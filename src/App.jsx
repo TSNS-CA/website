@@ -4,6 +4,8 @@ import { getInitialLang, setLang, t, supported } from "./i18n";
 import Membership from "./pages/Membership";
 import ConfirmationPage from "./pages/ConfirmationPage";
 import HomePage from "./pages/Home";
+import ContactPage from "./pages/Contact";
+import AboutPage from "./pages/About";
 
 function AppContent() {
   const [lang, setLangState] = useState(getInitialLang());
@@ -97,6 +99,9 @@ function AppContent() {
                   {t(lang, "about")}
                 </button>
                 <div id="about-menu" role="menu" className="dropdown-menu" aria-hidden={!aboutOpen}>
+                  <Link role="menuitem" to="/about" onClick={() => setAboutOpen(false)} style={{display: 'block', color: '#fff', padding: '8px 10px', borderRadius: '6px', textDecoration: 'none'}}>
+                    {t(lang, "about")}
+                  </Link>
                   <a role="menuitem" href="#">Newcomers</a>
                   <a role="menuitem" href="#">Sponsors</a>
                 </div>
@@ -109,9 +114,9 @@ function AppContent() {
               <a href="#" style={{ color: "rgba(255,255,255,0.95)", textDecoration: "none", padding: "6px 10px", borderRadius: "6px", fontWeight: "600", flex: "0 0 auto" }}>
                 {t(lang, "events")}
               </a>
-              <a href="#" style={{ color: "rgba(255,255,255,0.95)", textDecoration: "none", padding: "6px 10px", borderRadius: "6px", fontWeight: "600", flex: "0 0 auto" }}>
+              <Link to="/contact" style={{ color: "rgba(255,255,255,0.95)", textDecoration: "none", padding: "6px 10px", borderRadius: "6px", fontWeight: "600", flex: "0 0 auto" }}>
                 {t(lang, "contact")}
-              </a>
+              </Link>
             </nav>
 
             <button
@@ -248,6 +253,7 @@ function AppContent() {
               </button>
               {aboutOpen && (
                 <div style={{ paddingLeft: "16px", display: "flex", flexDirection: "column", gap: "4px" }}>
+                  <Link to="/about" onClick={() => { setMobileMenuOpen(false); setAboutOpen(false); }} style={{ color: "rgba(255,255,255,0.95)", textDecoration: "none", padding: "10px 8px", borderRadius: "6px" }}>{t(lang, "about")}</Link>
                   <a href="#" onClick={() => setMobileMenuOpen(false)} style={{ color: "rgba(255,255,255,0.85)", textDecoration: "none", padding: "10px 8px", borderRadius: "6px" }}>Newcomers</a>
                   <a href="#" onClick={() => setMobileMenuOpen(false)} style={{ color: "rgba(255,255,255,0.85)", textDecoration: "none", padding: "10px 8px", borderRadius: "6px" }}>Sponsors</a>
                 </div>
@@ -262,15 +268,17 @@ function AppContent() {
               {t(lang, "events")}
             </a>
 
-            <a href="#" onClick={() => setMobileMenuOpen(false)} style={{ color: "white", textDecoration: "none", padding: "12px 8px", borderRadius: "6px", marginBottom: "16px", fontWeight: "600" }}>
+            <Link to="/contact" onClick={() => setMobileMenuOpen(false)} style={{ color: "white", textDecoration: "none", padding: "12px 8px", borderRadius: "6px", marginBottom: "16px", fontWeight: "600" }}>
               {t(lang, "contact")}
-            </a>
+            </Link>
           </nav>
         </div>
       )}
 
       <Routes>
         <Route path="/" element={<HomePage lang={lang} />} />
+        <Route path="/about" element={<AboutPage lang={lang} />} />
+        <Route path="/contact" element={<ContactPage lang={lang} />} />
         <Route path="/membership" element={<Membership />} />
         <Route path="/confirmation" element={<ConfirmationPage />} />
       </Routes>
