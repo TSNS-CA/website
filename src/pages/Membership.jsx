@@ -14,11 +14,13 @@ export default function Membership() {
     setShowPayment(true);
   }
 
-  async function handlePaymentConfirm() {
+  async function handlePaymentConfirm(paymentResult) {
     setLoading(true);
     try {
-      // Store membership data and navigate to confirmation
-      sessionStorage.setItem("membershipData", JSON.stringify(formData));
+      sessionStorage.setItem(
+        "membershipData",
+        JSON.stringify({ ...formData, payment: paymentResult })
+      );
       navigate("/confirmation");
     } catch (err) {
       console.error("Error:", err);
@@ -39,9 +41,9 @@ export default function Membership() {
       {showPayment && formData && (
         <PaymentModal
           amount={formData.amount}
+          buyer={{ name: formData.name, email: formData.email, phone: formData.phone }}
           onClose={() => setShowPayment(false)}
           onConfirm={handlePaymentConfirm}
-          loading={loading}
         />
       )}
     </main>
