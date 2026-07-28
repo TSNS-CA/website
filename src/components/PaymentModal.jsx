@@ -32,7 +32,9 @@ function loadSquareSdk() {
 export default function PaymentModal({ amount, buyer, onClose, onConfirm }) {
   const cardRef = useRef(null);
   const cardContainerRef = useRef(null);
+  const applePayRef = useRef(null);
   const [sdkReady, setSdkReady] = useState(false);
+  const [applePayReady, setApplePayReady] = useState(false);
   const [initError, setInitError] = useState(null);
   const [processing, setProcessing] = useState(false);
   const [payError, setPayError] = useState(null);
@@ -40,6 +42,7 @@ export default function PaymentModal({ amount, buyer, onClose, onConfirm }) {
   useEffect(() => {
     let cancelled = false;
     let cardInstance = null;
+    let applePayInstance = null;
 
     async function init() {
       if (!APP_ID || !LOCATION_ID) {
@@ -50,6 +53,7 @@ export default function PaymentModal({ amount, buyer, onClose, onConfirm }) {
         const Square = await loadSquareSdk();
         if (cancelled) return;
         const payments = Square.payments(APP_ID, LOCATION_ID);
+
         cardInstance = await payments.card();
         if (cancelled) return;
         await cardInstance.attach(cardContainerRef.current);
@@ -59,6 +63,23 @@ export default function PaymentModal({ amount, buyer, onClose, onConfirm }) {
         }
         cardRef.current = cardInstance;
         setSdkReady(true);
+
+        try {
+          const req = payments.paymentRequest({
+            countryCode: "CA",
+            currencyCode: "CAD",
+            total: { amount: parseFloat(amount).toFixed(2), label: "TSNS Membership" },
+          });
+          applePayInstance = await payments.applePay(req);
+          if (cancelled) {
+            try { await applePayInstance.destroy(); } catch {}
+            return;
+          }
+          applePayRef.current = applePayInstance;
+          setApplePayReady(true);
+        } catch {
+          // Apple Pay is not available on this browser/device — silently skip.
+        }
       } catch (err) {
         console.error("Square SDK init failed", err);
         if (!cancelled) setInitError("Could not load the card form. Please refresh.");
@@ -69,48 +90,68 @@ export default function PaymentModal({ amount, buyer, onClose, onConfirm }) {
 
     return () => {
       cancelled = true;
-      const inst = cardRef.current;
+      const card = cardRef.current;
+      const applePay = applePayRef.current;
       cardRef.current = null;
-      if (inst) {
-        inst.destroy().catch(() => {});
-      }
+      applePayRef.current = null;
+      if (card) card.destroy().catch(() => {});
+      if (applePay) applePay.destroy().catch(() => {});
     };
   }, []);
 
-  async function handlePay() {
+  async function chargeWithToken(sourceId) {
+    const amountCents = Math.round(parseFloat(amount) * 100);
+    const res = await fetch("/api/create-payment", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sourceId, amountCents, currency: "CAD", buyer }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.ok) {
+      throw new Error(data.error || "Your card could not be charged.");
+    }
+    return data;
+  }
+
+  async function handleCardPay() {
     if (!cardRef.current || processing) return;
     setPayError(null);
     setProcessing(true);
     try {
       const result = await cardRef.current.tokenize();
       if (result.status !== "OK") {
-        const msg = result.errors?.[0]?.message || "Please check your card details.";
-        setPayError(msg);
+        setPayError(result.errors?.[0]?.message || "Please check your card details.");
         setProcessing(false);
         return;
       }
-
-      const amountCents = Math.round(parseFloat(amount) * 100);
-      const res = await fetch("/api/create-payment", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          sourceId: result.token,
-          amountCents,
-          currency: "CAD",
-          buyer,
-        }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok || !data.ok) {
-        setPayError(data.error || "Your card could not be charged.");
-        setProcessing(false);
-        return;
-      }
+      const data = await chargeWithToken(result.token);
       onConfirm(data);
     } catch (err) {
-      console.error("Payment failed", err);
-      setPayError("Something went wrong. Please try again.");
+      console.error("Card payment failed", err);
+      setPayError(err.message || "Something went wrong. Please try again.");
+      setProcessing(false);
+    }
+  }
+
+  async function handleApplePay() {
+    if (!applePayRef.current || processing) return;
+    setPayError(null);
+    setProcessing(true);
+    try {
+      const result = await applePayRef.current.tokenize();
+      if (result.status !== "OK") {
+        // "CANCEL" means the user dismissed the Apple sheet — no error message needed.
+        if (result.status !== "CANCEL") {
+          setPayError(result.errors?.[0]?.message || "Apple Pay could not be completed.");
+        }
+        setProcessing(false);
+        return;
+      }
+      const data = await chargeWithToken(result.token);
+      onConfirm(data);
+    } catch (err) {
+      console.error("Apple Pay failed", err);
+      setPayError(err.message || "Something went wrong. Please try again.");
       setProcessing(false);
     }
   }
@@ -128,6 +169,21 @@ export default function PaymentModal({ amount, buyer, onClose, onConfirm }) {
       justifyContent: "center",
       zIndex: 999
     }}>
+      <style>{`
+        .tsns-apple-pay-btn {
+          -webkit-appearance: -apple-pay-button;
+          -apple-pay-button-type: buy;
+          -apple-pay-button-style: black;
+          display: block;
+          width: 100%;
+          height: 48px;
+          border: none;
+          border-radius: 8px;
+          padding: 0;
+          margin: 0;
+        }
+        .tsns-apple-pay-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+      `}</style>
       <div style={{
         background: "white",
         borderRadius: "12px",
@@ -139,6 +195,30 @@ export default function PaymentModal({ amount, buyer, onClose, onConfirm }) {
         <h2 style={{ color: "#16466A", marginTop: 0, marginBottom: "24px" }}>
           Pay C${parseFloat(amount).toFixed(2)}
         </h2>
+
+        {applePayReady && (
+          <div style={{ marginBottom: "20px" }}>
+            <button
+              type="button"
+              onClick={handleApplePay}
+              disabled={processing}
+              className="tsns-apple-pay-btn"
+              aria-label="Pay with Apple Pay"
+            />
+            <div style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "12px",
+              margin: "16px 0 4px",
+              color: "#94a3b8",
+              fontSize: "0.85rem"
+            }}>
+              <div style={{ flex: 1, height: "1px", background: "#e2e8f0" }} />
+              <span>or pay with card</span>
+              <div style={{ flex: 1, height: "1px", background: "#e2e8f0" }} />
+            </div>
+          </div>
+        )}
 
         <div style={{ marginBottom: "16px" }}>
           <p style={{ fontWeight: "600", color: "#0f172a", marginBottom: "12px" }}>
@@ -195,7 +275,7 @@ export default function PaymentModal({ amount, buyer, onClose, onConfirm }) {
             Cancel
           </button>
           <button
-            onClick={handlePay}
+            onClick={handleCardPay}
             disabled={processing || !sdkReady}
             style={{
               flex: 1,
