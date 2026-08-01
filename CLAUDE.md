@@ -19,12 +19,20 @@ The site is a small **React SPA** that:
 - Accepts **membership dues** through **Square** card payments (CAD).
 - Serves **English / Turkish** via a hand-rolled i18n layer.
 
-Deployed on **Cloudflare Pages** (project name `tsns-ca-website`) with
-**Cloudflare Pages Functions** providing the serverless payment API.
+**Live deployment of this app: https://tsns.vercel.app/** (Vercel). It is the
+**custom rebuild** of the existing production site at **https://www.tsns.ca/**
+(a Google Sites site — see §2). ⚠️ The payment API is **not working on Vercel**
+today — see §7 (Deployment) and §10 (Known Gaps).
 
-> This app is the **custom rebuild** of the existing live site at
-> **https://www.tsns.ca/** (a Google Sites site). See **§2** for the live-site
-> reference and the live→repo migration/parity map.
+> There are **three** surfaces to keep straight:
+> - **www.tsns.ca** — current production, Google Sites (payments redirect to
+>   `tsns-payment.square.site`).
+> - **tsns.vercel.app** — live deployment of *this* repo (Vercel); frontend OK,
+>   but the payment backend **404s** — the function is Cloudflare-format and was
+>   never ported to Vercel.
+> - **Cloudflare Pages project `tsns-ca-website`** (`wrangler.toml`) — the
+>   *original/intended* target where the payment function actually runs (and via
+>   local `npm run dev:api`), but not the active public deployment.
 
 ---
 
@@ -197,6 +205,18 @@ Contact) plus a **hamburger drawer** for mobile (`@media max-width: 720px` hides
 
 ### Payments — the critical flow
 
+> 🚨 **CRITICAL — the backend is broken on the live Vercel deployment.**
+> `functions/api/create-payment.js` is written for **Cloudflare Pages
+> Functions** (`export async function onRequestPost({ request, env })`). The app
+> is deployed on **Vercel**, which neither scans `functions/` nor understands
+> the `onRequestPost` / `env` signature (there is no `api/` dir and no
+> `vercel.json`). Verified: `POST https://tsns.vercel.app/api/create-payment` →
+> **HTTP 404**. So the in-app card flow cannot complete in production —
+> `PaymentModal` shows *"Your card could not be charged."* The function only
+> runs under `npm run dev:api` (local Wrangler) or on Cloudflare Pages. Fixes:
+> (a) port to a Vercel `api/create-payment.js` default Web-Request handler
+> reading `process.env`, or (b) deploy the app to Cloudflare Pages. See §7/§10.
+
 ```
 MembershipForm                 PaymentModal (browser)            Pages Function               Square
   (user data)                    Square Web SDK                     /api/create-payment          /v2/payments
@@ -280,15 +300,33 @@ Both `.env` and `.dev.vars` are gitignored. **Never commit secrets.**
 
 ## 7. Deployment
 
-- **Host:** Cloudflare Pages, project `tsns-ca-website` (`wrangler.toml`).
-- **Build command:** `npm run build`; **output dir:** `dist/` (Vite default).
-- Pages Functions in `functions/` are deployed automatically alongside the
-  static build — no extra step.
-- The commit `8630462 "Empty commit: trigger CI"` indicates Pages auto-builds on
-  push to `main`. There is **no `.github/workflows`** directory — CI/CD is the
-  Cloudflare Pages integration, not GitHub Actions.
-- Production Square env vars are configured in the Cloudflare dashboard
-  (Settings → Environment variables), not in this repo.
+- **Active host: Vercel** → the repo's build is live at
+  **https://tsns.vercel.app/**. Vercel auto-detects the Vite framework, runs
+  `npm run build`, and serves `dist/` as a static SPA.
+- **Original/intended host: Cloudflare Pages** — `wrangler.toml` (project
+  `tsns-ca-website`) and the `dev:api` script target Pages, where
+  `functions/api/create-payment.js` *would* deploy as a serverless function.
+  This is currently the only place that function actually runs (local or Pages).
+- **⚠️ Hosting mismatch (live bug).** The payment function is Cloudflare-format
+  but the app ships on Vercel, so `/api/create-payment` is **404 on Vercel**
+  (verified). Payments cannot complete on the live deployment until resolved.
+- Client env on Vercel is set to **`VITE_SQUARE_ENV=production`** (the
+  production Square Web SDK URL is baked into the bundle).
+- There is **no `.github/workflows`** and no `vercel.json` — CI/CD is the host's
+  git integration (Vercel, optionally Cloudflare Pages), not GitHub Actions. The
+  `8630462 "Empty commit: trigger CI"` commit reflects this auto-deploy model.
+- Secrets live in the host dashboard env vars (Vercel project settings), **not**
+  in this repo. The server-side `SQUARE_ACCESS_TOKEN` only matters where the
+  function actually executes (local `.dev.vars` / Cloudflare) — Vercel doesn't
+  run it.
+
+**To fix the payment deployment, pick one:**
+
+1. **Stay on Vercel** → add `api/create-payment.js` (Vercel convention) porting
+   the logic to a default Web-Request handler that reads `process.env`, and set
+   `SQUARE_*` in Vercel env. (`functions/` can then be removed.)
+2. **Move to Cloudflare Pages** → the existing function works as-is; point the
+   `tsns.ca` (or a sub-) domain at Pages instead of Vercel.
 
 ---
 
@@ -323,11 +361,17 @@ Built and working:
 - ✅ Bilingual nav labels (EN/TR) with persistence.
 - ✅ Home, About, Contact content pages.
 - ✅ Membership form with client-side validation.
-- ✅ Square card-payment flow (tokenize → server charge → confirmation).
-- ✅ Cloudflare Pages Function with sandbox/production switching and idempotency.
+- ✅ Square card-payment flow — works **locally** / on Cloudflare (tokenize →
+  server charge → confirmation). ❌ **Broken on the live Vercel deployment**
+  (`/api/create-payment` → 404); see §7.
+- ✅ Server payment function with sandbox/production switching + idempotency
+  (Cloudflare Pages Functions format — needs porting for Vercel).
 
 In progress / not done:
 
+- 🚨 **Payment backend not deployed on Vercel** — `/api/create-payment` 404s on
+  tsns.vercel.app; the Cloudflare-format function must be ported or the app
+  moved to Cloudflare Pages (highest priority).
 - 🚧 **Apple Pay** — `feat/apple-pay` branch modifies `PaymentModal.jsx`
   (preparations only; not merged).
 - ❌ **Events** page (nav link is a placeholder).
@@ -342,17 +386,23 @@ In progress / not done:
 
 ## 10. Known Gaps & Tech Debt
 
-1. **Inline styles everywhere** — `App.jsx` (mobile menu), `MembershipForm`,
+1. **🚨 Hosting/runtime mismatch — payments broken in production (highest priority).**
+   The payment function is Cloudflare Pages format (`onRequestPost`/`env` in
+   `functions/api/`) but the app is deployed on **Vercel**, which returns 404
+   for `/api/create-payment`. Card payments cannot complete on tsns.vercel.app
+   until the function is ported to Vercel or the app is moved to Cloudflare
+   Pages (see §7).
+2. **Inline styles everywhere** — `App.jsx` (mobile menu), `MembershipForm`,
    `PaymentModal`, `ConfirmationPage`, `About`, `Contact` lean heavily on inline
    styles and magic hex values instead of `index.css` tokens/classes. Hard to
    theme and maintain.
-2. **Partial i18n** — only the nav shell uses `t()`. Page bodies and the entire
+3. **Partial i18n** — only the nav shell uses `t()`. Page bodies and the entire
    membership flow are English-only.
-3. **No member database** — payments succeed but nothing is stored about the
+4. **No member database** — even when payments work, nothing is stored about the
    member beyond the ephemeral confirmation screen. Square is the only record.
-4. **No tests, no linting, no TypeScript** — no guardrails beyond Vite's build.
-5. **Placeholder routes** — Events / Newcomers / Sponsors / Search.
-6. **Accessibility** — the About dropdown is keyboard-handled, but other
+5. **No tests, no linting, no TypeScript** — no guardrails beyond Vite's build.
+6. **Placeholder routes** — Events / Newcomers / Sponsors / Search.
+7. **Accessibility** — the About dropdown is keyboard-handled, but other
    interactive elements (hamburger, buttons) lack full ARIA/keyboard coverage.
 
 ---
