@@ -1,12 +1,30 @@
 <!doctype html>
-<html lang="en">
+<html lang="tr">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#0f172a" />
-    <title>Turkish Society — Starter</title>
-    <link rel="icon" href="/favicon.ico" />
-    <meta name="description" content="Responsive React starter for desktop and mobile" />
+    <meta name="theme-color" content="#16466A" />
+    <title>Türkiye Derneği — Nova Scotia | Turkish Society of Nova Scotia</title>
+    <link rel="icon" href="/tsns.jpeg" />
+    <meta
+      name="description"
+      content="Türkiye Derneği (Turkish Society of Nova Scotia) — Türk kültürünü Nova Scotia'da 2007'den beri yaşatan gönüllü topluluk. Bridging cultures, building communities since 2007."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Set theme before paint to avoid flash-of-wrong-theme -->
+    <script>
+      try {
+        var t = localStorage.getItem("theme");
+        if (t === "dark" || (!t && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+          document.documentElement.classList.add("dark");
+        }
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>

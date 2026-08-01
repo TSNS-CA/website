@@ -1,33 +1,30 @@
-import React from "react";
 import { t } from "../i18n";
+import { Section, Eyebrow } from "../components/ui";
+import { socials, departments } from "../content";
 
 export default function ContactPage({ lang }) {
-  const socials = [
-    { name: "Instagram", href: "https://instagram.com/turkishsocietyofns" },
-    { name: "Facebook", href: "https://www.facebook.com/turkishsocietyns" },
-    { name: "LinkedIn", href: "https://www.linkedin.com/company/turkish-society-of-nova-scotia" },
-    { name: "LinkTree", href: "https://www.linktr.ee/turkishsocietyofns" },
-
-  ];
-
-  const departments = [
-    { dept: "General enquiries", email: "info@tsns.ca" },
-    { dept: "Events", email: "events@tsns.ca" },
-    { dept: "Sponsorships & Partnerships", email: "partners@tsns.ca" },
-    { dept: "Community Relations", email: "community@tsns.ca" }
-  ];
-
   return (
-    <main className="container" style={{ padding: 24 }}>
-      <h1 style={{ color: "var(--primary)", marginBottom: 12 }}>{t(lang, "contact")}</h1>
+    <Section className="py-20">
+      <div className="max-w-3xl">
+        <Eyebrow>{t(lang, "nav.contact")}</Eyebrow>
+        <h1 className="mt-3 font-display text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl dark:text-white">
+          {t(lang, "contact.title")}
+        </h1>
 
-      <section style={{ display: "block", gap: 20, marginBottom: 18 }}>
-        <div style={{ marginBottom: 16 }}>
-          <h3 style={{ marginTop: 0 }}>Social</h3>
-          <ul style={{ listStyle: "none", paddingLeft: 0, margin: 0, display: "flex", gap: 12, flexWrap: "wrap" }}>
-            {socials.map(s => (
+        {/* Socials */}
+        <div className="mt-10">
+          <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+            {t(lang, "contact.social")}
+          </h2>
+          <ul className="mt-4 flex flex-wrap gap-3">
+            {socials.map((s) => (
               <li key={s.name}>
-                <a href={s.href} target="_blank" rel="noreferrer" style={{ color: "var(--primary)", textDecoration: "none", fontWeight: 600 }}>
+                <a
+                  href={s.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-primary hover:border-primary hover:text-accent dark:border-slate-800 dark:bg-slate-900 dark:text-white"
+                >
                   {s.name}
                 </a>
               </li>
@@ -35,22 +32,24 @@ export default function ContactPage({ lang }) {
           </ul>
         </div>
 
-        <div>
-          <h3 style={{ marginTop: 0 }}>Emails</h3>
-          <div style={{ overflowX: "auto", background: "white", borderRadius: 8, padding: 8, boxShadow: "0 6px 18px rgba(2,6,23,0.06)" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse" }}>
-              <thead>
-                <tr>
-                  <th style={{ textAlign: "left", padding: 8, borderBottom: "1px solid #eee" }}>Department</th>
-                  <th style={{ textAlign: "left", padding: 8, borderBottom: "1px solid #eee" }}>Email</th>
-                </tr>
-              </thead>
+        {/* Emails */}
+        <div className="mt-10">
+          <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+            {t(lang, "contact.emails")}
+          </h2>
+          <div className="mt-4 overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800">
+            <table className="w-full text-left text-sm">
               <tbody>
-                {departments.map(d => (
-                  <tr key={d.email}>
-                    <td style={{ padding: 8, borderBottom: "1px solid #f4f4f4" }}>{d.dept}</td>
-                    <td style={{ padding: 8, borderBottom: "1px solid #f4f4f4" }}>
-                      <a href={`mailto:${d.email}`} style={{ color: "var(--primary)", textDecoration: "none" }}>{d.email}</a>
+                {departments.map((d, i) => (
+                  <tr
+                    key={d.email}
+                    className={i % 2 ? "bg-slate-50 dark:bg-slate-900/50" : "bg-white dark:bg-slate-900"}
+                  >
+                    <td className="px-5 py-3 font-semibold text-slate-800 dark:text-slate-100">{d[lang]}</td>
+                    <td className="px-5 py-3">
+                      <a href={`mailto:${d.email}`} className="text-accent hover:underline">
+                        {d.email}
+                      </a>
                     </td>
                   </tr>
                 ))}
@@ -58,11 +57,9 @@ export default function ContactPage({ lang }) {
             </table>
           </div>
         </div>
-      </section>
 
-      <p style={{ color: "var(--muted)", marginTop: 6 }}>
-       We are stronger together!
-      </p>
-    </main>
+        <p className="mt-10 text-lg font-medium text-primary dark:text-white">{t(lang, "contact.tagline")}</p>
+      </div>
+    </Section>
   );
 }
