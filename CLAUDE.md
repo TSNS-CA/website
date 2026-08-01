@@ -328,6 +328,34 @@ Both `.env` and `.dev.vars` are gitignored. **Never commit secrets.**
 2. **Move to Cloudflare Pages** → the existing function works as-is; point the
    `tsns.ca` (or a sub-) domain at Pages instead of Vercel.
 
+### Domain: `tsns.ca` — ownership & migration plan
+
+- **Registered at GoDaddy; plan: transfer the registration to Cloudflare
+  Registrar.** (`.ca` transfers to Cloudflare became available Jul 26, 2025.)
+- **Two independent moves — don't conflate them:**
+  1. *DNS / nameserver move* (GoDaddy NS → Cloudflare NS): minutes, **no
+     downtime** if records are copied first. This is what routes `tsns.ca` to the
+     new app, and it's a prerequisite for the registrar transfer.
+  2. *Registrar transfer* (GoDaddy → Cloudflare): `.ca` typically **5–7 days**
+     (CIRA); Cloudflare's stated max is 10 days. Runs in the background with
+     **no downtime** — purely a billing/ownership move. It does **not** block
+     development or launch.
+- **`.ca` specifics:** the auth code is **registry-issued by CIRA** (request at
+  cira.ca, sent to the registrant email on file) — not just a registrar code.
+  Eligibility: >30 days since registration, and not within the **60-day lock**
+  that follows a registrant change.
+- **Safety rule:** before switching nameservers, snapshot all GoDaddy DNS
+  records and recreate them in Cloudflare — **especially MX records** (the
+  Contact-page mailboxes like `info@tsns.ca` / `events@tsns.ca`) and the Google
+  Sites record, so the live site and email stay up during the move.
+- **Recommended sequence:** (A) add `tsns.ca` to Cloudflare and switch
+  nameservers, keeping the Google Sites record live; (B) start the registrar
+  transfer in the background; (C) develop the new design; (D) on launch, flip
+  the DNS record to the app host in Cloudflare — no registrar action needed.
+- **Open decision (ties into the host choice above):** whether the domain should
+  point at Vercel or at Cloudflare Pages (the latter also fixes the payment
+  function with no code change). Decide before launch.
+
 ---
 
 ## 8. Design System (`src/index.css`)
