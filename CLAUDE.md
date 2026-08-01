@@ -355,6 +355,23 @@ Both `.env` and `.dev.vars` are gitignored. **Never commit secrets.**
 - **Open decision (ties into the host choice above):** whether the domain should
   point at Vercel or at Cloudflare Pages (the latter also fixes the payment
   function with no code change). Decide before launch.
+- **Live DNS confirmed (queried + GoDaddy export, 2026-08-01):**
+  - **Email = Google Workspace** — MX → `aspmx` + `alt1–4.aspmx.l.google.com`,
+    priorities **1 / 5 / 5 / 10 / 10**. The Contact-page mailboxes
+    (`info@`/`events@`/`partners@`/`community@tsns.ca`) are real Gmail inboxes —
+    these MX records are the #1 thing the migration must preserve.
+  - **Website = Google Sites** — apex `A` ×4 → `216.239.32.21`, `.34.21`,
+    `.36.21`, `.38.21`; `www` CNAME → `ghs.googlehosted.com`.
+  - One `TXT` = `google-site-verification=2PLW2MD7lzySzz3ZhCeYVomlGfgfqpb4s0dlU5BLGkk`.
+  - **No SPF / DKIM / DMARC / MTA-STS published today** (optional deliverability
+    hardening — not part of the move; don't add mid-migration).
+  - Nameservers currently GoDaddy (`ns37/ns38.domaincontrol.com`).
+- **Migration gotchas (so they're not re-learned next time):**
+  - In Cloudflare, **do NOT enable Email Routing** — it overwrites the Google MX
+    records and breaks mail. Keep the 5 Google MX records verbatim.
+  - Do **not** manually add `NS`/`SOA` — Cloudflare manages those automatically.
+  - Set the Google Sites `A`/`CNAME` records to **DNS-only (gray cloud)** to
+    mirror GoDaddy's current (un-proxied) behavior.
 
 ---
 
