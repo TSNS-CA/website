@@ -22,9 +22,95 @@ The site is a small **React SPA** that:
 Deployed on **Cloudflare Pages** (project name `tsns-ca-website`) with
 **Cloudflare Pages Functions** providing the serverless payment API.
 
+> This app is the **custom rebuild** of the existing live site at
+> **https://www.tsns.ca/** (a Google Sites site). See **§2** for the live-site
+> reference and the live→repo migration/parity map.
+
 ---
 
-## 2. Tech Stack
+## 2. Live Site Reference — www.tsns.ca
+
+The **currently live** production site at https://www.tsns.ca/ is what this repo
+is being built to replace. It defines the content, features, and payment
+behavior the new app must reach parity with — read this before scoping new work.
+
+### Platform
+
+- **Google Sites**, served on a custom domain (`tsns.ca`).
+  - Telling signals: assets from `www.gstatic.com/_/atari/_/...` ("atari" is
+    Google Sites' internal codebase), Google Fonts (Oswald / Open Sans), no CMS
+    generator tag, "Report abuse" links in the footer.
+- Built in Google's drag-and-drop editor — **not custom code**, so it is *not* a
+  source for this repo. Content lives in the Google Sites account and must be
+  **migrated by hand** into the React pages.
+
+### Visual design (live)
+
+- Dark teal/navy header, all-caps nav bar.
+- Full-bleed hero photo (Bosphorus / Istanbul imagery) with the bilingual
+  tagline **"Bridging Cultures / Building Communities"** and
+  **"Welcome to our Society!"**.
+- Three CTA cards: **New Comers – Yeni Gelenler**, **Membership – Uyelik**,
+  **More Details**.
+- Footer: *"© 2023 The Turkish Society of Nova Scotia. All rights reserved."*
+
+### Live site structure (full nav)
+
+| Section | Pages |
+| --- | --- |
+| Home | `/home` |
+| About | `/about` → Our Mission, **Bylaws–Tuzuk**, Membership and Our Board, **Documents**, **Photos** |
+| Announcements–Events | `/announcements-events` (static bilingual text, e.g. AGM Jun 2026) |
+| NewComers | `/newcomers` → Settlement Partnerships |
+| Sponsors | `/sponsors` → Nikki Jafari (Scotiabank), MediTerra Kitchen & Grocery, Bosphorus Construction, Remax / Deirdre Goulding |
+| Contact | `/contact` |
+| Membership and Tickets | `/membership-and-tickets` |
+
+### How the live site takes payments today (IMPORTANT)
+
+The current site does **not** process cards itself — it funnels to external
+services:
+
+1. **Square Online Checkout (hosted)** — a `MEMBERSHIP and TICKET PAYMENT`
+   button links to **`https://tsns-payment.square.site/`**, a Square-hosted
+   checkout that handles **both** membership dues and event tickets (e.g. the
+   *"102 Years of the Turkish Republic Celebration"* reception).
+2. **Google Form + e-transfer** — renewals also go through a Google Form with
+   **Interac e-transfer to `info@tsns.ca`**.
+
+> **This is the core motivation for the rebuild.** The repo re-implements the
+> Square flow **natively** (Web Payments SDK in `PaymentModal.jsx` →
+> `/api/create-payment` Pages Function → Square `/v2/payments`), so members pay
+> **in-app** instead of being redirected off-site to `tsns-payment.square.site`.
+> Benefits: keeps users on `tsns.ca`, lets the org capture name/email/phone
+> directly, and removes dependence on the hosted Square Online page.
+
+### Live → Repo migration / parity map
+
+| Live-site feature | Repo status | Notes |
+| --- | --- | --- |
+| Home hero ("Bridging Cultures…") | ⚠️ partial | `Home.jsx` hero uses only `welcome`; live has the full bilingual slogan |
+| About → Mission / Board | ⚠️ partial | `About.jsx` is a single text block; no mission/board sections |
+| About → Bylaws–Tuzuk | ❌ missing | — |
+| About → Documents | ❌ missing | — |
+| About → Photos | ❌ missing | — |
+| Announcements–Events | ❌ placeholder | nav link is `href="#"`; no events page |
+| NewComers + Settlement Partnerships | ❌ placeholder | nav link is `href="#"` |
+| Sponsors directory | ❌ placeholder | nav link is `href="#"` |
+| Contact | ⚠️ partial | repo has socials + email table; live adds **YouTube** and a Facebook *group* URL |
+| Membership payment | ✅ rebuilt natively | Square flow in-app; live redirects to `tsns-payment.square.site` |
+| Event ticket sales | ❌ missing | live sells tickets via Square Online; repo has no ticketing |
+| Google Form renewals / e-transfer | ❌ not replicated | — |
+
+### Social channels (live, for `Contact.jsx` parity)
+
+Facebook (group), Instagram, **YouTube**, LinkedIn, Linktree. The repo's
+`Contact.jsx` lists Instagram, Facebook (page), LinkedIn, Linktree — **YouTube
+is missing**, and its Facebook URL points at the page, not the live group.
+
+---
+
+## 3. Tech Stack
 
 | Layer        | Choice                                                        |
 | ------------ | ------------------------------------------------------------ |
@@ -43,7 +129,7 @@ No test framework, no linter config, no TypeScript. Dependencies are minimal
 
 ---
 
-## 3. Repository Structure
+## 4. Repository Structure
 
 ```
 .
@@ -75,7 +161,7 @@ No test framework, no linter config, no TypeScript. Dependencies are minimal
 
 ---
 
-## 4. Architecture
+## 5. Architecture
 
 ### Routing (`src/App.jsx`)
 
@@ -149,7 +235,7 @@ confirmation is purely client-side.
 
 ---
 
-## 5. Development
+## 6. Development
 
 ### Commands
 
@@ -192,7 +278,7 @@ Both `.env` and `.dev.vars` are gitignored. **Never commit secrets.**
 
 ---
 
-## 6. Deployment
+## 7. Deployment
 
 - **Host:** Cloudflare Pages, project `tsns-ca-website` (`wrangler.toml`).
 - **Build command:** `npm run build`; **output dir:** `dist/` (Vite default).
@@ -206,7 +292,7 @@ Both `.env` and `.dev.vars` are gitignored. **Never commit secrets.**
 
 ---
 
-## 7. Design System (`src/index.css`)
+## 8. Design System (`src/index.css`)
 
 CSS custom properties (design tokens):
 
@@ -229,7 +315,7 @@ CSS custom properties (design tokens):
 
 ---
 
-## 8. Current State (as of 2026-08-01)
+## 9. Current State (as of 2026-08-01)
 
 Built and working:
 
@@ -254,7 +340,7 @@ In progress / not done:
 
 ---
 
-## 9. Known Gaps & Tech Debt
+## 10. Known Gaps & Tech Debt
 
 1. **Inline styles everywhere** — `App.jsx` (mobile menu), `MembershipForm`,
    `PaymentModal`, `ConfirmationPage`, `About`, `Contact` lean heavily on inline
@@ -271,7 +357,7 @@ In progress / not done:
 
 ---
 
-## 10. Git Workflow
+## 11. Git Workflow
 
 - **Default branch:** `main`.
 - **Active branch:** `feat/apple-pay` (Apple Pay prep, unmerged).
@@ -282,7 +368,7 @@ In progress / not done:
 
 ---
 
-## 11. Conventions to Follow
+## 12. Conventions to Follow
 
 - **JSX + function components** with hooks; no class components.
 - **New UI should use the CSS variables** (`var(--primary)`, etc.) from
