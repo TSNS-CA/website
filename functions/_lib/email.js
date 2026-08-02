@@ -240,6 +240,9 @@ export function adminRecipients(env) {
  *   membershipType ("yearly" | "one_time"), autoRenews ("true" | "false")
  *   membershipStartDate    / membershipStartDateTr
  *   membershipExpiryDate   / membershipExpiryDateTr
+ *   renewalNoteTr / renewalNoteEn — a ready-made sentence, because the same
+ *     template serves both a renewing subscription and a one-off gift and
+ *     Resend templates have no conditionals
  *   receiptUrl
  */
 export function sendMemberConfirmation(env, ctx, opts) {
@@ -270,6 +273,14 @@ export function sendMemberConfirmation(env, ctx, opts) {
           currency: "CAD",
           membershipType: type,
           autoRenews: type === "yearly" ? "true" : "false",
+          renewalNoteTr:
+            type === "yearly"
+              ? `Üyeliğiniz artık aktif ve ${formatDate(membershipEnd, "tr")} tarihine kadar geçerli. Her yıl otomatik olarak yenilenecek; dilediğiniz zaman info@tsns.ca adresinden iptal edebilirsiniz.`
+              : `Bağışınız size ${formatDate(membershipEnd, "tr")} tarihine kadar geçerli bir yıllık üyelik kazandırıyor. Bu üyelik otomatik olarak yenilenmez; süre dolduğunda dilerseniz tekrar üye olabilirsiniz.`,
+          renewalNoteEn:
+            type === "yearly"
+              ? `Your membership is now active and valid until ${formatDate(membershipEnd, "en")}. It renews automatically each year — you can cancel any time at info@tsns.ca.`
+              : `Your donation also gives you a year of membership, valid until ${formatDate(membershipEnd, "en")}. It does not renew automatically, so you are welcome to join again when it ends.`,
           membershipStartDate: formatDate(membershipStart, "en"),
           membershipStartDateTr: formatDate(membershipStart, "tr"),
           membershipExpiryDate: formatDate(membershipEnd, "en"),

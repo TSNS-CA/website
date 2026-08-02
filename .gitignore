@@ -9,3 +9,4 @@ atlas-credentials.env
 worker/
 
 emails
+docs/email-templates/*.preview.html

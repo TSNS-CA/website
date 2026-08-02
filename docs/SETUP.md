@@ -368,6 +368,45 @@ yedek için kullanılıyor; içindeki domain doğrulanmış olmalı yoksa Resend
 döner. Template id'si boş bırakılırsa kod sessizce kendi ürettiği HTML'e düşer
 ve loga uyarı yazar — akış kırılmaz ama tasarım senin template'in olmaz.
 
+### 3.3.0 Template HTML'leri nerede
+
+İki şablonun kaynağı repoda duruyor, böylece sürüm geçmişi var:
+
+```
+docs/email-templates/membership-confirmation.html
+docs/email-templates/volunteer-confirmation.html
+```
+
+**Yerelde görmek için:**
+
+```bash
+node docs/email-templates/preview.mjs --serve
+# → http://localhost:4321
+```
+
+Örnek değerlerle üç önizleme çıkarıyor: üyelik, **bağış** (aynı şablonun diğer
+hâli) ve gönüllü. Logo canlıda `https://tsns.ca/tsns.jpeg` adresinden geliyor —
+domain Worker'a bağlanana kadar e-postada görünmez; önizleme yerel dosyayı
+koyduğu için bugün de doğru görüntüyü verir.
+
+**Resend'e almak için:** ilgili `.html` dosyasının tamamını kopyala →
+Resend → Templates → ilgili template → HTML olarak yapıştır → kaydet.
+(`.preview.html` dosyalarını değil, `{{...}}` içeren asıl dosyayı.)
+
+Tasarım siteyle aynı dili konuşuyor: krem zemin `#F0EEE6`, kart beyaz, üstte
+6px kırmızı çizgi `#D81E34`, navy `#16466A` marka bandı, altın `#FFD200` isim.
+
+Düzeltilen iki şey:
+
+- **WhatsApp butonu görünmüyordu.** Butonun `<td>`'sinde `border-radius` vardı
+  ama `background-color` yoktu; beyaz kart üzerinde beyaz yazı kalıyordu. Artık
+  hem `bgcolor` hem `style` ile kırmızı zemin var (Outlook `bgcolor`'ı,
+  diğerleri `style`'ı okuyor) ve link hem butona hem de altındaki yedek satıra
+  gömülü.
+- **"ENGLİSH" yazıyordu.** `text-transform:uppercase` + `lang="tr"` birleşince
+  tarayıcı Türkçe kuralını uygulayıp `i` harfini `İ` yapıyordu. Başlıklar artık
+  düz metin olarak büyük harfle yazılı.
+
 ### 3.3.1 Template'lerin kullanabileceği değişkenler
 
 Template yalnızca kendi kullandığı değişkeni işler, fazlası zararsız.

@@ -1,0 +1,133 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!--
+  TSNS — membership-confirmation
+  Resend template. Used for BOTH the yearly membership and the one-time
+  donation; the code fills renewalNoteTr / renewalNoteEn with the right sentence.
+
+  Variables: firstName, amount, membershipExpiryDate, membershipExpiryDateTr,
+             renewalNoteTr, renewalNoteEn, receiptUrl
+
+  Palette matches the website: cream #F0EEE6, navy #16466A, red #D81E34.
+-->
+<html dir="ltr" lang="tr">
+<head>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<meta content="text/html; charset=UTF-8" http-equiv="Content-Type"/>
+<meta name="x-apple-disable-message-reformatting"/>
+<meta content="IE=edge" http-equiv="X-UA-Compatible"/>
+<meta content="telephone=no,address=no,email=no,date=no,url=no" name="format-detection"/>
+<title>Üyeliğiniz onaylandı — hoş geldiniz! / Your membership is confirmed.</title>
+<style>
+  body, table, td, a { -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%; }
+  table, td { mso-table-lspace:0pt; mso-table-rspace:0pt; }
+  img { -ms-interpolation-mode:bicubic; border:0; height:auto; line-height:100%; outline:none; text-decoration:none; }
+  body { margin:0; padding:0; width:100% !important; height:100% !important; }
+  a { text-decoration:none; }
+  @media only screen and (max-width:620px) {
+    .container { width:100% !important; }
+    .px { padding-left:24px !important; padding-right:24px !important; }
+    .h1 { font-size:23px !important; }
+  }
+</style>
+</head>
+<body style="background-color:#F0EEE6;margin:0;padding:0;">
+<div style="display:none;overflow:hidden;line-height:1px;opacity:0;max-height:0;max-width:0;">Üyeliğiniz onaylandı — hoş geldiniz! Your TSNS membership is confirmed.</div>
+
+<table border="0" width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background-color:#F0EEE6;">
+<tr>
+<td align="center" style="padding:32px 16px;">
+
+  <table width="600" border="0" cellpadding="0" cellspacing="0" role="presentation" class="container" style="width:600px;max-width:600px;">
+
+    <!-- Card -->
+    <tr><td style="background-color:#FFFFFF;border-radius:14px;overflow:hidden;border:1px solid #E7E1D2;">
+      <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation">
+
+        <!-- Red rule, same as the site header -->
+        <tr><td style="height:6px;line-height:6px;font-size:6px;background-color:#D81E34;">&nbsp;</td></tr>
+
+        <!-- Brand -->
+        <tr><td align="center" style="background-color:#16466A;padding:26px 24px;">
+          <table border="0" cellpadding="0" cellspacing="0" role="presentation">
+            <tr><td align="center" style="background-color:#FFFFFF;border-radius:10px;padding:6px;">
+              <img src="https://tsns.ca/tsns.jpeg" width="104" alt="Nova Scotia Türk Derneği" style="display:block;width:104px;height:auto;border-radius:6px;"/>
+            </td></tr>
+            <tr><td align="center" style="padding-top:14px;font-family:Georgia,'Times New Roman',serif;font-size:19px;font-weight:bold;color:#FFD200;letter-spacing:.3px;">
+              Nova Scotia Türk Derneği
+            </td></tr>
+            <tr><td align="center" style="padding-top:4px;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#AFC6D9;letter-spacing:1.4px;">
+              TURKISH SOCIETY OF NOVA SCOTIA
+            </td></tr>
+          </table>
+        </td></tr>
+
+        <!-- Türkçe -->
+        <tr><td class="px" style="padding:38px 40px 8px 40px;">
+          <p style="margin:0 0 6px;font-family:Arial,Helvetica,sans-serif;font-size:12px;font-weight:bold;letter-spacing:1.6px;color:#B8172A;">TÜRKÇE</p>
+          <h1 class="h1" style="margin:0 0 18px;font-family:Georgia,'Times New Roman',serif;font-size:26px;line-height:1.3;color:#16466A;">TSNS'e hoş geldiniz, {{firstName}}!</h1>
+          <p style="margin:0 0 16px;font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.65;color:#4A4038;">Nova Scotia Türk Derneği'ne kaydolduğunuz için teşekkür ederiz. Sizi topluluğumuzun bir parçası olarak aramızda görmekten çok mutluyuz.</p>
+          <p style="margin:0 0 16px;font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.65;color:#4A4038;">{{renewalNoteTr}}</p>
+        </td></tr>
+
+        <!-- Details -->
+        <tr><td class="px" style="padding:6px 40px 0 40px;">
+          <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background-color:#FAF8F2;border:1px solid #ECE3D8;border-radius:10px;">
+            <tr>
+              <td style="padding:16px 20px;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#8A7E70;">Tutar · Amount</td>
+              <td align="right" style="padding:16px 20px;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:bold;color:#2B2420;">{{amount}} CAD</td>
+            </tr>
+            <tr>
+              <td style="padding:0 20px 16px;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#8A7E70;">Geçerlilik · Valid until</td>
+              <td align="right" style="padding:0 20px 16px;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:bold;color:#B8172A;">{{membershipExpiryDateTr}}</td>
+            </tr>
+          </table>
+        </td></tr>
+
+        <!-- Divider -->
+        <tr><td class="px" style="padding:32px 40px 0 40px;">
+          <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation"><tr>
+            <td style="border-top:1px solid #ECE3D8;font-size:1px;line-height:1px;">&nbsp;</td>
+          </tr></table>
+        </td></tr>
+
+        <!-- English -->
+        <tr><td class="px" style="padding:30px 40px 8px 40px;">
+          <p style="margin:0 0 6px;font-family:Arial,Helvetica,sans-serif;font-size:12px;font-weight:bold;letter-spacing:1.6px;color:#B8172A;">ENGLISH</p>
+          <h1 class="h1" style="margin:0 0 18px;font-family:Georgia,'Times New Roman',serif;font-size:26px;line-height:1.3;color:#16466A;">Welcome to TSNS, {{firstName}}!</h1>
+          <p style="margin:0 0 16px;font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.65;color:#4A4038;">Thank you for registering with the Turkish Society of Nova Scotia. We're so glad to have you as part of our community.</p>
+          <p style="margin:0 0 16px;font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.65;color:#4A4038;">{{renewalNoteEn}}</p>
+          <p style="margin:0 0 4px;font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.65;color:#4A4038;">We'll keep you posted about upcoming events, gatherings, and ways to get involved.</p>
+        </td></tr>
+
+        <!-- Follow -->
+        <tr><td align="center" class="px" style="padding:30px 40px 38px 40px;">
+          <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation"><tr>
+            <td align="center" style="border-top:1px solid #ECE3D8;padding-top:24px;">
+              <p style="margin:0 0 10px;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#8A7E70;">Bizi takip edin · Follow us</p>
+              <p style="margin:0 0 16px;font-family:Arial,Helvetica,sans-serif;font-size:15px;">
+                <a href="https://www.instagram.com/turkishsocietyofns" target="_blank" rel="noopener noreferrer" style="color:#B8172A;text-decoration:underline;font-weight:bold;">@turkishsocietyofns</a>
+              </p>
+              <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:1.6;color:#8A7E70;">Sorularınız mı var? Questions?<br/>
+                <a href="mailto:info@tsns.ca" style="color:#B8172A;text-decoration:underline;">info@tsns.ca</a>
+              </p>
+            </td>
+          </tr></table>
+        </td></tr>
+
+      </table>
+    </td></tr>
+
+    <!-- Footer -->
+    <tr><td align="center" style="padding:22px 24px 0;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.7;color:#9A8D7D;">
+      Nova Scotia Türk Derneği · Turkish Society of Nova Scotia · Nova Scotia, Canada<br/>
+      Bu e-postayı tsns.ca üzerinden kaydolduğunuz için alıyorsunuz.<br/>
+      You are receiving this because you registered on tsns.ca.
+    </td></tr>
+
+  </table>
+
+</td>
+</tr>
+</table>
+</body>
+</html>
