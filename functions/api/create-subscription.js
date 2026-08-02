@@ -52,9 +52,17 @@ function toE164(raw) {
   if (text.startsWith("+")) return digits.length >= 8 && digits.length <= 15 ? `+${digits}` : null;
   if (digits.length === 10) return `+1${digits}`; // Canada/US, no country code
   if (digits.length === 11 && digits.startsWith("1")) return `+${digits}`;
-  // A leading zero is a national trunk prefix ("0532 ..." in Turkey). Without a
-  // country code there is nothing to prepend, and guessing would be worse than
-  // sending nothing — Supabase keeps the number either way.
+  // "0532 111 22 33" — Turkish national format: trunk prefix 0, then ten
+  // digits. Our members are Turkish, so this is the second most likely thing
+  // to be typed after a Canadian number. Turkish numbers start with 5 (mobile)
+  // or 2-4 (landline area codes) once the 0 is dropped, which keeps a UK
+  // "07..." from being mistaken for one.
+  if (digits.length === 11 && digits.startsWith("0") && /[2-5]/.test(digits[1])) {
+    return `+90${digits.slice(1)}`;
+  }
+  // Any other leading zero is a trunk prefix we cannot resolve without knowing
+  // the country. Guessing is worse than sending nothing — Supabase keeps the
+  // number either way.
   if (digits.startsWith("0")) return null;
   return digits.length >= 8 && digits.length <= 15 ? `+${digits}` : null;
 }
