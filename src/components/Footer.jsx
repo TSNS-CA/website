@@ -70,7 +70,9 @@ function Newsletter({ lang }) {
 }
 
 export default function Footer({ lang }) {
-  const year = new Date().getFullYear();
+  // Halifax'ta yılbaşı, UTC'de çoktan yeni yıl olduğu için 31 Aralık akşamı
+  // altbilgi bir sonraki yılı gösteriyordu.
+  const year = new Date().toLocaleDateString("en-CA", { timeZone: "America/Halifax", year: "numeric" });
   return (
     <footer className="border-t-4 border-accent bg-primary-900 text-slate-200">
       <Container className="py-14">

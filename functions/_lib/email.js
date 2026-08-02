@@ -22,6 +22,7 @@ import {
   formatAmount,
   sendInBackground,
 } from "./resend";
+import { halifaxYear } from "./time";
 
 export { sendInBackground };
 
@@ -87,7 +88,7 @@ function layout({ heading, lead, rows, extraHtml = "", closing, footnote, year }
 }
 
 /** Receipt / welcome mail for a donation or a yearly membership. */
-export function buildMemberEmail({ name, email, type, amountCents, endDate, receiptUrl, lang = "tr", year = new Date().getFullYear() }) {
+export function buildMemberEmail({ name, email, type, amountCents, endDate, receiptUrl, lang = "tr", year = halifaxYear() }) {
   const tr = lang !== "en";
   const amount = `$${(amountCents / 100).toFixed(2)} CAD`;
   const typeLabel =
@@ -152,7 +153,7 @@ export function buildMemberEmail({ name, email, type, amountCents, endDate, rece
 }
 
 /** Thank-you mail for someone who signed up to volunteer. */
-export function buildVolunteerEmail({ name, email, phone, interests, lang = "tr", year = new Date().getFullYear() }) {
+export function buildVolunteerEmail({ name, email, phone, interests, lang = "tr", year = halifaxYear() }) {
   const tr = lang !== "en";
 
   const rows = [
@@ -196,7 +197,7 @@ export function buildVolunteerEmail({ name, email, phone, interests, lang = "tr"
  * Internal heads-up to the society's inbox. `kind` is "volunteer" | "donation"
  * | "membership"; `rows` is an array of [label, value] pairs.
  */
-export function buildAdminNotice({ kind, rows, year = new Date().getFullYear() }) {
+export function buildAdminNotice({ kind, rows, year = halifaxYear() }) {
   const titles = {
     volunteer: "Yeni gönüllü başvurusu",
     donation: "Yeni bağış",
