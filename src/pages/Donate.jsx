@@ -156,37 +156,47 @@ export default function DonatePage({ lang }) {
             <label className="mb-2 block text-sm font-bold text-slate-700 dark:text-slate-200">
               {tr ? `Tutar (CAD)${frequency === "yearly" ? " · yıllık" : ""}` : `Amount (CAD)${frequency === "yearly" ? " · yearly" : ""}`}
             </label>
-            <div className="grid grid-cols-4 gap-2">
-              {PRESETS.map((p) => (
-                <button
-                  key={p}
-                  type="button"
-                  disabled={locked}
-                  onClick={() => { setPreset(p); setCustom(""); }}
-                  className={
-                    "rounded-lg border py-2 text-sm font-semibold transition disabled:opacity-60 " +
-                    (!custom && preset === p
-                      ? "border-accent bg-accent/10 text-brand-red ring-1 ring-accent"
-                      : "border-slate-300 text-slate-700 hover:border-accent dark:border-slate-700 dark:text-slate-200")
-                  }
-                >
-                  ${p}
-                </button>
-              ))}
-            </div>
-            <div className="mt-2 flex items-center gap-2">
-              <span className="text-sm font-semibold text-slate-600 dark:text-slate-300">$</span>
-              <input
-                type="number"
-                min={MIN_AMOUNT}
-                step="1"
-                disabled={locked}
-                value={locked ? "" : custom}
-                onChange={(e) => setCustom(e.target.value)}
-                placeholder={tr ? `Özel tutar (min $${MIN_AMOUNT})` : `Custom amount (min $${MIN_AMOUNT})`}
-                className={inputCls}
-              />
-            </div>
+            {/* With a student coupon the price is fixed, so there is nothing
+                left to choose. Showing the presets greyed out — with $25 still
+                ringed while $5 is what gets charged — read as a bug. Show the
+                price instead; "Kaldır" on the coupon brings the picker back. */}
+            {locked ? (
+              <div className="rounded-xl border border-accent bg-accent/10 px-4 py-3 text-sm font-bold text-brand-red">
+                🎓 {tr ? "Öğrenci üyeliği" : "Student membership"} · {amountLabel}
+              </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-4 gap-2">
+                  {PRESETS.map((p) => (
+                    <button
+                      key={p}
+                      type="button"
+                      onClick={() => { setPreset(p); setCustom(""); }}
+                      className={
+                        "rounded-lg border py-2 text-sm font-semibold transition " +
+                        (!custom && preset === p
+                          ? "border-accent bg-accent/10 text-brand-red ring-1 ring-accent"
+                          : "border-slate-300 text-slate-700 hover:border-accent dark:border-slate-700 dark:text-slate-200")
+                      }
+                    >
+                      ${p}
+                    </button>
+                  ))}
+                </div>
+                <div className="mt-2 flex items-center gap-2">
+                  <span className="text-sm font-semibold text-slate-600 dark:text-slate-300">$</span>
+                  <input
+                    type="number"
+                    min={MIN_AMOUNT}
+                    step="1"
+                    value={custom}
+                    onChange={(e) => setCustom(e.target.value)}
+                    placeholder={tr ? `Özel tutar (min $${MIN_AMOUNT})` : `Custom amount (min $${MIN_AMOUNT})`}
+                    className={inputCls}
+                  />
+                </div>
+              </>
+            )}
             {errors.amount && <p className="mt-1 text-xs font-semibold text-brand-red">{errors.amount}</p>}
           </div>
 
