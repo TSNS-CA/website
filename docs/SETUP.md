@@ -152,29 +152,89 @@ Resend → Templates → ilgili template → ayarlar → uuid'yi kopyala:
 
 ## 3. Square (sandbox)
 
-### 3.1 Sandbox bilgileri
+Square'de dört değere ihtiyacın var. Application ID ve Access Token credentials
+ekranında; Location ID ve Plan ID ayrı yerlerde.
 
-Square Developer Dashboard → uygulaman → **Sandbox** sekmesi:
+### 3.1 Application ID ve Access Token
+
+Square Developer Dashboard → [developer.squareup.com](https://developer.squareup.com)
+→ uygulamani aç → **Sandbox** sekmesi → **Credentials**:
 
 | Panel'deki isim | Değişken |
 | --- | --- |
-| Application ID | `VITE_SQUARE_APPLICATION_ID` |
-| Access token | `SQUARE_ACCESS_TOKEN` |
-| Locations → location id | `SQUARE_LOCATION_ID` **ve** `VITE_SQUARE_LOCATION_ID` |
+| Square Application ID | `VITE_SQUARE_APPLICATION_ID` |
+| Sandbox Access Token | `SQUARE_ACCESS_TOKEN` |
 
-### 3.2 Yıllık üyelik planı
+> Application ID `sandbox-sq0idb-...` formatında, Access Token `EAAAl...` ile
+> başlar. Bu ikisini kolay buluyorsun.
+
+### 3.2 Location ID — en kolay bulamayacağın
+
+Sandbox'ta otomatik bir test location oluşturulmuştur ama ID'si credentials
+sayfasında **yazmaz**. İki yolla alırsın:
+
+**Yol A — panelden:**
+
+1. Developer Dashboard → uygulaman → sol menüde **Sandbox** → **Sandbox API
+   Tools** (veya **Locations** sekmesi)
+2. "Default Test Account" altında test location listelenir → `id` alanı
+   `L...` veya `...P3W...` gibi bir string
+3. Aynı ID iki yere: `SQUARE_LOCATION_ID` **ve** `VITE_SQUARE_LOCATION_ID`
+
+**Yol B — API ile (bana access token'ı verirsen ben çekerim):**
+
+```bash
+curl -H "Authorization: Bearer EAAAl-SANDBOX-TOKEN" \
+  https://connect.squareupsandbox.com/v2/locations | jq '.locations[] | {name, id}'
+```
+
+Dönen listedeki `id` → `SQUARE_LOCATION_ID` + `VITE_SQUARE_LOCATION_ID`.
+(Location Name genelde "Default Test Account" olur.)
+
+### 3.3 Yıllık üyelik planı
 
 Yıllık üyelik Square **Subscriptions** kullanıyor, plan olmadan çalışmaz:
 
-1. Square Dashboard → **Items & Orders → Subscription plans**
-2. Yeni plan: cadence **ANNUAL**, para birimi **CAD**
-3. Plan **variation id**'si → `SQUARE_YEARLY_PLAN_ID`
+1. **Sandbox Seller Dashboard** → [sandboxsquareup.com/dashboard](https://sandboxsquareup.com/dashboard)
+   (normal dashboard değil — sandbox olan!)
+2. **Items & Orders → Subscription plans → Create plan**
+3. Cadence **Annual** (yillik), para birimi **CAD**, tutar ne yazarsan yaz
+   (kodu override ediyor, önemli değil — örn. $25)
+4. Planı kaydet → oluşan **subscription plan variation id** (`plan_variation_id`,
+   `P...` formatında) → `SQUARE_YEARLY_PLAN_ID`
 
 > Planı sandbox ve production'da **ayrı ayrı** oluşturman gerekiyor; id'ler
 > farklı olur. Sandbox planı production'da çalışmaz.
+>
+> Tutar plandan bağımsız: kod kullanıcının seçtiği tutarı (öğrenci kuponuyla
+> $5) `price_override_money` ile geçiyor, bu yüzden plandaki fiyat umurumuzda değil.
 
-Fiyat plandan bağımsız: kod kullanıcının seçtiği tutarı (öğrenci kuponuyla $5)
-`price_override_money` ile geçiyor.
+### 3.4 Neden bazıları `VITE_` ile başlıyor?
+
+Square değerleri iki yerde çalışıyor, ve Vite bunları buna göre ayırıyor:
+
+| Değişken | Nerede kullanılıyor | `VITE_` öneki |
+| --- | --- | --- |
+| `VITE_SQUARE_APPLICATION_ID` | **Tarayıcıda** — SDK kart formunu açarken | evet |
+| `VITE_SQUARE_LOCATION_ID` | **Tarayıcıda** — SDK kart formunu açarken | evet |
+| `VITE_SQUARE_ENV` | **Tarayıcıda** — sandbox/production SDK URL seçimi | evet |
+| `SQUARE_ACCESS_TOKEN` | **Sunucuda** — kartı tahsil ederken | hayır (gizli) |
+| `SQUARE_LOCATION_ID` | **Sunucuda** — ödemeyi kaydederken | hayır |
+| `SQUARE_YEARLY_PLAN_ID` | **Sunucuda** — abonelik oluştururken | hayır |
+
+`VITE_` ile başlayanlar Vita tarafından **build sırasında** tarayıcıdaki JS'e
+gömülür — çünkü Square Web Payments SDK kart formunu tarayıcıda çiziyor
+(`DonationCheckout.jsx`'te `Square.payments(APP_ID, LOCATION_ID)`). Tarayıcı bu
+değerleri göremese form açılmaz.
+
+Application ID ve Location ID Square'de **public** değerlerdir — herkes
+görebilir, gizli değildir. O yüzden tarayıcıya gömmek güvenli. Ama Access Token
+gizlidir (kart tahsil etme yetkisi verir), `VITE_` ile başlamaz ve asla
+tarayıcıya gitmez — sadece Worker'da kullanılır.
+
+> Location ID aynı değeri iki yere giriyorsun (`VITE_SQUARE_LOCATION_ID` ve
+> `SQUARE_LOCATION_ID`) çünkü hem tarayıcı hem sunucu lazım. Application ID'nin
+> ise sadece `VITE_` hâli var çünkü sadece tarayıcı kullanıyor.
 
 ### ✅ Doğrula
 
