@@ -31,14 +31,19 @@ export default function Header({ lang, onChangeLang }) {
   return (
     <header className="sticky top-0 z-50 border-b-2 border-accent/70 bg-cream/90 backdrop-blur dark:border-accent/60 dark:bg-primary-900/90">
       <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-1.5 px-4 sm:gap-3 sm:px-6 lg:px-8">
-        {/* Brand — always one line: "Nova Scotia Türk Derneği" */}
+        {/* Marka. Telefonda iki satira sarilir, `sm`den itibaren tek satir.
+            320px'de satirda marka yazisina 160px kaliyor — logo, kalp butonu ve
+            hamburger geri kalanini aliyor — ve tek satirda 13px'ten buyugu
+            sigmiyor. Iki satira izin verince punto 15px'e cikabiliyor ve
+            dernek adi hala tam okunuyor. leading-none ile iki satir 30px, 64px
+            yuksekligindeki basligi zorlamiyor. */}
         <Link to="/" className="flex min-w-0 items-center gap-1.5 sm:gap-2.5" onClick={() => setOpen(false)}>
           <img
             src="/tsns.jpeg"
             alt="Nova Scotia Türk Derneği logo"
             className="h-9 w-9 flex-none rounded-lg border-2 border-gold bg-white p-1 object-contain sm:h-11 sm:w-11"
           />
-          <span className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-[13px] font-extrabold leading-none tracking-tight text-primary xs:text-[15px] sm:text-lg lg:text-xl dark:text-white">
+          <span className="min-w-0 overflow-hidden text-ellipsis text-[15px] font-extrabold leading-[1.15] tracking-tight text-primary xs:text-base sm:whitespace-nowrap sm:text-lg sm:leading-none lg:text-xl dark:text-white">
             {t(lang, "brand.full")}
           </span>
         </Link>
