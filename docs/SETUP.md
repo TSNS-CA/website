@@ -28,12 +28,14 @@ sorunu ortaya çıktığı yerde yakalamak, üç adım sonra aramaktan kolay.
 
 ## 0. Önce: branch'i merge et
 
-Bütün bu iş `worktree-site-redesign` dalında ve [PR
-#2](https://github.com/TSNS-CA/website/pull/2)'de duruyor. Cloudflare
-production build'i `main`'den aldığı için merge etmeden hiçbiri canlıya çıkmaz.
+Cloudflare production build'i `main`'den alıyor; merge edilmeyen hiçbir şey
+canlıya çıkmaz.
 
-Merge etmeden denemek istersen Cloudflare'de branch build'lerini açıp o dalın
-preview adresinde test edebilirsin (adım 4.1).
+> 🚨 **Branch build'lerini açmak istiyorsan önce adım 4.1'i oku.** Bu projede
+> "Non-production branch builds" ayarı bir dönem her dalı **production
+> Worker'ına** deploy etti — yani yarım kalmış bir dala push, doğrudan tsns.ca'yı
+> değiştirdi. Production Square anahtarlarıyla bu, gerçek kart çeken siteye
+> denenmemiş kod göndermek demek.
 
 ---
 
@@ -47,14 +49,24 @@ preview adresinde test edebilirsin (adım 4.1).
 
 ### 1.2 Tabloları oluştur
 
-1. Sol menü → **SQL Editor** → **+ New query**
-2. Repodaki şu dosyanın **tamamını** kopyalayıp yapıştır:
-   ```
-   supabase/migrations/0002_contacts_activities.sql
-   ```
-3. **Run** (⌘+Enter)
+Sol menü → **SQL Editor** → **+ New query** → dosyanın **tamamını** yapıştır →
+**Run** (⌘+Enter). Sırayla, hepsi:
 
-Dosya idempotent — tekrar çalıştırmak zararsız. Postgres 17'de test edildi.
+| Dosya | Ne yapıyor |
+| --- | --- |
+| `0002_contacts_activities.sql` | `contacts`, `activities` tabloları; `people`, `members` görünümleri |
+| `0003_newsletter.sql` | Bülten aboneliği sütunları ve `subscribers` görünümü |
+| `0004_service_role_grants.sql` | `service_role`'e `public` şemasında yetki — **bu olmadan hiçbir kayıt yazılmaz** |
+| `0005_halifax_time.sql` | Tarih karşılaştırmaları ve görünümler Halifax saatine göre |
+
+Hepsi idempotent — tekrar çalıştırmak zararsız. Postgres 16 ve 17'de test edildi.
+
+> **0004'ü atlama.** Supabase Nisan 2026'dan beri yeni projelerde `public`
+> şemasındaki tablolara otomatik yetki vermiyor. Tablolar oluşur, `service_role`
+> RLS'i aşar, ama tabloya dokunma yetkisi olmadığı için her yazma
+> `permission denied for table contacts` ile düşer. Bunun dışa vurumu sinsi:
+> kod bütün Supabase hatalarını yutup `null` döndüğü için **formlar "başarılı"
+> der ve hiçbir şey kaydedilmez**.
 
 ### 1.3 Anahtarları al
 
@@ -72,8 +84,20 @@ Dosya idempotent — tekrar çalıştırmak zararsız. Postgres 17'de test edild
 ### ✅ Doğrula
 
 - **Table Editor**'da `contacts` ve `activities` tabloları var
-- **Database → Views** altında `people` ve `members` görünümleri var
-- SQL Editor'da şu boş sonuç dönüyor (hata değil): `select * from people;`
+- **Database → Views** altında `people`, `members`, `subscribers` görünümleri var
+- SQL Editor'da şu boş sonuç dönüyor (hata değil): `select * from public.people;`
+- Yazma yetkisi gerçekten var:
+  ```sql
+  set role service_role;
+  insert into public.contacts (email, name) values ('yetki@test.test', 'Test');
+  delete from public.contacts where email = 'yetki@test.test';
+  reset role;
+  ```
+  `permission denied` alırsan `0004_service_role_grants.sql` çalışmamıştır.
+
+> **Saat dilimi.** Ham tablolar `timestamptz`, yani UTC saklar — doğrusu bu.
+> Panelde Halifax saatini görmek için `contacts` tablosuna değil **`people`
+> görünümüne** bak; oradaki zaman damgaları yerel saate çevrilmiş gelir.
 
 ---
 
@@ -200,8 +224,44 @@ Yıllık üyelik Square **Subscriptions** kullanıyor, plan olmadan çalışmaz:
 2. **Items & Orders → Subscription plans → Create plan**
 3. Cadence **Annual** (yillik), para birimi **CAD**, tutar ne yazarsan yaz
    (kodu override ediyor, önemli değil — örn. $25)
-4. Planı kaydet → oluşan **subscription plan variation id** (`plan_variation_id`,
-   `P...` formatında) → `SQUARE_YEARLY_PLAN_ID`
+4. Planı kaydet → oluşan **subscription plan variation id**
+   (`plan_variation_id`) → `SQUARE_YEARLY_PLAN_ID`. `L6USRUO5BRHOMTKGMNNDJ44W`
+   gibi 26 karakterlik bir katalog id'si olur.
+
+Panelde bulamazsan API'den çekebilirsin — production için taban adres
+`connect.squareup.com`, sandbox için `connect.squareupsandbox.com`:
+
+```bash
+read -rs SQ_TOKEN && export SQ_TOKEN     # terminal geçmişine düşmesin
+export SQ_BASE='https://connect.squareup.com'
+
+curl -s "$SQ_BASE/v2/catalog/list?types=SUBSCRIPTION_PLAN_VARIATION" \
+  -H "Authorization: Bearer $SQ_TOKEN" -H "Square-Version: 2024-10-17" \
+| jq -r '.objects[] | "\(.id)  |  \(.subscription_plan_variation_data.name)  |  \(.subscription_plan_variation_data.phases[0].cadence)"'
+```
+
+`ANNUAL` görmen lazım. Location id'yi de aynı token'la alırsın:
+
+```bash
+curl -s "$SQ_BASE/v2/locations" \
+  -H "Authorization: Bearer $SQ_TOKEN" -H "Square-Version: 2024-10-17" \
+| jq -r '.locations[] | select(.status=="ACTIVE") | "\(.id)  |  \(.name)  |  \(.currency)"'
+```
+
+Token'ın hangi ortama ait olduğundan emin değilsen — en sık karışan şey bu:
+
+```bash
+curl -s -o /dev/null -w "production: %{http_code}\n" "https://connect.squareup.com/v2/locations" \
+  -H "Authorization: Bearer $SQ_TOKEN" -H "Square-Version: 2024-10-17"
+curl -s -o /dev/null -w "sandbox   : %{http_code}\n" "https://connect.squareupsandbox.com/v2/locations" \
+  -H "Authorization: Bearer $SQ_TOKEN" -H "Square-Version: 2024-10-17"
+```
+
+Doğru production token'da `production: 200`, `sandbox: 401`. Bitince
+`unset SQ_TOKEN SQ_BASE`.
+
+Application id API'den gelmiyor; Developer Console → uygulaman →
+**Credentials** sekmesinde yazıyor.
 
 > Planı sandbox ve production'da **ayrı ayrı** oluşturman gerekiyor; id'ler
 > farklı olur. Sandbox planı production'da çalışmaz.
@@ -262,7 +322,16 @@ Cloudflare → **Workers & Pages** → Worker'ın → **Settings → Build**:
 > `name = "tsns"` **birebir aynı** olmalı. Değilse build daha
 > başlamadan patlar.
 
-Branch preview'ları istersen **Non-production branch builds** açık olsun.
+> 🚨 **Non-production branch builds.** Bu ayarı açarken dikkat: bu projede bir
+> dönem her dala yapılan push **production Worker'ını** güncelledi, ayrı bir
+> preview adresi değil. Yani merge edilmemiş kod doğrudan tsns.ca'ya çıktı.
+> Production Square anahtarlarına geçmeden önce **kapat**, ya da yalnızca
+> `main`'in deploy ettiğinden emin ol. Şüphelenirsen canlıdaki bundle'a bak:
+>
+> ```bash
+> js=$(curl -s https://tsns.ca/ | grep -o 'assets/index-[A-Za-z0-9_-]*\.js' | head -1)
+> curl -s "https://tsns.ca/$js" | grep -c "beklediğin bir metin"
+> ```
 
 ### 4.2 Runtime değişkenleri
 
@@ -286,6 +355,17 @@ RESEND_ADMIN_TO               = info@tsns.ca
 
 STUDENT_COUPON_CODES          = OGRENCI2026
 ```
+
+> **Neden `keep_vars = true`.** `wrangler deploy` varsayılan olarak, deploy
+> etmeden önce **düz metin (Text) değişkenlerin hepsini siler** ve yerine
+> `wrangler.toml`'daki `[vars]` bloğunu koyar. Bu dosyada `[vars]` yok, yani her
+> deploy paneli boşaltıyordu. **Secret** işaretli olanlara dokunulmuyor —
+> "sadece secret'lar duruyor, ötekiler kayboldu" tablosu buradan geliyor.
+> `wrangler.toml`'daki `keep_vars = true` bunu durduruyor; o satırı silme.
+>
+> Cloudflare dokümanı: *"Wrangler will delete all vars before setting those
+> found in the Wrangler configuration. Note that secrets are never deleted by
+> deployments."*
 
 ### 4.3 Build değişkenleri — ayrı yer!
 
@@ -438,10 +518,22 @@ Sana kalan:
 1. Adım 6 bitmiş olmalı (domain Worker'a bağlı, HTTPS çalışıyor)
 2. Doğrula:
    ```bash
-   curl -i https://tsns.ca/.well-known/apple-developer-merchantid-domain-association
+   curl -sS -o /tmp/ap -w '%{http_code} %{content_type} redirect=%{num_redirects}\n' \
+     https://tsns.ca/.well-known/apple-developer-merchantid-domain-association
+   # → 200 text/plain; charset=utf-8 redirect=0
+
+   wc -c < /tmp/ap        # 9098
+   head -c 32 /tmp/ap     # 7B227073704964223A22423836424637
    ```
-   Beklenen: `HTTP/2 200`, `content-type: text/plain`, gövdede `7B227073...`
-   ile başlayan hex metin. `301`, `404` veya `text/html` gelirse Square reddeder.
+   Dördü de tutmalı: **200**, **text/plain**, **yönlendirme yok**, doğru içerik.
+   `301`, `404` ya da `text/html` gelirse Square reddeder.
+
+   Square'in verdiği dosya elindeyse birebir karşılaştır:
+   ```bash
+   cmp /tmp/ap ~/Downloads/apple-developer-merchantid-domain-association && echo AYNI
+   ```
+   Dosya sandbox ve production'da aynıdır; Square'in merchant kimliğine bağlı,
+   satıcı ortamına değil.
 3. Square Developer Dashboard → **Apple Pay** → **Verify**
 
 ### Dikkat
@@ -450,7 +542,19 @@ Sana kalan:
   "çalışmıyor" sanma.
 - Sandbox ve production kayıtları **ayrı**. Production'a geçerken `tsns.ca`'yı
   orada da eklemen gerekiyor.
-- `www` kullanacaksan Square'de onu da ayrı ekle.
+- 🚨 **`www.tsns.ca`'yı ekleme** — o ad şu anda DNS'te yok (`dig +short
+  www.tsns.ca` boş dönüyor), Square dosyayı oradan çekemez ve doğrulama
+  başarısız olur. Önce www'yi ayağa kaldır (adım 6'daki not), sonra eklemeyi
+  düşün.
+- macOS Safari'de buton çıkmıyorsa cihaz eksikliği de olabilir: Touch ID'li bir
+  Mac ya da eşleştirilmiş iPhone/Apple Watch gerekiyor, ve Cüzdan'da **gerçek**
+  bir kart olmalı — sandbox test kartı Apple Pay için geçmez (sandbox'ta kart
+  çekilmez, ama gerçek kart bulunmak zorunda). Konsolda hızlı teşhis:
+  ```js
+  typeof ApplePaySession            // "undefined" → cihaz/tarayıcı desteklemiyor
+  ApplePaySession.canMakePayments() // false → Cüzdan'da kart yok
+  ```
+  `true` dönüyorsa sorun domain kaydındadır.
 
 ---
 
@@ -460,8 +564,19 @@ Sana kalan:
 
 Square Developer Dashboard → **Production** sekmesi → aynı dört değer.
 Production access token alabilmen için Square hesabının aktivasyonu (iş
-bilgileri, banka hesabı) tamamlanmış olmalı. Yıllık planı production'da da
-oluştur.
+bilgileri, banka hesabı) tamamlanmış olmalı.
+
+**Yıllık planı production'da yeniden oluştur** — sandbox kataloğu taşınmıyor,
+id'ler farklı. Plan variation id'yi ve location id'yi bulmak için adım 3.3'teki
+curl komutları, taban adresi `https://connect.squareup.com` yaparak çalışır.
+
+Bir de işletme bilgilerini doldur: Square'in abonelik fatura e-postaları
+oradan besleniyor. Sandbox'ta bunlar `Default Test Account` ve
+`80 Wellington St, Ottawa` olarak gider; production'da hesabındaki gerçek ad ve
+adres görünür. **Account & Settings → Business information**.
+
+> Üye iki e-posta alır: Square'in abonelik faturası ve bizim
+> `membership-confirmation` şablonumuz. Bu beklenen davranış.
 
 ### 8.2 Değişkenleri değiştir
 
@@ -489,10 +604,19 @@ Sonra **yeniden deploy et** — `VITE_*` değiştiği için şart.
 
 ### 8.3 Son kontrol
 
+- [ ] Branch build'leri production'a deploy etmiyor (adım 4.1)
 - [ ] Gerçek kartla $1 bağış yapıldı, e-posta geldi, Supabase'e düştü
+- [ ] Yıllık üyelik denendi, Square'de abonelik oluştu, sonra iptal edildi
 - [ ] Square'den o ödeme iade edildi
 - [ ] Safari + iPhone'da Apple Pay butonu görünüyor
-- [ ] `tsns.ca` ve `www.tsns.ca` doğru çalışıyor
+- [ ] `tsns.ca` çalışıyor
+- [ ] `www.tsns.ca` çalışıyor — **şu anda çalışmıyor**, DNS kaydı yok:
+      ```bash
+      dig +short www.tsns.ca     # boş dönüyor
+      ```
+      Cloudflare → DNS → `www` için `tsns.ca`'ya CNAME (proxied), sonra apex'e
+      301 yönlendiren bir kural. Apex kanonik kalmalı — Apple Pay doğrulama
+      dosyası oradan servis ediliyor.
 
 ---
 
@@ -679,12 +803,17 @@ Akış kırılmaz ama tasarım senin şablonun olmaz.
 | "Server is not configured for payments" | `SQUARE_ACCESS_TOKEN` / `SQUARE_LOCATION_ID` o Worker'da tanımlı değil |
 | Yıllık üyelik hata veriyor | `SQUARE_YEARLY_PLAN_ID` o ortamın planı mı? Sandbox planı production'da çalışmaz |
 | Kayıt Supabase'e düşmüyor | Yanıtta `warning: "not_stored"` varsa `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY` yanlış ya da SQL çalıştırılmamış |
+| `permission denied for table contacts` | `0004_service_role_grants.sql` çalışmamış. Anahtar sorunu değil — legacy JWT'ye geçmek de çözmez, o da aynı `service_role` rolüne düşer |
+| Panele girilen değişkenler deploy'dan sonra yok oluyor, sadece Secret'lar duruyor | `wrangler.toml`'daki `keep_vars = true` silinmiş → 4.2 |
+| Üyelik tarihi bir gün ileri, ya da üyelik akşamları "süresi dolmuş" görünüyor | `0005_halifax_time.sql` çalışmamış → tarihler UTC'ye göre hesaplanıyor |
+| Ödeme "Could not create donor profile." diyor | Square telefonu reddetmiş olabilir. Kod artık numarayı E.164'e çevirip, yine reddedilirse telefonsuz yeniden deniyor — bu hatayı görüyorsan sebep telefon değil, e-posta ya da token |
+| Supabase'de saat 3 saat ileri | Hata değil: `timestamptz` UTC saklar. Yerel saat için `people` görünümüne bak |
 | Aynı kişi iki kez görünüyor | Olmamalı — `contacts.email` unique. İki farklı adres kullanmış olabilir; elle birleştir |
 | `activities` insert hatası | Kısıtlar türe göre: gönüllü başvurusuna tutar, bağışa ilgi alanı yazılamaz |
 | E-posta gitmiyor | Cloudflare → Worker → **Logs**; `resend:` ile başlayan satırlar. Sonra Resend → Logs |
 | E-postada logo görünmüyor | Logo URL'i henüz canlı değil → Ek C |
 | WhatsApp butonu görünmüyor | Eski şablon kalmış; `docs/email-templates/volunteer-confirmation.html`'i yeniden yapıştır |
-| Apple Pay butonu yok | Safari + Apple cihaz mı? Domain doğrulandı mı? |
+| Apple Pay butonu yok | Safari + Apple cihaz mı? Cüzdan'da gerçek kart var mı? Domain **o ortamda** doğrulandı mı? → adım 7 |
 | `ERR_TOO_MANY_REDIRECTS` | SSL/TLS **Flexible** → **Full (strict)** yap |
 | Site eski görünüyor | `.workers.dev`'e mi `tsns.ca`'ya mı bakıyorsun? Domain hâlâ Google'da olabilir (adım 6) |
 
