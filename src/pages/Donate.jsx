@@ -9,9 +9,12 @@ const MIN_AMOUNT = 10;
 const inputCls =
   "w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-slate-700 dark:bg-primary-700 dark:text-white";
 
-export default function DonatePage({ lang }) {
+// Aynı form iki kapıdan giriliyor: /uye-ol yıllık üyeliği, /bagis tek seferlik
+// bağışı seçili açar. Sayfanın başlığı da seçili sıklığı takip eder, yani
+// formdaki seçimi değiştiren biri başlığın da değiştiğini görür.
+export default function DonatePage({ lang, defaultFrequency = "yearly" }) {
   const tr = lang === "tr";
-  const [frequency, setFrequency] = useState("yearly"); // 'yearly' | 'one_time'
+  const [frequency, setFrequency] = useState(defaultFrequency); // 'yearly' | 'one_time'
   const [preset, setPreset] = useState(25);
   const [custom, setCustom] = useState("");
   const [donor, setDonor] = useState({ name: "", email: "", phone: "" });
@@ -23,6 +26,7 @@ export default function DonatePage({ lang }) {
   const [done, setDone] = useState(null);
 
   const locked = !!coupon;
+  const uyelik = frequency === "yearly";
 
   const amountCents = coupon ? coupon.amountCents : (custom ? Math.round(parseFloat(custom) * 100) : preset * 100);
   const amountLabel =
@@ -94,8 +98,8 @@ export default function DonatePage({ lang }) {
           </h1>
           <p className="mt-2 text-slate-600 dark:text-slate-300">
             {tr
-              ? `${done.name}, bağışınız alındı. Nova Scotia Türk Derneği olarak Türk mirasını ve kültürünü Nova Scotia genelinde yaşatıyor; insanları bir araya getiriyoruz. Desteğiniz için minnettarız.`
-              : `${done.name}, your gift was received. As the Nova Scotia Türk Derneği, we sustain Turkish heritage and culture across Nova Scotia, bringing people together. Thank you.`}
+              ? `${done.name}, ${done.uyelik ? "üyeliğiniz başladı" : "bağışınız alındı"}. Nova Scotia Türk Derneği olarak Türk mirasını ve kültürünü Nova Scotia genelinde yaşatıyor; insanları bir araya getiriyoruz. Desteğiniz için minnettarız.`
+              : `${done.name}, ${done.uyelik ? "your membership is active" : "your gift was received"}. As the Nova Scotia Türk Derneği, we sustain Turkish heritage and culture across Nova Scotia, bringing people together. Thank you.`}
           </p>
           {done.receiptUrl && (
             <p className="mt-3 text-sm">
@@ -117,11 +121,13 @@ export default function DonatePage({ lang }) {
     <Section className="py-16">
       <div className="mx-auto max-w-xl">
         <div className="text-center">
-          <Eyebrow lang={lang}>{t(lang, "action.donate")}</Eyebrow>
+          <Eyebrow lang={lang}>{t(lang, uyelik ? "action.becomeMember" : "action.donate")}</Eyebrow>
           <h1 className="mt-3 font-display text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl dark:text-white">
-            {t(lang, "donate.title")}
+            {t(lang, uyelik ? "membership.title" : "donate.title")}
           </h1>
-          <p className="mx-auto mt-3 max-w-md text-slate-600 dark:text-slate-300">{t(lang, "donate.intro")}</p>
+          <p className="mx-auto mt-3 max-w-md text-slate-600 dark:text-slate-300">
+            {t(lang, uyelik ? "membership.intro" : "donate.intro")}
+          </p>
         </div>
 
         <form onSubmit={onSubmit} className="mt-8 space-y-6">
@@ -130,8 +136,8 @@ export default function DonatePage({ lang }) {
             <label className="mb-2 block text-sm font-bold text-slate-700 dark:text-slate-200">{tr ? "Sıklık" : "Frequency"}</label>
             <div className="grid grid-cols-2 gap-2">
               {[
-                { id: "yearly", label: tr ? "Yıllık Üyelik" : "Yearly Membership", sub: tr ? "Her yıl yenilenir" : "Renews yearly" },
-                { id: "one_time", label: tr ? "Tek Seferlik" : "One-time", sub: tr ? "1 yıl üyelik, yenilenmez" : "1 year, no renewal" },
+                { id: "yearly", label: t(lang, "donate.freq.yearly"), sub: t(lang, "donate.freq.yearlySub") },
+                { id: "one_time", label: t(lang, "donate.freq.oneTime"), sub: t(lang, "donate.freq.oneTimeSub") },
               ].map((f) => (
                 <button
                   key={f.id}
@@ -275,7 +281,7 @@ export default function DonatePage({ lang }) {
             try {
               sessionStorage.setItem("membershipData", JSON.stringify({ ...donor, frequency, amountCents, coupon: !!coupon, payment: data }));
             } catch (e) {}
-            setDone({ ...donor, receiptUrl: data.receiptUrl });
+            setDone({ ...donor, receiptUrl: data.receiptUrl, uyelik });
             setCheckout(false);
             window.scrollTo({ top: 0 });
           }}

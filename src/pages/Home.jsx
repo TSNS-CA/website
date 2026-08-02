@@ -23,8 +23,8 @@ function Hero({ lang }) {
             {t(lang, "home.hero.subtitle")}
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <Button to="/bagis" variant="primary" size="lg">
-              {t(lang, "action.donate")} →
+            <Button to="/uye-ol" variant="primary" size="lg">
+              {t(lang, "action.becomeMember")} →
             </Button>
             <Button to="/gonullu" variant="ghostWhite" size="lg">
               {t(lang, "action.volunteer")}
@@ -207,7 +207,7 @@ function CTA({ lang }) {
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-base text-slate-200">{t(lang, "home.cta.body")}</p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <Button to="/bagis" variant="primary" size="lg">{t(lang, "action.donate")}</Button>
+            <Button to="/uye-ol" variant="primary" size="lg">{t(lang, "action.becomeMember")}</Button>
             <Button to="/gonullu" variant="solidWhite" size="lg">{t(lang, "action.volunteer")}</Button>
           </div>
         </div>
