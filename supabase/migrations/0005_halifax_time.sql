@@ -137,7 +137,10 @@ create view public.members with (security_invoker = true) as
 select * from public.people
 where membership_end is not null;
 
-create or replace view public.subscribers with (security_invoker = true) as
+-- create or replace degil: newsletter_subscribed_at artik timestamptz yerine
+-- yerel timestamp donuyor ve replace sutun tipini degistiremez (42P16).
+drop view if exists public.subscribers;
+create view public.subscribers with (security_invoker = true) as
 select
   id,
   email,
@@ -146,7 +149,10 @@ select
   (newsletter_subscribed_at at time zone 'America/Halifax') as newsletter_subscribed_at
 from public.contacts
 where newsletter_subscribed
-order by newsletter_subscribed_at desc;
+-- Ham timestamptz'e gore siralaniyor, cikti sutununa gore degil: kis saatine
+-- gecis gecesinde yerel saat geri sarar, iki abonelik ayni duvar saatini
+-- gosterir ve yerel sutuna gore siralama gercek sirayi bozar.
+order by public.contacts.newsletter_subscribed_at desc;
 
 do $$
 begin
