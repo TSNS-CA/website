@@ -138,20 +138,33 @@ function Events({ lang }) {
         subtitle={t(lang, "home.events.subtitle")}
       />
       <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-3">
-        {events.map((e, i) => (
-          <Card key={i} className="flex gap-4">
-            <div className="surface-red flex w-14 flex-none flex-col items-center justify-center rounded-xl">
-              <span className="text-lg font-black leading-none">{e.date[lang].split(" ")[0]}</span>
-              <span className="text-[10px] font-bold uppercase">
-                {e.date[lang].split(" ").slice(1).join(" ")}
-              </span>
-            </div>
-            <div>
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">{e.title[lang]}</h3>
-              <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{e.desc[lang]}</p>
-            </div>
-          </Card>
-        ))}
+        {events.map((e, i) => {
+          // Tarihler iki biçimde gelir: "29 Ekim" (gün + ay) ya da "Haziran"
+          // (yalnızca ay). Eski kod her zaman ilk parçayı büyük bir sayı sanıp
+          // text-lg ile basıyordu; "Haziran" tek başına büyük puntoyla tile'a
+          // sığmıyordu.
+          const parts = e.date[lang].split(" ");
+          const day = parts.length > 1 ? parts[0] : null;
+          const month = parts.length > 1 ? parts.slice(1).join(" ") : parts[0];
+          return (
+            <Card key={i} className="flex gap-4">
+              <div className="surface-red flex w-16 flex-none flex-col items-center justify-center rounded-xl px-1 text-center">
+                {day ? (
+                  <>
+                    <span className="text-lg font-black leading-none">{day}</span>
+                    <span className="text-[10px] font-bold leading-tight">{month}</span>
+                  </>
+                ) : (
+                  <span className="text-xs font-bold leading-tight">{month}</span>
+                )}
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">{e.title[lang]}</h3>
+                <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{e.desc[lang]}</p>
+              </div>
+            </Card>
+          );
+        })}
       </div>
     </Section>
   );

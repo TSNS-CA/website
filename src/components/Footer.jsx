@@ -6,7 +6,30 @@ import { Container, Button } from "./ui";
 import SocialLinks from "./SocialIcons";
 
 function Newsletter({ lang }) {
+  const tr = lang === "tr";
   const [done, setDone] = useState(false);
+  const [error, setError] = useState("");
+
+  async function onSubmit(e) {
+    e.preventDefault();
+    setError("");
+    const form = e.currentTarget;
+    const name = form.elements.name.value;
+    const email = form.elements.email.value;
+    try {
+      const res = await fetch("/api/newsletter", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, lang }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.ok) throw new Error(data.error || (tr ? "Bir hata oluştu." : "Something went wrong."));
+      setDone(true);
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+
   if (done) {
     return (
       <p className="rounded-xl bg-white/10 p-4 text-sm font-medium text-white">
@@ -15,16 +38,11 @@ function Newsletter({ lang }) {
     );
   }
   return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        setDone(true);
-      }}
-      className="space-y-3"
-    >
+    <form onSubmit={onSubmit} className="space-y-3">
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
         <input
           required
+          name="name"
           type="text"
           placeholder={t(lang, "newsletter.name")}
           aria-label={t(lang, "newsletter.name")}
@@ -32,6 +50,7 @@ function Newsletter({ lang }) {
         />
         <input
           required
+          name="email"
           type="email"
           placeholder={t(lang, "newsletter.email")}
           aria-label={t(lang, "newsletter.email")}
@@ -42,6 +61,7 @@ function Newsletter({ lang }) {
         <input required type="checkbox" className="mt-0.5 accent-gold" />
         {t(lang, "newsletter.consent")}
       </label>
+      {error && <p className="text-xs font-semibold text-red-300">{error}</p>}
       <Button type="submit" variant="solidWhite" size="sm">
         {t(lang, "action.subscribe")}
       </Button>
