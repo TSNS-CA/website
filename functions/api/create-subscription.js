@@ -134,8 +134,9 @@ export async function onRequestPost(context) {
   // view uses to decide who is currently active.
   const { start: startDate, end: endDate } = membershipWindow();
   const email = buyer.email.trim().toLowerCase();
+  // Only used to label the internal notification — "new member" vs "renewal" is
+  // derived from the rows themselves, never stored per row.
   const history = await lookupDonorHistory(env, email);
-  const now = new Date().toISOString();
 
   await recordDonor(env, {
     name: buyer.name || null,
@@ -147,8 +148,6 @@ export async function onRequestPost(context) {
     status: subscription?.status || null,
     membership_start: startDate,
     membership_end: endDate,
-    is_first_time: history.isFirstTime,
-    first_joined_at: history.firstJoinedAt || now,
     student_coupon: couponUsed,
     square_customer_id: customerId || null,
     square_subscription_id: subscription?.id || null,
@@ -184,7 +183,15 @@ export async function onRequestPost(context) {
         ["Telefon", buyer.phone || null],
         ["Tutar", `$${(finalAmountCents / 100).toFixed(2)} CAD / yıl`],
         ["Öğrenci kuponu", couponUsed ? "evet" : "hayır"],
-        ["İlk kez mi", history.isFirstTime ? "evet (yeni üye)" : "hayır (yenileme)"],
+        [
+          "Geçmiş",
+          history.isFirstTime
+            ? "yeni üye"
+            : `${history.renewalCount + 1}. yenileme · ${history.paymentCount} önceki ödeme, toplam $${(
+                history.totalCents / 100
+              ).toFixed(2)} CAD` +
+              (history.firstJoinedAt ? ` — ${history.firstJoinedAt.slice(0, 10)} tarihinden beri üye` : ""),
+        ],
         ["Başlangıç", startDate],
         ["Square abonelik", subscription?.id || null],
         ["Durum", subscription?.status || null],

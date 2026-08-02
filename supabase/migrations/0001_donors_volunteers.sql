@@ -33,12 +33,12 @@ create table if not exists public.donors (
   membership_start date,
   membership_end   date,
 
-  -- Was this the email's very first payment? Decided at insert time by looking
-  -- for an earlier row with the same (lowercased) email.
-  is_first_time boolean not null default true,
-  -- created_at of that email's first ever row. Equals this row's created_at the
-  -- first time, and is carried forward on every renewal.
-  first_joined_at timestamptz,
+  -- NOTE: "when did this person first join" and "is this their first payment"
+  -- are facts about a *person*, not about a transaction, and both are already
+  -- implied by the rows themselves (the earliest row for that email). Storing
+  -- them per row would duplicate a constant and — worse — could disagree with
+  -- reality if the lookup that computes them ever failed. They live in the
+  -- `members` view below instead.
 
   -- Did they use the student discount code?
   student_coupon boolean not null default false,
@@ -55,13 +55,15 @@ create table if not exists public.donors (
     check (membership_end is null or membership_start is null or membership_end >= membership_start)
 );
 
--- Widen an older install that still had the 'monthly' option or lacked the
--- membership columns. No-ops on a fresh database.
-alter table public.donors add column if not exists membership_start  date;
-alter table public.donors add column if not exists membership_end    date;
-alter table public.donors add column if not exists is_first_time     boolean not null default true;
-alter table public.donors add column if not exists first_joined_at   timestamptz;
-alter table public.donors add column if not exists student_coupon    boolean not null default false;
+-- Bring an older install up to date. No-ops on a fresh database.
+alter table public.donors add column if not exists membership_start date;
+alter table public.donors add column if not exists membership_end   date;
+alter table public.donors add column if not exists student_coupon   boolean not null default false;
+
+-- Drop the per-row copies of the per-person facts (see the note above).
+drop view if exists public.members;
+alter table public.donors drop column if exists is_first_time;
+alter table public.donors drop column if exists first_joined_at;
 
 do $$
 begin
@@ -112,17 +114,35 @@ create index if not exists volunteers_email_idx      on public.volunteers (lower
 create or replace view public.members with (security_invoker = true) as
 with agg as (
   select
-    lower(email)        as email,
-    min(created_at)     as first_joined_at,
-    max(created_at)     as last_payment_at,
-    max(membership_end) as membership_end,
-    count(*)            as payment_count,
-    sum(amount_cents)   as total_cents
+    lower(email)    as email,
+
+    -- Constant per person: the earliest row we have for this email.
+    min(created_at) as first_joined_at,
+    max(created_at) as last_payment_at,
+    max(created_at) filter (where type = 'yearly') as last_membership_at,
+    max(membership_end)                            as membership_end,
+
+    -- How many times have they paid, and how many of those were memberships?
+    count(*)                                    as payment_count,
+    count(*) filter (where type = 'yearly')     as membership_count,
+    count(*) filter (where type = 'one_time')   as donation_count,
+    -- The first yearly payment is the join; every one after it is a renewal.
+    greatest(count(*) filter (where type = 'yearly') - 1, 0) as renewal_count,
+
+    -- How much have they given, split by what it was for. `filter` can return
+    -- null when there are no matching rows, so coalesce to 0 for clean sums.
+    coalesce(sum(amount_cents), 0)                                     as total_cents,
+    coalesce(sum(amount_cents) filter (where type = 'yearly'), 0)      as membership_cents,
+    coalesce(sum(amount_cents) filter (where type = 'one_time'), 0)    as donation_cents,
+    max(amount_cents)                                                  as largest_payment_cents,
+
+    bool_or(student_coupon) as ever_used_student_discount
   from public.donors
   where email is not null and email <> ''
   group by lower(email)
 ),
 latest as (
+  -- Name and phone as of their most recent payment.
   select distinct on (lower(email))
     lower(email) as email,
     name,
@@ -135,15 +155,32 @@ select
   a.email,
   l.name,
   l.phone,
+
   a.first_joined_at,
   a.last_payment_at,
+  a.last_membership_at,
   a.membership_end,
+
   a.payment_count,
+  a.membership_count,
+  a.renewal_count,
+  a.donation_count,
+
   a.total_cents,
+  a.membership_cents,
+  a.donation_cents,
+  a.largest_payment_cents,
+  -- Same numbers in dollars, so the dashboard is readable without mental math.
+  round(a.total_cents      / 100.0, 2) as total_cad,
+  round(a.membership_cents / 100.0, 2) as membership_cad,
+  round(a.donation_cents   / 100.0, 2) as donation_cad,
+
+  a.ever_used_student_discount,
+
   case
-    when a.membership_end is null            then 'supporter'  -- only one-off gifts
-    when a.membership_end >= current_date    then 'active'
-    else                                          'expired'
+    when a.membership_end is null         then 'supporter'  -- only one-off gifts
+    when a.membership_end >= current_date then 'active'
+    else                                       'expired'
   end as status
 from agg a
 join latest l on l.email = a.email;

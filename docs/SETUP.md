@@ -172,17 +172,21 @@ kalıntıları da temizlendi.
 | `amount_cents`, `currency`, `status` | Ödeme tutarı ve Square durumu |
 | `membership_start` | **Üyelik başlangıç tarihi** — yıllık üyelikte bugün |
 | `membership_end` | **Üyelik bitiş tarihi** — başlangıç + 1 yıl |
-| `is_first_time` | **İlk defa mı kaydoluyor** — kayıt anında aynı e-postayla daha eski bir satır aranarak belirleniyor |
-| `first_joined_at` | **İlk kayıt tarihi** — o e-postanın ilk satırının tarihi, her yenilemede taşınıyor |
 | `student_coupon` | Öğrenci indirimi kullanıldı mı |
 | `square_*` | Square müşteri / ödeme / abonelik id'leri |
 
-Tek seferlik bağışta `membership_start`/`membership_end` boş kalır, ama
-`is_first_time` ve `first_joined_at` yine dolar — böylece "bu kişi bizimle ilk
-kez mi temas etti" sorusu bağışçılar için de cevaplanabiliyor.
+Tek seferlik bağışta `membership_start`/`membership_end` boş kalır.
 
 E-postalar **küçük harfe çevrilerek** yazılıyor, yani `Ayse@` ile `ayse@` aynı
 kişi sayılıyor.
+
+**"İlk kayıt tarihi" ve "kaç kere yenilemiş" neden bu tabloda değil?** Çünkü
+ikisi de *kişiye* ait sabit bilgiler, *işleme* ait değil. Her satıra kopyalasak
+aynı değeri defalarca yazmış olurduk ve — daha kötüsü — o değeri hesaplayan
+sorgu bir gün hata verse satır yalan söylerdi (yenileme yapan birine "ilk kez"
+damgası gibi). İkisi de zaten satırların kendisinden çıkıyor: o e-postanın en
+eski satırı = ilk kayıt tarihi. Bu yüzden aşağıdaki `members` görünümünde
+hesaplanıyorlar.
 
 ### 2.4 `members` görünümü — "kim şu an üye?"
 
@@ -197,11 +201,23 @@ select * from members order by membership_end desc nulls last;
 | Kolon | |
 | --- | --- |
 | `email`, `name`, `phone` | En son ödemedeki bilgiler |
-| `first_joined_at` | İlk kayıt tarihi |
+| `first_joined_at` | **İlk kayıt tarihi** — sabit, hiç değişmez |
 | `last_payment_at` | Son ödeme tarihi |
-| `membership_end` | Üyeliğin bittiği/biteceği tarih |
-| `payment_count`, `total_cents` | Kaç ödeme, toplam ne kadar |
-| `status` | `active` (üyeliği sürüyor) / `expired` (bitmiş) / `supporter` (sadece tek seferlik bağış yapmış) |
+| `last_membership_at` | Son üyelik ödemesinin tarihi |
+| `membership_end` | Üyeliğin bittiği / biteceği tarih |
+| `payment_count` | Toplam kaç ödeme yapmış |
+| `membership_count` | Bunların kaçı üyelik ödemesi |
+| `renewal_count` | **Kaç kere yenilemiş** — ilk yıllık ödeme katılım, sonrakiler yenileme |
+| `donation_count` | Kaç tek seferlik bağış yapmış |
+| `total_cents` / `total_cad` | **Toplam ne kadar ödemiş** |
+| `membership_cents` / `membership_cad` | Bunun ne kadarı üyelik |
+| `donation_cents` / `donation_cad` | Ne kadarı bağış |
+| `largest_payment_cents` | En büyük tek ödemesi |
+| `ever_used_student_discount` | Hiç öğrenci indirimi kullandı mı |
+| `status` | `active` (üyeliği sürüyor) / `expired` (bitmiş) / `supporter` (sadece bağış yapmış, hiç üye olmamış) |
+
+Tutarlar hem kuruş (`*_cents`) hem dolar (`*_cad`) olarak var; panelde
+bakarken kafadan bölmek zorunda kalmayasın.
 
 Görünüm `security_invoker` ile tanımlı, yani altındaki tablonun RLS kurallarını
 devralıyor. Bu olmadan view sahibi haklarıyla çalışır ve veriyi `anon`
@@ -220,6 +236,14 @@ order by membership_end;
 
 -- Bu yılın yeni üyeleri
 select * from members where first_joined_at >= date_trunc('year', now());
+
+-- En çok destek olanlar
+select name, email, total_cad, renewal_count, first_joined_at::date
+from members order by total_cents desc limit 20;
+
+-- Sadık üyeler (en az 2 kere yenilemiş)
+select name, email, renewal_count, total_cad from members
+where renewal_count >= 2 order by renewal_count desc;
 
 -- Bekleyen gönüllü başvuruları
 select * from volunteers where status = 'new' order by created_at desc;

@@ -11,36 +11,46 @@ export function getSupabase(env) {
 }
 
 /**
- * Has this email paid before? Returns `{ isFirstTime, firstJoinedAt }`.
+ * What we already know about this email, read from the `members` view *before*
+ * the current payment is written. Used only to enrich the internal notification
+ * — none of it is stored back on the transaction row.
  *
- * Errors and an unconfigured Supabase both fall back to `isFirstTime: true`
- * with a null join date — the caller then stamps "now", which is the right
- * answer when there is no history to find.
+ * Returns `{ isFirstTime, firstJoinedAt, paymentCount, renewalCount,
+ * totalCents }`. An unconfigured Supabase, an error, or simply no history all
+ * come back as a first-timer, which is the safe reading: we say "first time"
+ * only when we have nothing that says otherwise.
  */
 export async function lookupDonorHistory(env, email) {
-  const fallback = { isFirstTime: true, firstJoinedAt: null };
+  const fallback = {
+    isFirstTime: true,
+    firstJoinedAt: null,
+    paymentCount: 0,
+    renewalCount: 0,
+    totalCents: 0,
+  };
   if (!email) return fallback;
   try {
     const supabase = getSupabase(env);
     if (!supabase) return fallback;
     const { data, error } = await supabase
-      .from("donors")
-      .select("created_at, first_joined_at")
-      .ilike("email", email.trim())
-      .order("created_at", { ascending: true })
-      .limit(1);
+      .from("members")
+      .select("first_joined_at, payment_count, renewal_count, total_cents")
+      .eq("email", email.trim().toLowerCase())
+      .maybeSingle();
     if (error) {
-      console.error("supabase donor history lookup failed", error.message);
+      console.error("supabase member lookup failed", error.message);
       return fallback;
     }
-    const first = data && data[0];
-    if (!first) return fallback;
+    if (!data) return fallback;
     return {
       isFirstTime: false,
-      firstJoinedAt: first.first_joined_at || first.created_at || null,
+      firstJoinedAt: data.first_joined_at || null,
+      paymentCount: data.payment_count || 0,
+      renewalCount: data.renewal_count || 0,
+      totalCents: data.total_cents || 0,
     };
   } catch (e) {
-    console.error("supabase donor history lookup error", e);
+    console.error("supabase member lookup error", e);
     return fallback;
   }
 }

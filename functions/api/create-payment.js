@@ -102,10 +102,9 @@ export async function onRequestPost(context) {
   const payment = squareBody?.payment;
   const email = buyer?.email ? buyer.email.trim().toLowerCase() : null;
 
-  // A one-off gift carries no membership window, but we still record whether
-  // this is the person's first contact with us and when that first contact was.
+  // Only used to label the internal notification — "first gift" vs "gave
+  // before" is derived from the rows themselves, never stored per row.
   const history = await lookupDonorHistory(env, email);
-  const now = new Date().toISOString();
 
   await recordDonor(env, {
     name: buyer?.name || null,
@@ -117,8 +116,6 @@ export async function onRequestPost(context) {
     status: payment?.status || null,
     membership_start: null,
     membership_end: null,
-    is_first_time: history.isFirstTime,
-    first_joined_at: history.firstJoinedAt || now,
     student_coupon: false,
     square_payment_id: payment?.id || null,
   });
@@ -157,7 +154,13 @@ export async function onRequestPost(context) {
         ["Tutar", `$${(amountCents / 100).toFixed(2)} CAD`],
         ["Square ödeme", payment?.id || null],
         ["Durum", payment?.status || null],
-        ["İlk kez mi", history.isFirstTime ? "evet" : "hayır (daha önce destek olmuş)"],
+        [
+          "Geçmiş",
+          history.isFirstTime
+            ? "ilk bağışı"
+            : `${history.paymentCount} önceki ödeme, toplam $${(history.totalCents / 100).toFixed(2)} CAD` +
+              (history.firstJoinedAt ? ` — ${history.firstJoinedAt.slice(0, 10)} tarihinden beri` : ""),
+        ],
         ["Ortam", SQUARE_ENV === "production" ? "production" : "sandbox"],
       ],
     });
