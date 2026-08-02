@@ -1,4 +1,11 @@
-import { recordDonor, lookupDonorHistory, membershipWindow } from "../_lib/supabase";
+import {
+  upsertContact,
+  recordActivity,
+  lookupPerson,
+  describeHistory,
+  membershipWindow,
+  normalizeEmail,
+} from "../_lib/supabase";
 import {
   sendEmail,
   sendInBackground,
@@ -133,16 +140,21 @@ export async function onRequestPost(context) {
   // own cadence; this window is what we show the member and what the `members`
   // view uses to decide who is currently active.
   const { start: startDate, end: endDate } = membershipWindow();
-  const email = buyer.email.trim().toLowerCase();
-  // Only used to label the internal notification — "new member" vs "renewal" is
-  // derived from the rows themselves, never stored per row.
-  const history = await lookupDonorHistory(env, email);
+  const email = normalizeEmail(buyer.email);
+  const lang = buyer.lang === "en" ? "en" : "tr";
 
-  await recordDonor(env, {
-    name: buyer.name || null,
+  // Read before writing, so the notification can tell a new member from a
+  // renewal — and mention it if this person already volunteers for us.
+  const history = await lookupPerson(env, email);
+
+  const contactId = await upsertContact(env, {
     email,
-    phone: buyer.phone || null,
-    type: "yearly",
+    name: buyer.name,
+    phone: buyer.phone,
+    lang,
+  });
+  await recordActivity(env, contactId, {
+    kind: "membership",
     amount_cents: finalAmountCents,
     currency: "CAD",
     status: subscription?.status || null,
@@ -153,10 +165,9 @@ export async function onRequestPost(context) {
     square_subscription_id: subscription?.id || null,
   });
 
-  const lang = buyer.lang === "en" ? "en" : "tr";
   const mail = buildMemberEmail({
     name: buyer.name,
-    email: buyer.email,
+    email,
     type: "yearly",
     amountCents: finalAmountCents,
     endDate,
@@ -165,7 +176,7 @@ export async function onRequestPost(context) {
   sendInBackground(
     context,
     sendEmail(env, {
-      to: buyer.email,
+      to: email,
       subject: mail.subject,
       html: mail.html,
       text: mail.text,
@@ -179,19 +190,11 @@ export async function onRequestPost(context) {
       kind: "membership",
       rows: [
         ["Ad", buyer.name || null],
-        ["E-posta", buyer.email],
+        ["E-posta", email],
         ["Telefon", buyer.phone || null],
         ["Tutar", `$${(finalAmountCents / 100).toFixed(2)} CAD / yıl`],
         ["Öğrenci kuponu", couponUsed ? "evet" : "hayır"],
-        [
-          "Geçmiş",
-          history.isFirstTime
-            ? "yeni üye"
-            : `${history.renewalCount + 1}. yenileme · ${history.paymentCount} önceki ödeme, toplam $${(
-                history.totalCents / 100
-              ).toFixed(2)} CAD` +
-              (history.firstJoinedAt ? ` — ${history.firstJoinedAt.slice(0, 10)} tarihinden beri üye` : ""),
-        ],
+        ["Geçmiş", describeHistory(history, { renewalLabel: true })],
         ["Başlangıç", startDate],
         ["Square abonelik", subscription?.id || null],
         ["Durum", subscription?.status || null],
@@ -206,7 +209,7 @@ export async function onRequestPost(context) {
         subject: notice.subject,
         html: notice.html,
         text: notice.text,
-        replyTo: buyer.email,
+        replyTo: email,
         tags: [{ name: "type", value: "membership_admin" }],
       })
     );

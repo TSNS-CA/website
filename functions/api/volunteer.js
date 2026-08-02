@@ -1,4 +1,4 @@
-import { recordVolunteer } from "../_lib/supabase";
+import { upsertContact, recordActivity, lookupPerson, describeHistory } from "../_lib/supabase";
 import {
   sendEmail,
   sendInBackground,
@@ -33,6 +33,7 @@ export async function onRequestPost(context) {
     return json(400, { ok: false, error: "A valid email is required." });
   }
 
+  const locale = lang === "en" ? "en" : "tr";
   const volunteer = {
     name: name.trim().slice(0, 200),
     email: email.trim().toLowerCase().slice(0, 320),
@@ -40,11 +41,25 @@ export async function onRequestPost(context) {
     interests: (interests || "").trim().slice(0, 2000) || null,
   };
 
-  const data = await recordVolunteer(env, { ...volunteer, status: "new" });
+  // Read before writing: if they have donated or been a member before, the
+  // notification should say so.
+  const person = await lookupPerson(env, volunteer.email);
 
-  // Confirmation to the volunteer + heads-up to the society. Both are
-  // best-effort and run after the response, so the form returns immediately.
-  const locale = lang === "en" ? "en" : "tr";
+  // One contact per human. Someone who already gave — or who volunteers a
+  // second time — updates that same row rather than creating a duplicate.
+  const contactId = await upsertContact(env, {
+    email: volunteer.email,
+    name: volunteer.name,
+    phone: volunteer.phone,
+    lang: locale,
+    // Don't demote an already-active volunteer back to 'new'.
+    volunteerStatus: person.isVolunteer ? undefined : "new",
+  });
+  const stored = await recordActivity(env, contactId, {
+    kind: "volunteer_signup",
+    interests: volunteer.interests,
+  });
+
   const mail = buildVolunteerEmail({ ...volunteer, lang: locale });
   sendInBackground(
     context,
@@ -67,7 +82,8 @@ export async function onRequestPost(context) {
         ["Telefon", volunteer.phone],
         ["İlgi alanları", volunteer.interests],
         ["Dil", locale],
-        ["Supabase", data ? "kaydedildi" : "KAYDEDİLEMEDİ"],
+        ["Geçmiş", describeHistory(person)],
+        ["Supabase", stored ? "kaydedildi" : "KAYDEDİLEMEDİ"],
       ],
     });
     sendInBackground(
@@ -83,9 +99,9 @@ export async function onRequestPost(context) {
     );
   }
 
-  if (!data) {
-    // Supabase not configured or the insert failed. The visitor is still
-    // acknowledged (and both emails went out), but this needs attention.
+  if (!stored) {
+    // Supabase unconfigured or the write failed. The visitor is acknowledged
+    // and both emails went out, but this needs attention.
     console.error("volunteer: record not stored (Supabase misconfigured?)");
     return json(201, { ok: true, warning: "not_stored" });
   }

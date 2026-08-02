@@ -1,4 +1,10 @@
-import { recordDonor, lookupDonorHistory } from "../_lib/supabase";
+import {
+  upsertContact,
+  recordActivity,
+  lookupPerson,
+  describeHistory,
+  normalizeEmail,
+} from "../_lib/supabase";
 import {
   sendEmail,
   sendInBackground,
@@ -100,31 +106,31 @@ export async function onRequestPost(context) {
   }
 
   const payment = squareBody?.payment;
-  const email = buyer?.email ? buyer.email.trim().toLowerCase() : null;
+  const email = normalizeEmail(buyer?.email);
+  const lang = buyer?.lang === "en" ? "en" : "tr";
 
-  // Only used to label the internal notification — "first gift" vs "gave
-  // before" is derived from the rows themselves, never stored per row.
-  const history = await lookupDonorHistory(env, email);
+  // Read the person's history before recording this gift, so the internal
+  // notification can say whether they have supported us before.
+  const history = await lookupPerson(env, email);
 
-  await recordDonor(env, {
-    name: buyer?.name || null,
+  const contactId = await upsertContact(env, {
     email,
-    phone: buyer?.phone || null,
-    type: "one_time",
+    name: buyer?.name,
+    phone: buyer?.phone,
+    lang,
+  });
+  await recordActivity(env, contactId, {
+    kind: "donation",
     amount_cents: amountCents,
     currency: "CAD",
     status: payment?.status || null,
-    membership_start: null,
-    membership_end: null,
-    student_coupon: false,
     square_payment_id: payment?.id || null,
   });
 
-  if (buyer?.email) {
-    const lang = buyer.lang === "en" ? "en" : "tr";
+  if (email) {
     const mail = buildMemberEmail({
       name: buyer.name,
-      email: buyer.email,
+      email,
       type: "one_time",
       amountCents: amountCents,
       endDate: null,
@@ -134,7 +140,7 @@ export async function onRequestPost(context) {
     sendInBackground(
       context,
       sendEmail(env, {
-        to: buyer.email,
+        to: email,
         subject: mail.subject,
         html: mail.html,
         text: mail.text,
@@ -149,18 +155,12 @@ export async function onRequestPost(context) {
       kind: "donation",
       rows: [
         ["Ad", buyer?.name || null],
-        ["E-posta", buyer?.email || null],
+        ["E-posta", email],
         ["Telefon", buyer?.phone || null],
         ["Tutar", `$${(amountCents / 100).toFixed(2)} CAD`],
         ["Square ödeme", payment?.id || null],
         ["Durum", payment?.status || null],
-        [
-          "Geçmiş",
-          history.isFirstTime
-            ? "ilk bağışı"
-            : `${history.paymentCount} önceki ödeme, toplam $${(history.totalCents / 100).toFixed(2)} CAD` +
-              (history.firstJoinedAt ? ` — ${history.firstJoinedAt.slice(0, 10)} tarihinden beri` : ""),
-        ],
+        ["Geçmiş", describeHistory(history)],
         ["Ortam", SQUARE_ENV === "production" ? "production" : "sandbox"],
       ],
     });
@@ -171,7 +171,7 @@ export async function onRequestPost(context) {
         subject: notice.subject,
         html: notice.html,
         text: notice.text,
-        replyTo: buyer?.email || undefined,
+        replyTo: email || undefined,
         tags: [{ name: "type", value: "donation_admin" }],
       })
     );

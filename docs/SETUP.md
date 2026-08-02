@@ -20,7 +20,7 @@ değiştirmiş olursun:
 | --- | --- | --- |
 | Statik site | Cloudflare Worker static assets (`dist/`) | `VITE_*` değişkenleri **build sırasında** gömülür |
 | API | `functions/api/*` → tek Worker script'ine derleniyor | `SQUARE_*`, `SUPABASE_*`, `RESEND_*` **runtime**'da okunur |
-| Veritabanı | Supabase (`donors`, `volunteers` + `members` view) | Sadece `service_role` erişir, RLS kapalı-erişim |
+| Veritabanı | Supabase (`contacts` + `activities`, `people` view) | Sadece `service_role` erişir, RLS kapalı-erişim |
 | Ödeme | Square (Web Payments SDK + Payments/Subscriptions API) | Apple Pay dahil |
 | E-posta | Resend | Üye/bağışçı makbuzu, gönüllü onayı, yönetim bildirimi |
 
@@ -142,116 +142,170 @@ curl -s -X POST https://<worker-adi>.<hesabin>.workers.dev/api/coupon \
 
 ### 2.2 SQL'i nerede çalıştıracaksın
 
-Repodaki `supabase/migrations/0001_donors_volunteers.sql` dosyasını **Supabase
-panelinde** çalıştırıyorsun — terminalde değil, Cloudflare'de değil:
+Repodaki migration dosyalarını **Supabase panelinde** çalıştırıyorsun —
+terminalde değil, Cloudflare'de değil. Sırayla `0001` sonra `0002`; ya da
+sadece `0002` (tek başına da çalışır, sıfır veritabanında da doğru şemayı kurar):
 
 1. Supabase Dashboard → projen
 2. Sol menüden **SQL Editor**
 3. **+ New query**
-4. Dosyanın **tamamını** kopyalayıp editöre yapıştır
+4. `supabase/migrations/0002_contacts_activities.sql` dosyasının **tamamını**
+   kopyalayıp editöre yapıştır
 5. Sağ altta **Run** (veya ⌘+Enter)
 
 Alt tarafta `Success. No rows returned` görmelisin. Dosya **idempotent** —
 yeniden çalıştırmak zarar vermez, mevcut tabloları bozmaz. Postgres 17'de
 çalıştırılarak test edildi.
 
-Sonra **Table Editor**'da `donors` ve `volunteers` tablolarını, **Database →
-Views** altında da `members` görünümünü görmelisin.
+Sonra **Table Editor**'da `contacts` ve `activities` tablolarını, **Database →
+Views** altında da `people` ve `members` görünümlerini görmelisin.
 
-### 2.3 Şemada ne var
+`0001`'i daha önce çalıştırdıysan `0002` eski `donors`/`volunteers` verisini yeni
+yapıya taşıyıp o tabloları kaldırıyor — aynı e-posta iki tablodaysa tek kişide
+birleştiriyor. Bu taşıma da test edildi.
 
-**Aylık üyelik kaldırıldı.** `type` artık sadece `one_time` | `yearly` kabul
-ediyor; `monthly` yazmayı denersen veritabanı reddediyor. Koddaki aylık
-kalıntıları da temizlendi.
+### 2.3 Neden iki tablo — tek tablo ve dört tablo neden olmadı
 
-`donors` tablosu — **her satır bir işlem** (bir bağış veya bir üyelik ödemesi):
+Kısa cevap: **bölmeyi "gönüllü mü bağışçı mı" diye değil, "kişi mi olay mı" diye
+yapıyoruz.** Toplam iki tablo.
 
-| Kolon | Ne işe yarıyor |
-| --- | --- |
-| `type` | `one_time` \| `yearly` |
-| `amount_cents`, `currency`, `status` | Ödeme tutarı ve Square durumu |
-| `membership_start` | **Üyelik başlangıç tarihi** — yıllık üyelikte bugün |
-| `membership_end` | **Üyelik bitiş tarihi** — başlangıç + 1 yıl |
-| `student_coupon` | Öğrenci indirimi kullanıldı mı |
-| `square_*` | Square müşteri / ödeme / abonelik id'leri |
+Önceki yapıda `donors` ve `volunteers` diye iki tablo vardı ve bölme yanlış
+eksendeydi. Aynı insan hem gönüllü olup hem üye olduğunda iki ayrı satır
+oluşuyor, aralarında hiçbir bağ bulunmuyordu: adı ve telefonu iki yerde tekrar
+ediyor, biri güncellenince diğeri eskiyor, "bu gönüllü aynı zamanda üye mi?"
+sorusunun güvenilir cevabı olmuyordu.
 
-Tek seferlik bağışta `membership_start`/`membership_end` boş kalır.
+**Her şeyi tek tabloya koymak** da çözmüyor. İki kötü seçenekten birine
+düşersin: ya her ödeme satırında kişi bilgisini tekrar edersin (aynı insanın
+adı 5 satırda, biri güncellenince diğerleri yalan söyler), ya da kişi başına tek
+satır tutup **ödeme geçmişini kaybedersin** — o zaman "2025'te ne kadar
+topladık", "kim kaç kere yeniledi", "makbuz hangi ödemeye ait" sorularının
+cevabı kalmaz. Bir dernek için mali geçmiş kaybedilemez.
 
-E-postalar **küçük harfe çevrilerek** yazılıyor, yani `Ayse@` ile `ayse@` aynı
-kişi sayılıyor.
+**Her tür için ayrı tablo** (üye / bağışçı / gönüllü) ise aynı hatanın büyütülmüş
+hâli: aynı insan üç tabloda üç kez.
 
-**"İlk kayıt tarihi" ve "kaç kere yenilemiş" neden bu tabloda değil?** Çünkü
-ikisi de *kişiye* ait sabit bilgiler, *işleme* ait değil. Her satıra kopyalasak
-aynı değeri defalarca yazmış olurduk ve — daha kötüsü — o değeri hesaplayan
-sorgu bir gün hata verse satır yalan söylerdi (yenileme yapan birine "ilk kez"
-damgası gibi). İkisi de zaten satırların kendisinden çıkıyor: o e-postanın en
-eski satırı = ilk kayıt tarihi. Bu yüzden aşağıdaki `members` görünümünde
-hesaplanıyorlar.
+Doğru sınır şu: *kişi* ile *olay* farklı şeylerdir.
 
-### 2.4 `members` görünümü — "kim şu an üye?"
+| Tablo | Ne | Örnek |
+| --- | --- | --- |
+| `contacts` | **İnsan başına bir satır** | Ahmet Demir, ahmet@example.ca |
+| `activities` | **Olan her şey için bir satır** | 2023: gönüllü başvurusu · 2024: üyelik · 2025: bağış |
 
-"Kim üye, ne zamandan beri, ne zamana kadar" sorusu bir *işlemin* değil bir
-*kişinin* sorusu. Bu yüzden ikinci bir tablo tutup senkron kalmasına uğraşmak
-yerine `donors` üzerine bir **view** koyduk:
+Tek seferlik bağış yapan için ayrı tablo gerekmiyor — o da bir `activities`
+satırı, sadece `kind = 'donation'`. Yeni bir ilişki türü çıkarsa (etkinlik
+kaydı, bağış sözü) yine yeni tablo değil, yeni bir `kind` oluyor.
 
-```sql
-select * from members order by membership_end desc nulls last;
-```
+### 2.4 Aynı kişinin ikiye bölünmemesi
+
+`contacts.email` **unique** ve her zaman küçük harf (veritabanı kısıtı
+zorluyor). Kod da her yazmadan önce e-postaya göre *upsert* yapıyor. Yani:
+
+- Gönüllü olan biri sonradan yıllık üye olursa → **aynı** `contacts` satırı, iki
+  `activities` kaydı
+- `Ahmet@Example.CA` ile `ahmet@example.ca` → aynı kişi
+- İkinci başvuruda telefon vermezse → daha önce verdiği telefon **silinmez**
+  (upsert yalnızca dolu alanları yazar)
+
+Bu uçtan uca test edildi: aynı kişi büyük harfli e-postayla gönüllü olup sonra
+küçük harfle tekrar başvurduğunda tek kişi + iki aktivite kalıyor, ardından üye
+olunca `roles` değeri `{member, volunteer}` oluyor ve hâlâ tek kişi.
+
+### 2.4.1 `contacts` kolonları
 
 | Kolon | |
 | --- | --- |
-| `email`, `name`, `phone` | En son ödemedeki bilgiler |
-| `first_joined_at` | **İlk kayıt tarihi** — sabit, hiç değişmez |
-| `last_payment_at` | Son ödeme tarihi |
-| `last_membership_at` | Son üyelik ödemesinin tarihi |
-| `membership_end` | Üyeliğin bittiği / biteceği tarih |
-| `payment_count` | Toplam kaç ödeme yapmış |
-| `membership_count` | Bunların kaçı üyelik ödemesi |
-| `renewal_count` | **Kaç kere yenilemiş** — ilk yıllık ödeme katılım, sonrakiler yenileme |
-| `donation_count` | Kaç tek seferlik bağış yapmış |
-| `total_cents` / `total_cad` | **Toplam ne kadar ödemiş** |
-| `membership_cents` / `membership_cad` | Bunun ne kadarı üyelik |
-| `donation_cents` / `donation_cad` | Ne kadarı bağış |
-| `largest_payment_cents` | En büyük tek ödemesi |
-| `ever_used_student_discount` | Hiç öğrenci indirimi kullandı mı |
-| `status` | `active` (üyeliği sürüyor) / `expired` (bitmiş) / `supporter` (sadece bağış yapmış, hiç üye olmamış) |
+| `email` | Kimlik. Unique, küçük harf zorunlu |
+| `name`, `phone` | En son bildiği bilgiler |
+| `preferred_lang` | `tr` / `en` — e-postaları hangi dilde göndereceğimiz |
+| `volunteer_status` | `new` / `contacted` / `active` / `inactive` — gönüllü değilse boş |
+| `notes` | Serbest not |
 
-Tutarlar hem kuruş (`*_cents`) hem dolar (`*_cad`) olarak var; panelde
-bakarken kafadan bölmek zorunda kalmayasın.
+### 2.4.2 `activities` kolonları
 
-Görünüm `security_invoker` ile tanımlı, yani altındaki tablonun RLS kurallarını
-devralıyor. Bu olmadan view sahibi haklarıyla çalışır ve veriyi `anon`
-anahtarına açardı.
+| Kolon | |
+| --- | --- |
+| `kind` | `membership` / `donation` / `volunteer_signup` |
+| `amount_cents`, `currency`, `status` | Para (gönüllü başvurusunda boş) |
+| `membership_start`, `membership_end` | Üyelik penceresi (yalnızca `membership`) |
+| `student_coupon` | Öğrenci indirimi kullanıldı mı |
+| `interests` | Gönüllünün ilgi alanları (yalnızca `volunteer_signup`) |
+| `square_*` | Square müşteri / ödeme / abonelik id'leri |
 
-İşe yarayacak sorgular:
+Tek tabloda üç tür olay tutmanın bedeli, ilgisiz kolonların boş kalması. Bunu
+**CHECK kısıtlarıyla** güvenli hâle getirdik: gönüllü başvurusuna tutar
+yazılamıyor, bağışa üyelik tarihi veya ilgi alanı yazılamıyor, üyelikte tutar
+zorunlu, bitiş tarihi başlangıçtan önce olamıyor. On kısıtın hepsi hatalı veriyi
+gerçekten reddediyor (Postgres 17'de test edildi).
+
+### 2.4.3 `people` görünümü — kişi başına özet
+
+```sql
+select * from people order by first_seen_at desc;
+```
+
+`member_type` istediğin tek etiketi veriyor, ama önce şunu bilmek lazım: **bir
+insan aynı anda hem gönüllü hem üye olabildiği için tek değerli bir kolon
+gerçeği anlatamaz.** Bu yüzden görünüm ikisini birden sunuyor:
+
+- `roles` — dizi, hepsini gösterir: `{member, volunteer}`
+- `is_member`, `was_member`, `is_volunteer`, `is_donor` — filtrelemek için
+- `member_type` — tek etiket, öncelik sırası: **aktif üye > gönüllü > eski üye >
+  bağışçı > sadece kayıtlı kişi**
+
+Diğer kolonlar: `first_seen_at` (ilk kayıt tarihi, sabit), `last_activity_at`,
+`membership_end`, `payment_count`, `membership_count`, `renewal_count`
+(kaç kere yenilemiş), `donation_count`, `volunteer_signup_count`,
+`total_cad` / `membership_cad` / `donation_cad` (ne kadar ödemiş, kırılımlı),
+`largest_payment_cents`, `ever_used_student_discount`, `volunteer_status`.
+
+Tüm kombinasyonlar test edildi:
+
+| Kişi | member_type | roles |
+| --- | --- | --- |
+| Sadece gönüllü | `volunteer` | `{volunteer}` |
+| Sadece tek seferlik bağış | `donor` | `{donor}` |
+| Aktif üye | `member` | `{member}` |
+| Üyeliği bitmiş | `former_member` | `{former_member}` |
+| Gönüllü + aktif üye | `member` | `{member, volunteer}` |
+| Gönüllü + eski üye + bağışçı | `volunteer` | `{former_member, volunteer, donor}` |
+| Kayıtlı ama hiç aktivitesi yok | `contact` | `{}` |
+
+`members` görünümü de duruyor — `people`'ın üyelik ilişkisi olanlara
+daraltılmış hâli.
+
+### 2.4.4 İşe yarayacak sorgular
 
 ```sql
 -- Şu an aktif üyeler
-select * from members where status = 'active' order by membership_end;
+select name, email, membership_end from people where is_member order by membership_end;
 
 -- 30 gün içinde üyeliği bitecekler (yenileme hatırlatması)
-select email, name, membership_end from members
-where status = 'active' and membership_end <= current_date + 30
-order by membership_end;
+select name, email, membership_end from people
+where is_member and membership_end <= current_date + 30 order by membership_end;
 
--- Bu yılın yeni üyeleri
-select * from members where first_joined_at >= date_trunc('year', now());
+-- Hem gönüllü hem üye olanlar
+select name, email, roles from people where is_member and is_volunteer;
 
 -- En çok destek olanlar
-select name, email, total_cad, renewal_count, first_joined_at::date
-from members order by total_cents desc limit 20;
-
--- Sadık üyeler (en az 2 kere yenilemiş)
-select name, email, renewal_count, total_cad from members
-where renewal_count >= 2 order by renewal_count desc;
+select name, email, total_cad, renewal_count from people
+order by total_cents desc limit 20;
 
 -- Bekleyen gönüllü başvuruları
-select * from volunteers where status = 'new' order by created_at desc;
+select p.name, p.email, a.interests, a.created_at
+from activities a join people p on p.id = a.contact_id
+where a.kind = 'volunteer_signup' and p.volunteer_status = 'new'
+order by a.created_at desc;
+
+-- Bir kişinin bütün geçmişi
+select created_at, kind, amount_cents, membership_end, interests
+from activities where contact_id = (select id from people where email = 'x@y.ca')
+order by created_at;
 ```
 
 ### 2.5 Güvenlik
 
-`donors` ve `volunteers` tablolarında RLS **açık ve hiç policy yok**. Yani
+`contacts` ve `activities` tablolarında RLS **açık ve hiç policy yok**. Yani
 `anon`/`authenticated` anahtarlarıyla kimse hiçbir şey okuyup yazamıyor;
 yalnızca Worker'ın kullandığı `service_role` erişiyor. Panelden sen her zaman
 görebilirsin.
@@ -567,13 +621,13 @@ Sana kalanlar:
 - [ ] Worker adı `wrangler.toml`'daki `name` ile aynı
 - [ ] Build command `npm run build:cf`, deploy command `npx wrangler deploy`
 - [ ] İlk deploy `.workers.dev`'de açılıyor, `/api/coupon` JSON dönüyor
-- [ ] Supabase projesi açıldı, SQL Editor'da migration çalıştırıldı,
-      `members` görünümü görünüyor
+- [ ] Supabase projesi açıldı, SQL Editor'da `0002` çalıştırıldı,
+      `people` görünümü görünüyor
 - [ ] Resend'de `tsns.ca` **Verified**
 - [ ] Runtime değişkenleri **Variables and Secrets**'a, `VITE_*` olanlar
       **Build variables**'a girildi (sandbox değerleriyle)
 - [ ] `.workers.dev` adresinde: gönüllü formu + sandbox kartla test bağış
-      denendi, e-postalar geldi, `donors` tablosuna kayıt düştü
+      denendi, e-postalar geldi, `contacts` + `activities` kaydı düştü
 - [ ] Square production hesabı aktif, production plan oluşturuldu
 - [ ] Değişkenler production Square değerleriyle güncellendi + yeniden deploy
 - [ ] PR `main`'e merge edildi → deploy geçti
@@ -608,6 +662,7 @@ hatırlatma olarak gösteriliyor.
 | "Server is not configured for payments" | `SQUARE_ACCESS_TOKEN` veya `SQUARE_LOCATION_ID` o ortamda tanımlı değil |
 | "Ödeme yapılandırılmamış." (tarayıcıda) | `VITE_*` değişkenleri **Build variables** yerine runtime tarafına girilmiş, ya da girildikten sonra yeniden deploy edilmemiş |
 | Kayıt Supabase'e düşmüyor | `warning: "not_stored"` dönüyorsa `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY` yanlış ya da migration çalıştırılmamış |
+| Aynı kişi iki kez görünüyor | Olmamalı — `contacts.email` unique. İki farklı e-posta adresi kullanmış olabilir; `contacts`'ta elle birleştir |
 | Apple Pay butonu görünmüyor | Safari + Apple cihaz mı? Domain doğrulandı mı? Konsolda Square SDK hatası var mı? |
 | Yıllık üyelik hata veriyor | `SQUARE_YEARLY_PLAN_ID` o ortamın planına ait mi? Sandbox planı production'da çalışmaz. |
-| Supabase'e `type` hatası | Aylık üyelik kaldırıldı; `type` sadece `one_time` \| `yearly` kabul ediyor |
+| `activities` insert hatası | Kısıtlar türe göre: gönüllü başvurusuna tutar, bağışa üyelik tarihi/ilgi alanı yazılamaz |
