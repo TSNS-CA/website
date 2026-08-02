@@ -1,2 +1,30 @@
+# Cloudflare Worker + static assets.
+#
+# `name` MUST match the Worker's name in the Cloudflare dashboard, otherwise
+# Workers Builds fails before it even starts.
 name = "tsns-ca-website"
-compatibility_date = "2025-01-01"
+compatibility_date = "2026-08-02"
+
+# The API lives in functions/ (Pages-style file routing). The build compiles it
+# into a single Worker script with:
+#   npx wrangler pages functions build --outdir=worker
+# It is written to worker/ — outside dist/ — so it is never uploaded as a
+# static asset, which saves needing an .assetsignore.
+main = "./worker/index.js"
+
+# Per-branch preview URLs (the Workers equivalent of Pages preview deployments).
+preview_urls = true
+
+[assets]
+directory = "./dist"
+binding = "ASSETS"
+
+# React Router owns /bagis, /gonullu, /about ... — none of which exist as files,
+# so unmatched paths must return index.html.
+not_found_handling = "single-page-application"
+
+# Workers serve static assets *before* the Worker; Pages did the opposite. With
+# SPA handling on, /api/* would otherwise be answered with index.html instead of
+# reaching the API. This flips the order back for the API only, so page loads
+# stay pure asset hits (not billed as Worker invocations).
+run_worker_first = ["/api/*"]
