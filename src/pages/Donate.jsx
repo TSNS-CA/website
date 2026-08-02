@@ -117,7 +117,7 @@ export default function DonatePage({ lang }) {
     <Section className="py-16">
       <div className="mx-auto max-w-xl">
         <div className="text-center">
-          <Eyebrow>{t(lang, "action.donate")}</Eyebrow>
+          <Eyebrow lang={lang}>{t(lang, "action.donate")}</Eyebrow>
           <h1 className="mt-3 font-display text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl dark:text-white">
             {t(lang, "donate.title")}
           </h1>

@@ -1,4 +1,4 @@
-import { t } from "../i18n";
+import { t, upper } from "../i18n";
 import { Section, Eyebrow } from "../components/ui";
 import { socials, departments } from "../content";
 
@@ -6,15 +6,15 @@ export default function ContactPage({ lang }) {
   return (
     <Section className="py-20">
       <div className="max-w-3xl">
-        <Eyebrow>{t(lang, "nav.contact")}</Eyebrow>
+        <Eyebrow lang={lang}>{t(lang, "nav.contact")}</Eyebrow>
         <h1 className="mt-3 font-display text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl dark:text-white">
           {t(lang, "contact.title")}
         </h1>
 
         {/* Socials */}
         <div className="mt-10">
-          <h2 className="text-sm font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
-            {t(lang, "contact.social")}
+          <h2 className="text-sm font-bold tracking-wider text-slate-600 dark:text-slate-400">
+            {upper(lang, t(lang, "contact.social"))}
           </h2>
           <ul className="mt-4 flex flex-wrap gap-3">
             {socials.map((s) => (
@@ -34,8 +34,8 @@ export default function ContactPage({ lang }) {
 
         {/* Emails */}
         <div className="mt-10">
-          <h2 className="text-sm font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
-            {t(lang, "contact.emails")}
+          <h2 className="text-sm font-bold tracking-wider text-slate-600 dark:text-slate-400">
+            {upper(lang, t(lang, "contact.emails"))}
           </h2>
           <div className="mt-4 overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800">
             <table className="w-full text-left text-sm">

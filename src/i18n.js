@@ -230,4 +230,24 @@ export function t(lang, key, vars = {}) {
   return str;
 }
 
+// Türkçe metinde geçen ama Türkçe kurallarıyla büyütülmemesi gereken özel
+// adlar: "Nova Scotia" → "NOVA SCOTİA" değil, "NOVA SCOTIA". Yeni bir yabancı
+// yer/marka adı eklenirse listeye yazılmalı.
+const LATIN_NAMES = ["Nova Scotia", "Halifax"];
+const LATIN_NAMES_RE = new RegExp(`(${LATIN_NAMES.join("|")})`, "gi");
+
+// Büyütmeyi CSS'in `text-transform: uppercase`ına bırakamıyoruz: o hem
+// tarayıcıya göre "beri" → "BERI" ya da "BERİ" verebiliyor, hem de yukarıdaki
+// özel adları koruyamıyor. Başlıklarda `uppercase` sınıfı yerine bu kullanılır.
+export function upper(lang, text) {
+  const s = String(text ?? "");
+  if (lang !== "tr") return s.toLocaleUpperCase("en-CA");
+  // split, yakalama grubu yüzünden parçaları sırayla verir: tek indisler eşleşen
+  // özel adlar, çift indisler aradaki Türkçe metin.
+  return s
+    .split(LATIN_NAMES_RE)
+    .map((part, i) => part.toLocaleUpperCase(i % 2 ? "en-CA" : "tr-TR"))
+    .join("");
+}
+
 export const supported = SUPPORTED;

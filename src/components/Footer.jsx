@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { t } from "../i18n";
+import { t, upper } from "../i18n";
 import { socials, departments } from "../content";
 import { Container, Button } from "./ui";
 import SocialLinks from "./SocialIcons";
@@ -87,8 +87,8 @@ export default function Footer({ lang }) {
 
           {/* Quick links */}
           <div>
-            <h3 className="text-sm font-bold uppercase tracking-wider text-white">
-              {t(lang, "footer.quickLinks")}
+            <h3 className="text-sm font-bold tracking-wider text-white">
+              {upper(lang, t(lang, "footer.quickLinks"))}
             </h3>
             <ul className="mt-4 space-y-2 text-sm">
               <li><Link to="/" className="text-slate-300 hover:text-white">{t(lang, "nav.home")}</Link></li>
@@ -101,7 +101,7 @@ export default function Footer({ lang }) {
 
           {/* Contact */}
           <div>
-            <h3 className="text-sm font-bold uppercase tracking-wider text-white">{t(lang, "footer.contact")}</h3>
+            <h3 className="text-sm font-bold tracking-wider text-white">{upper(lang, t(lang, "footer.contact"))}</h3>
             <ul className="mt-4 space-y-2 text-sm">
               {departments.map((d) => (
                 <li key={d.email}>
@@ -109,7 +109,7 @@ export default function Footer({ lang }) {
                 </li>
               ))}
             </ul>
-            <h3 className="mt-6 text-sm font-bold uppercase tracking-wider text-white">{t(lang, "footer.follow")}</h3>
+            <h3 className="mt-6 text-sm font-bold tracking-wider text-white">{upper(lang, t(lang, "footer.follow"))}</h3>
             <div className="mt-3">
               <SocialLinks socials={socials} />
             </div>
@@ -117,7 +117,7 @@ export default function Footer({ lang }) {
 
           {/* Newsletter */}
           <div>
-            <h3 className="text-sm font-bold uppercase tracking-wider text-white">{t(lang, "newsletter.title")}</h3>
+            <h3 className="text-sm font-bold tracking-wider text-white">{upper(lang, t(lang, "newsletter.title"))}</h3>
             <p className="mt-4 text-sm text-slate-300">{t(lang, "newsletter.body")}</p>
             <div className="mt-4">
               <Newsletter lang={lang} />

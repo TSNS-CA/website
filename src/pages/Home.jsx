@@ -1,4 +1,4 @@
-import { t } from "../i18n";
+import { t, upper } from "../i18n";
 import { stories, events, sponsors } from "../content";
 import { Container, Section, SectionHeading, Eyebrow, Button, Card } from "../components/ui";
 
@@ -13,8 +13,8 @@ function Hero({ lang }) {
 
       <Container className="flex min-h-[78vh] flex-col items-start justify-center py-24">
         <div className="max-w-2xl">
-          <span className="inline-flex items-center gap-2 rounded-full bg-accent px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider text-white shadow-sm ring-1 ring-inset ring-white/20">
-            🇹🇷 {t(lang, "home.hero.eyebrow")}
+          <span className="inline-flex items-center gap-2 rounded-full bg-accent px-3.5 py-1.5 text-xs font-bold tracking-wider text-white shadow-sm ring-1 ring-inset ring-white/20">
+            🇹🇷 {upper(lang, t(lang, "home.hero.eyebrow"))}
           </span>
           <h1 className="mt-5 whitespace-pre-line font-display text-4xl font-black leading-[1.05] tracking-tight text-white sm:text-5xl lg:text-6xl">
             {t(lang, "home.hero.title")}
@@ -51,7 +51,7 @@ function WhySupport({ lang }) {
     <Section className="py-20">
       <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-2">
         <div>
-          <Eyebrow>{t(lang, "home.why.eyebrow")}</Eyebrow>
+          <Eyebrow lang={lang}>{t(lang, "home.why.eyebrow")}</Eyebrow>
           <h2 className="mt-3 font-display text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl dark:text-white">
             {t(lang, "home.why.title")}
           </h2>
@@ -103,6 +103,7 @@ function Stories({ lang }) {
   return (
     <Section className="py-20">
       <SectionHeading
+        lang={lang}
         center
         eyebrow={t(lang, "home.stories.eyebrow")}
         title={t(lang, "home.stories.title")}
@@ -133,6 +134,7 @@ function Events({ lang }) {
   return (
     <Section className="bg-cream-200 py-20 dark:bg-primary-800">
       <SectionHeading
+        lang={lang}
         eyebrow={t(lang, "home.events.eyebrow")}
         title={t(lang, "home.events.title")}
         subtitle={t(lang, "home.events.subtitle")}
@@ -174,6 +176,7 @@ function Sponsors({ lang }) {
   return (
     <Section className="py-20">
       <SectionHeading
+        lang={lang}
         center
         eyebrow={t(lang, "home.sponsors.eyebrow")}
         title={t(lang, "home.sponsors.title")}
