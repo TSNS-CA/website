@@ -4,8 +4,13 @@ Bu doküman **senin panellerde yapman gereken** adımları anlatır. Koddaki her
 zaten hazır; aşağıdaki değişkenler girilmediğinde ilgili özellik sessizce devre
 dışı kalır (ödeme/gönüllü akışı çökmez, sadece e-posta veya kayıt atlanır).
 
-Sıra önemli: **1) Supabase → 2) Resend → 3) Square Sandbox → 4) Cloudflare →
-5) Apple Pay → 6) Square Production.**
+Sıra önemli — özellikle **domain'e en son dokun**. Site preview URL'inde
+çalışmadan `tsns.ca`'yı taşırsan, eski Google Sites'ı çalışmayan bir şeyle
+değiştirmiş olursun:
+
+**1) Pages projesi → 2) Supabase → 3) Resend → 4) Square Sandbox →
+5) Değişkenler → 6) Preview'da test → 7) Domain + DNS → 8) Apple Pay →
+9) Square Production**
 
 ---
 
@@ -28,7 +33,62 @@ Uç noktalar:
 
 ---
 
-## 1. Supabase
+## 1. Cloudflare Pages projesini oluştur
+
+Henüz bir Pages projesi yok — önce bu.
+
+1. Cloudflare Dashboard → **Workers & Pages** → **Create** → **Pages** →
+   **Connect to Git**.
+2. GitHub'ı yetkilendir → **TSNS-CA/website** reposunu seç.
+3. **Production branch:** `main`.
+4. Build ayarları:
+
+   | Alan | Değer |
+   | --- | --- |
+   | Framework preset | **Vite** (yoksa *None*) |
+   | Build command | `npm run build` |
+   | Build output directory | `dist` |
+   | Root directory | `/` (boş bırak) |
+
+5. **Save and Deploy.**
+
+### Bilmen gerekenler
+
+- **Functions otomatik bulunur.** Repodaki `functions/` klasörü ayrı bir ayar
+  gerektirmez; `/api/*` uç noktaları ilk deploy'dan itibaren çalışır.
+- **Compatibility flag'e gerek yok.** `nodejs_compat` bayrağı olmadan
+  `@supabase/supabase-js`'in insert akışını Workers runtime'ında test ettim,
+  sorunsuz çalışıyor. Sonradan Node API'si isteyen bir paket eklersen
+  Settings → Functions → *Compatibility flags* altından eklersin.
+- **Node sürümü:** Pages V3 build image varsayılan olarak Node 22 veriyor ve
+  repoda `.nvmrc` (`22`) var, yani sürüm sabit. Cloudflare varsayılanı
+  ileride değiştirse bile build kırılmaz.
+- **`wrangler.toml`'a `pages_build_output_dir` EKLEME.** O anahtarı eklediğin
+  anda Cloudflare bu dosyayı *source of truth* kabul eder ve aynı alanları
+  panelden **düzenleyemezsin**; değişkenler de dosyadan okunmaya başlar, yani
+  gizli anahtarları repoya yazmak zorunda kalırsın. Mevcut `wrangler.toml`
+  sadece yerelde `wrangler pages dev` için duruyor, deploy'u etkilemiyor —
+  öyle kalsın.
+
+### İlk deploy'u doğrula
+
+Deploy bitince Cloudflare sana `xxx.pages.dev` adresi verir. Aç ve kontrol et:
+
+```bash
+curl -s https://<projen>.pages.dev/ | grep -o "<title>[^<]*</title>"
+# beklenen: <title>Nova Scotia Türk Derneği | Turkish Society of Nova Scotia</title>
+
+curl -s -X POST https://<projen>.pages.dev/api/coupon \
+  -H 'Content-Type: application/json' -d '{"code":"x"}'
+# beklenen: {"ok":true,"valid":false}   -> Functions çalışıyor demektir
+```
+
+`/api/coupon` HTML dönüyorsa Functions devreye girmemiştir (build output
+dizini yanlış olabilir).
+
+---
+
+## 2. Supabase
 
 1. [supabase.com](https://supabase.com) → **New project**.
    - Region: **East US (North Virginia)** veya **Canada** — Halifax'a en yakını seç.
@@ -55,14 +115,14 @@ Uç noktalar:
 
 ---
 
-## 2. Resend (e-posta)
+## 3. Resend (e-posta)
 
 Kod Resend'in **REST API**'sini `fetch` ile çağırıyor
 (`functions/_lib/email.js`). Cloudflare Workers ortamında Node SDK'sı gerekmez —
 ayrı bir paket kurmana **gerek yok**, dolayısıyla "hangi dil?" sorusunun cevabı:
 zaten HTTP/REST kullanıyoruz, hazır.
 
-### 2.1 Domain doğrulama
+### 3.1 Domain doğrulama
 
 1. Resend → **Domains** → `tsns.ca` (eklediğini söylemiştin).
 2. Resend'in gösterdiği DNS kayıtlarını **Cloudflare DNS**'e ekle:
@@ -74,14 +134,14 @@ zaten HTTP/REST kullanıyoruz, hazır.
    DNS-only olmalı; turuncu bulut e-posta doğrulamasını bozar.
 4. Resend'de **Verify** → "Verified" olana kadar bekle (genelde birkaç dakika).
 
-### 2.2 API anahtarı
+### 3.2 API anahtarı
 
 Resend → **API Keys** → **Create API Key**
 - İzin: **Sending access**
 - Domain: `tsns.ca`
 - Çıkan `re_...` değerini `RESEND_API_KEY` olarak sakla.
 
-### 2.3 Değişkenler
+### 3.3 Değişkenler
 
 | Değişken | Örnek | Zorunlu |
 | --- | --- | --- |
@@ -93,7 +153,7 @@ Resend → **API Keys** → **Create API Key**
 `RESEND_FROM` içindeki domain **doğrulanmış domain olmak zorunda**, yoksa Resend
 403 döner.
 
-### 2.4 Hangi e-posta ne zaman gider
+### 3.4 Hangi e-posta ne zaman gider
 
 | Tetikleyici | Kime | İçerik |
 | --- | --- | --- |
@@ -114,7 +174,7 @@ sayılır, hata Cloudflare loglarına düşer.
 
 ---
 
-## 3. Square — Sandbox ve Production'ı ayırma
+## 4. Square — Sandbox ve Production'ı ayırma
 
 Evet, önerin doğru: **ikisini Cloudflare'de ayrı environment'lara koyalım.**
 Cloudflare Pages'in iki ortamı var ve her biri için ayrı değişken seti
@@ -131,14 +191,14 @@ otomatik olarak canlı Square'e geçilir. Kodda ekstra bir şey yapmana gerek yo
 (`connect.squareupsandbox.com` ↔ `connect.squareup.com`) hem de tarayıcıdaki SDK
 (`sandbox.web.squarecdn.com` ↔ `web.squarecdn.com`) otomatik değişiyor.
 
-### 3.1 Sandbox değerlerini alma
+### 4.1 Sandbox değerlerini alma
 
 Square Developer Dashboard → uygulaman → **Sandbox** sekmesi:
 - `Application ID` → `VITE_SQUARE_APPLICATION_ID`
 - `Access token` → `SQUARE_ACCESS_TOKEN`
 - **Locations** → sandbox location → `SQUARE_LOCATION_ID` ve `VITE_SQUARE_LOCATION_ID`
 
-### 3.2 Yıllık üyelik planı
+### 4.2 Yıllık üyelik planı
 
 Yıllık üyelik Square **Subscriptions** kullanıyor, yani bir plan gerekiyor:
 
@@ -151,7 +211,7 @@ Yıllık üyelik Square **Subscriptions** kullanıyor, yani bir plan gerekiyor:
 Tutar, plandaki fiyattan bağımsız olarak `price_override_money` ile
 geçiliyor (kullanıcının seçtiği tutar; öğrenci kuponuyla $5).
 
-### 3.3 Production değerleri
+### 4.3 Production değerleri
 
 Square Developer Dashboard → **Production** sekmesi → aynı üç değer. Production
 access token'ı almadan önce Square hesabının **aktivasyonu** (iş bilgileri,
@@ -159,7 +219,7 @@ banka hesabı) tamamlanmış olmalı.
 
 ---
 
-## 4. Cloudflare Pages değişkenleri
+## 5. Cloudflare Pages değişkenleri
 
 Cloudflare Dashboard → **Workers & Pages → tsns-ca-website → Settings →
 Environment variables**. Orada **Production** ve **Preview** için ayrı iki liste
@@ -222,7 +282,65 @@ npm run dev:api           # wrangler pages dev — functions'ları da çalışt�
 
 ---
 
-## 5. Apple Pay — domain doğrulama (sorduğun kısım)
+## 6. Domain, DNS ve yönlendirme
+
+### Şu anki durum (ölçüldü, 2026-08-02)
+
+| Ne | Durum |
+| --- | --- |
+| Nameserver | Cloudflare ✅ (`piper` / `arnold.ns.cloudflare.com`) |
+| `tsns.ca` A kayıtları | Google'a işaret ediyor (`216.239.32/34/36/38.21`) |
+| `www.tsns.ca` | `ghs.googlehosted.com` → **eski Google Sites** |
+| `https://tsns.ca` | ❌ TLS el sıkışması başarısız |
+| `http://tsns.ca` | `301` → `http://www.tsns.ca` |
+
+Yani domain hâlâ eski Google Sites'ta ve apex üzerinde HTTPS hiç çalışmıyor.
+Nameserver zaten Cloudflare'de olduğu için registrar'a dokunmana gerek yok;
+sadece Cloudflare içindeki DNS kayıtlarını değiştireceğiz.
+
+> ⚠️ Bu adım **eski siteyi canlıdan indirir.** Önce yeni siteyi `.pages.dev`
+> adresinde tam test et.
+
+### Önce karar ver: apex mi, www mi?
+
+Biri "kanonik" olmalı, diğeri ona yönlenmeli. Öneri: **apex kanonik**
+(`tsns.ca`), çünkü Square'de Apple Pay domain'ini `tsns.ca` olarak kaydettin ve
+o dosyanın **yönlendirme olmadan** apex'ten dönmesi gerekiyor.
+
+### Adımlar
+
+1. **Eski Google kayıtlarını sil.** Cloudflare → `tsns.ca` zone → **DNS** →
+   `216.239.*` A kayıtları ve `www` → `ghs.googlehosted.com` CNAME'i sil.
+   (Silmeden önce ekran görüntüsü al — geri dönmen gerekirse lazım olur.)
+2. **Pages custom domain ekle.** Workers & Pages → projen → **Custom domains**
+   → **Set up a custom domain** → `tsns.ca`. Cloudflare gerekli CNAME'i
+   kendisi oluşturur; onayla. Aynı ekranda `www.tsns.ca`'yı da ekle.
+3. **Yönlendirmeyi kur.** `www` → apex yönlendirmesi için Cloudflare →
+   **Rules** → **Redirect Rules** → *Create rule*:
+   - Eşleşme: `Hostname` **equals** `www.tsns.ca`
+   - Aksiyon: **Dynamic redirect** → `concat("https://tsns.ca", http.request.uri.path)`
+   - Durum kodu: **301**, *Preserve query string* açık.
+4. **SSL/TLS modunu kontrol et.** Cloudflare → SSL/TLS → **Full (strict)**
+   olmalı. "Flexible" moddaysa Pages ile sonsuz yönlendirme döngüsü oluşur.
+5. **Always Use HTTPS** açık olsun (SSL/TLS → Edge Certificates).
+
+### Doğrulama
+
+```bash
+dig +short tsns.ca                       # artık 216.239.* GÖRMEMELİSİN
+curl -sI https://tsns.ca/         | head -1   # HTTP/2 200
+curl -sI https://www.tsns.ca/     | head -1   # HTTP/2 301
+curl -s  https://tsns.ca/ | grep -o "<title>[^<]*</title>"
+curl -s -o /dev/null -w "%{http_code}\n" -X POST https://tsns.ca/api/coupon \
+  -H 'Content-Type: application/json' -d '{"code":"x"}'   # 200
+```
+
+Sertifika ilk birkaç dakika "not yet valid" diyebilir — Cloudflare sertifikayı
+üretene kadar normal.
+
+---
+
+## 7. Apple Pay — domain doğrulama
 
 Square'in gösterdiği ekran şunu istiyor:
 
@@ -241,31 +359,34 @@ Square merchant kimliğini kendi hesabı üzerinden yönetiyor.
 
 ### Nasıl yapılır
 
-1. Square Developer Dashboard → uygulaman → **Apple Pay** → **Add domain** →
-   `tsns.ca` yaz → **Download verification file**.
-   İnen dosyanın adı: `apple-developer-merchantid-domain-association`
-   (**uzantısı yok** — `.txt` ekleme, tarayıcı eklediyse kaldır).
-2. Dosyayı repoda şu konuma koy:
+**✅ 1–2. adımlar bitti.** Square'in verdiği dosya repoda duruyor:
 
-   ```
-   public/.well-known/apple-developer-merchantid-domain-association
-   ```
+```
+public/.well-known/apple-developer-merchantid-domain-association
+```
 
-   Vite `public/` altındaki her şeyi (nokta ile başlayan klasörler dahil)
-   `dist/`'e olduğu gibi kopyalar; Cloudflare Pages de `.well-known` dizinini
-   yayınlar. Repoda hazır bekleyen `public/_headers` dosyası bu yola
-   `Content-Type: text/plain` veriyor, böylece dosya HTML'e sarılmadan ham
-   metin olarak dönüyor.
-3. Commit → push → **production deploy'un bitmesini bekle**.
-4. Doğrula:
+Byte-birebir kopyalandı (sha256 doğrulandı). Dosya hex-encoded JSON ve **Apple
+imzalı**; sonunda newline bile yok — tek karakter değişirse imza geçersiz olur,
+o yüzden hiçbir editör/formatlayıcı bu dosyaya dokunmamalı. `public/_headers`
+bu yolu `text/plain`'e sabitliyor. Build çıktısında ve `wrangler pages dev`
+altında test edildi: `200`, `text/plain`, gövde sha256 eşleşiyor.
+
+Sana kalanlar:
+
+3. **PR'ı `main`'e merge et** ve production deploy'un bitmesini bekle.
+   (Dosya `worktree-site-redesign` dalında; `main`'e geçmeden canlıda olmaz.)
+4. **Domain'i Pages'e bağla** — bölüm 6. Bu yapılmadan `https://tsns.ca` zaten
+   TLS el sıkışması yapamıyor, dolayısıyla doğrulama kesin başarısız olur.
+5. Doğrula:
 
    ```bash
    curl -i https://tsns.ca/.well-known/apple-developer-merchantid-domain-association
    ```
 
-   Beklenen: `HTTP/2 200`, `content-type: text/plain`, gövdede Square'in verdiği
-   token. `301`, `404` veya HTML dönerse Square doğrulaması başarısız olur.
-5. Square panelinde **Verify** / **Add domain** butonuna bas.
+   Beklenen: `HTTP/2 200`, `content-type: text/plain`, gövdede `7B227073...`
+   ile başlayan hex token. `301`, `404` veya `text/html` dönerse Square
+   doğrulaması başarısız olur.
+6. Square panelinde **Verify** / **Add domain** butonuna bas.
 
 ### Dikkat edilecekler
 
@@ -285,19 +406,25 @@ Square merchant kimliğini kendi hesabı üzerinden yönetiyor.
 
 ---
 
-## 6. Canlıya alma sırası (checklist)
+## 8. Canlıya alma sırası (checklist)
 
+- [ ] **Pages projesi oluşturuldu** (build: `npm run build` → `dist`), ilk
+      deploy `.pages.dev`'de açılıyor, `/api/coupon` JSON dönüyor
 - [ ] Supabase projesi açıldı, migration çalıştırıldı
 - [ ] Resend'de `tsns.ca` **Verified**
 - [ ] Cloudflare **Preview** değişkenleri girildi (sandbox)
-- [ ] Bir PR açıp preview URL'inde: gönüllü formu + sandbox kartla ($1 test)
-      bağış denendi, e-postalar geldi, Supabase'e kayıt düştü
+- [ ] Preview URL'inde: gönüllü formu + sandbox kartla ($1 test) bağış denendi,
+      e-postalar geldi, Supabase'e kayıt düştü
 - [ ] Square production hesabı aktif, production plan oluşturuldu
 - [ ] Cloudflare **Production** değişkenleri girildi
-- [ ] `main`'e merge → deploy
-- [ ] `curl` ile Apple Pay doğrulama dosyası kontrol edildi
+- [ ] PR `main`'e merge edildi → production deploy geçti
+- [ ] **Domain taşındı:** eski Google A/CNAME kayıtları silindi, `tsns.ca`
+      custom domain olarak eklendi, `www` → apex redirect kuruldu,
+      SSL/TLS **Full (strict)**
+- [ ] `curl` ile Apple Pay doğrulama dosyası kontrol edildi (200 + text/plain)
 - [ ] Square'de production domain doğrulandı
 - [ ] Gerçek kartla küçük tutarlı ($1) bir bağış yapılıp Square'den iade edildi
+- [ ] Safari + iPhone'da Apple Pay butonu görünüyor
 
 ### Sandbox test kartı
 
@@ -307,10 +434,14 @@ hatırlatma olarak gösteriliyor.
 
 ---
 
-## 7. Sorun giderme
+## 9. Sorun giderme
 
 | Belirti | Bak |
 | --- | --- |
+| Build fail: `crypto.hash is not a function` vb. | Node sürümü eski → `.nvmrc` (22) repoda mı, build log'unda hangi Node yazıyor? |
+| `/api/*` HTML dönüyor | Functions devreye girmemiş: build output dizini `dist` mi, `functions/` repo kökünde mi? |
+| Site açılıyor ama boş/eski görünüyor | `.pages.dev` mi yoksa `tsns.ca` mı bakıyorsun? Domain hâlâ Google Sites'a bakıyor olabilir (bölüm 6). |
+| `ERR_TOO_MANY_REDIRECTS` | SSL/TLS modu **Flexible** → **Full (strict)** yap |
 | E-posta gitmiyor | Cloudflare → Pages → Functions → **Real-time logs**; `email:` ile başlayan satırlar. Sonra Resend → Logs. |
 | "Server is not configured for payments" | `SQUARE_ACCESS_TOKEN` veya `SQUARE_LOCATION_ID` o ortamda tanımlı değil |
 | "Ödeme yapılandırılmamış." (tarayıcıda) | `VITE_SQUARE_APPLICATION_ID` / `VITE_SQUARE_LOCATION_ID` build'e girmemiş → değişkeni ekleyip **yeniden deploy et** |
