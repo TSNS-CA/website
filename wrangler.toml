@@ -2,7 +2,7 @@
 #
 # `name` MUST match the Worker's name in the Cloudflare dashboard, otherwise
 # Workers Builds fails before it even starts.
-name = "website"
+name = "tsns"
 compatibility_date = "2026-08-02"
 
 # The API lives in functions/ (Pages-style file routing). The build compiles it

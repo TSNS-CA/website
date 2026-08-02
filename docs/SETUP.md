@@ -116,7 +116,7 @@ docs/email-templates/volunteer-confirmation.html
 Önce **logoyu nereden servis edeceğine** karar ver (detay: Ek C):
 
 - **Şimdilik en kolayı:** Worker deploy olduktan sonra
-  `https://website.<hesabin>.workers.dev/tsns.jpeg`
+  `https://tsns.<hesabin>.workers.dev/tsns.jpeg`
 - **Kalıcı:** `https://tsns.ca/tsns.jpeg` — şablonlarda zaten yazan adres.
   Domain taşınınca kendiliğinden çalışır, hiçbir şey yapman gerekmez.
 
@@ -259,7 +259,7 @@ Cloudflare → **Workers & Pages** → Worker'ın → **Settings → Build**:
 | Branch | `main` |
 
 > ⚠️ Panel'deki Worker adı ile `wrangler.toml` içindeki
-> `name = "website"` **birebir aynı** olmalı. Değilse build daha
+> `name = "tsns"` **birebir aynı** olmalı. Değilse build daha
 > başlamadan patlar.
 
 Branch preview'ları istersen **Non-production branch builds** açık olsun.
@@ -310,10 +310,10 @@ application id ve location id zaten public değerler, sorun değil.)
 ### ✅ Doğrula
 
 ```bash
-curl -s https://website.<hesabin>.workers.dev/ | grep -o "<title>[^<]*</title>"
+curl -s https://tsns.<hesabin>.workers.dev/ | grep -o "<title>[^<]*</title>"
 # → Nova Scotia Türk Derneği | Turkish Society of Nova Scotia
 
-curl -s -X POST https://website.<hesabin>.workers.dev/api/coupon \
+curl -s -X POST https://tsns.<hesabin>.workers.dev/api/coupon \
   -H 'Content-Type: application/json' -d '{"code":"x"}'
 # → {"ok":true,"valid":false}
 ```
@@ -639,7 +639,7 @@ E-postadaki logo internetten erişilebilir **mutlak bir URL** olmalı:
 1. **Resend'e yükle** — Templates → editörde `/image` yaz → `public/tsns.jpeg`
    yükle → **code view** panelinden oluşan `<img src="https://...">` adresini al
 2. **`.workers.dev`** — Worker deploy olduğu anda
-   `https://website.<hesabin>.workers.dev/tsns.jpeg` canlı
+   `https://tsns.<hesabin>.workers.dev/tsns.jpeg` canlı
 3. **`https://tsns.ca/tsns.jpeg`** — şablonlarda yazan adres; domain taşınınca
    kendiliğinden çalışır (kalıcı çözüm)
 
