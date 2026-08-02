@@ -3,6 +3,11 @@
 //
 //   node docs/email-templates/preview.mjs          # writes .preview.html files
 //   node docs/email-templates/preview.mjs --serve  # ...and serves them on :4321
+//   node docs/email-templates/preview.mjs --logo https://host/logo.png
+//                                                  # writes .paste.html — the
+//                                                  # real template with that
+//                                                  # logo URL, {{vars}} intact,
+//                                                  # ready to paste into Resend
 //
 // The logo points at https://tsns.ca/tsns.jpeg, which only resolves once the
 // domain is pointed at the Worker. The preview swaps in the local file so you
@@ -43,6 +48,30 @@ const SAMPLES = {
       "Your donation also gives you a year of membership, valid until August 2, 2027. It does not renew automatically, so you are welcome to join again when it ends.",
   },
 };
+
+const DEFAULT_LOGO = "https://tsns.ca/tsns.jpeg";
+const TEMPLATES = ["membership-confirmation", "volunteer-confirmation"];
+
+// --logo <url>: emit paste-ready copies pointing at a logo that is actually
+// reachable today (a Resend-hosted upload, or the .workers.dev URL before the
+// domain moves). Variables are left as {{...}} — this is the file for Resend,
+// not a preview.
+const logoArg = process.argv.indexOf("--logo");
+if (logoArg !== -1) {
+  const url = process.argv[logoArg + 1];
+  if (!url || url.startsWith("--")) {
+    console.error("--logo needs a URL, e.g. --logo https://tsns-ca-website.workers.dev/tsns.jpeg");
+    process.exit(1);
+  }
+  for (const name of TEMPLATES) {
+    const src = readFileSync(join(here, `${name}.html`), "utf8");
+    const out = join(here, `${name}.paste.html`);
+    writeFileSync(out, src.replaceAll(DEFAULT_LOGO, url));
+    console.log(`✓ ${out.replace(repo + "/", "")}  (logo → ${url})`);
+  }
+  console.log("\nBu dosyaların tamamını Resend → Templates → ilgili template → HTML olarak yapıştır.");
+  process.exit(0);
+}
 
 const rendered = {};
 

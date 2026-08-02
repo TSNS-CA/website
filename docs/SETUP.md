@@ -393,6 +393,31 @@ koyduğu için bugün de doğru görüntüyü verir.
 Resend → Templates → ilgili template → HTML olarak yapıştır → kaydet.
 (`.preview.html` dosyalarını değil, `{{...}}` içeren asıl dosyayı.)
 
+#### Logo URL'i
+
+E-postadaki logo mutlaka **internetten erişilebilir mutlak bir URL** olmalı;
+repodaki dosya yolu işe yaramaz. Üç seçenek:
+
+1. **Resend'e yükle (bugün çalışır).** Resend → Templates → template'i aç →
+   editörde `/image` yazıp `public/tsns.jpeg` dosyasını yükle. Resend görseli
+   kendi statik host'unda barındırır. Sonra editörün **code view** panelinden
+   oluşan `<img src="https://...">` adresini kopyala.
+2. **`.workers.dev` (bugün çalışır).** Worker deploy edildiği anda
+   `https://<worker-adi>.<hesabin>.workers.dev/tsns.jpeg` canlı olur — domain
+   taşınmasını beklemeden kullanabilirsin. Geçici bir adres olduğunu unutma.
+3. **`https://tsns.ca/tsns.jpeg` (kalıcı çözüm).** Domain Worker'a bağlandıktan
+   sonra çalışır ve şablonlarda zaten yazılı olan adres budur. Uzun vadede en
+   iyisi: görsel kendi domainimizde, kontrolümüzde.
+
+1 veya 2'yi seçtiysen URL'i şablonlara gömmek için:
+
+```bash
+node docs/email-templates/preview.mjs --logo https://SENIN/LOGO/ADRESIN.jpg
+```
+
+`*.paste.html` dosyalarını üretir — `{{...}}` değişkenleri yerinde, sadece logo
+adresi değişmiş, doğrudan Resend'e yapıştırılacak hâlde.
+
 Tasarım siteyle aynı dili konuşuyor: krem zemin `#F0EEE6`, kart beyaz, üstte
 6px kırmızı çizgi `#D81E34`, navy `#16466A` marka bandı, altın `#FFD200` isim.
 
