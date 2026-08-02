@@ -25,7 +25,7 @@ function Layout() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-white dark:bg-slate-950">
+    <div className="flex min-h-screen flex-col bg-cream dark:bg-primary-900">
       <Header lang={lang} onChangeLang={changeLanguage} />
       <main className="flex-1">
         <Routes>

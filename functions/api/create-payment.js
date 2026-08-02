@@ -1,3 +1,5 @@
+import { recordDonor } from "../_lib/supabase";
+
 const SQUARE_API_VERSION = "2024-10-17";
 
 function json(status, body) {
@@ -90,6 +92,18 @@ export async function onRequestPost({ request, env }) {
   }
 
   const payment = squareBody?.payment;
+
+  await recordDonor(env, {
+    name: buyer?.name || null,
+    email: buyer?.email || null,
+    phone: buyer?.phone || null,
+    type: "one_time",
+    amount_cents: amountCents,
+    currency: "CAD",
+    status: payment?.status || null,
+    square_payment_id: payment?.id || null,
+  });
+
   return json(200, {
     ok: true,
     paymentId: payment?.id || null,

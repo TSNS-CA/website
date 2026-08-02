@@ -23,7 +23,7 @@ export default function ContactPage({ lang }) {
                   href={s.href}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-primary hover:border-primary hover:text-accent dark:border-slate-800 dark:bg-slate-900 dark:text-white"
+                  className="inline-flex items-center rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-primary hover:border-primary hover:text-accent dark:border-slate-800 dark:bg-primary-800 dark:text-white"
                 >
                   {s.name}
                 </a>
@@ -43,7 +43,7 @@ export default function ContactPage({ lang }) {
                 {departments.map((d, i) => (
                   <tr
                     key={d.email}
-                    className={i % 2 ? "bg-slate-50 dark:bg-slate-900/50" : "bg-white dark:bg-slate-900"}
+                    className={i % 2 ? "bg-cream-200 dark:bg-primary-800/50" : "bg-white dark:bg-primary-800"}
                   >
                     <td className="px-5 py-3 font-semibold text-slate-800 dark:text-slate-100">{d[lang]}</td>
                     <td className="px-5 py-3">

@@ -36,6 +36,14 @@ export default {
           DEFAULT: "#FFD200", // Nova Scotia yellow
           dark: "#e6bd00",
         },
+        // Anthropic-style warm cream for the light theme background
+        cream: {
+          50: "#FAF8F2",
+          DEFAULT: "#F0EEE6",
+          100: "#F0EEE6",
+          200: "#E7E1D2",
+          300: "#D9D2BF",
+        },
       },
       fontFamily: {
         sans: ["Inter", "system-ui", "-apple-system", "Segoe UI", "Roboto", "sans-serif"],

@@ -85,7 +85,7 @@ export function Button({ to, href, variant = "primary", size = "md", className =
 export function Card({ className = "", children }) {
   return (
     <div
-      className={`rounded-2xl border border-slate-200 bg-white p-6 shadow-card transition hover:shadow-lg dark:border-slate-800 dark:bg-slate-900 ${className}`}
+      className={`rounded-2xl border border-slate-200 bg-white p-6 shadow-card transition hover:shadow-lg dark:border-slate-800 dark:bg-primary-800 ${className}`}
     >
       {children}
     </div>

@@ -14,7 +14,7 @@ html {
 }
 
 body {
-  @apply bg-white font-sans text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100;
+  @apply bg-cream font-sans text-slate-900 antialiased dark:bg-primary-900 dark:text-slate-100;
 }
 
 /* Accessible focus ring for keyboard users */

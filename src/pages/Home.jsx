@@ -8,7 +8,7 @@ function Hero({ lang }) {
       {/* Background image + overlay */}
       <div className="absolute inset-0 -z-10">
         <img src="/bogaz.jpg" alt="" className="h-full w-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-b from-primary-900/80 via-primary-900/65 to-slate-950/85" />
+        <div className="absolute inset-0 bg-gradient-to-b from-primary-900/80 via-primary-900/65 to-primary-900/85" />
       </div>
 
       <Container className="flex min-h-[78vh] flex-col items-start justify-center py-24">
@@ -81,7 +81,7 @@ function WhySupport({ lang }) {
 function Stats({ lang }) {
   const items = [{ key: "since" }, { key: "members" }, { key: "events" }, { key: "region" }];
   return (
-    <Section className="bg-slate-50 py-16 dark:bg-slate-900">
+    <Section className="bg-cream-200 py-16 dark:bg-primary-800">
       <div className="grid grid-cols-2 gap-6 text-center lg:grid-cols-4">
         {items.map((it) => (
           <div key={it.key}>
@@ -130,7 +130,7 @@ function Stories({ lang }) {
 
 function Events({ lang }) {
   return (
-    <Section className="bg-slate-50 py-20 dark:bg-slate-900">
+    <Section className="bg-cream-200 py-20 dark:bg-primary-800">
       <SectionHeading
         eyebrow={t(lang, "home.events.eyebrow")}
         title={t(lang, "home.events.title")}
@@ -169,7 +169,7 @@ function Sponsors({ lang }) {
         {sponsors.map((name) => (
           <div
             key={name}
-            className="rounded-xl border border-slate-200 bg-white px-5 py-4 text-sm font-semibold text-slate-700 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200"
+            className="rounded-xl border border-slate-200 bg-white px-5 py-4 text-sm font-semibold text-slate-700 shadow-sm dark:border-slate-800 dark:bg-primary-800 dark:text-slate-200"
           >
             {name}
           </div>
