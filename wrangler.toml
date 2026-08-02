@@ -15,6 +15,19 @@ main = "./worker/index.js"
 # Per-branch preview URLs (the Workers equivalent of Pages preview deployments).
 preview_urls = true
 
+# Runtime config (SUPABASE_*, SQUARE_*, RESEND_*, STUDENT_COUPON_CODES) is
+# entered in the dashboard under Settings -> Variables and Secrets, not here.
+#
+# By default `wrangler deploy` DELETES every plain-text var before applying the
+# ones in this file — and this file has no [vars] block, so every deploy wiped
+# the dashboard values and left only the ones marked Secret (secrets are never
+# touched by a deploy). keep_vars stops that.
+#
+# The trade-off: this file is no longer the source of truth for vars. If you
+# ever move them here into a [vars] block, drop this line. Never put a token or
+# key in [vars] — this repository is public.
+keep_vars = true
+
 [assets]
 directory = "./dist"
 binding = "ASSETS"
