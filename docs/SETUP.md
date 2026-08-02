@@ -440,8 +440,11 @@ Sana kalan:
    ```bash
    curl -i https://tsns.ca/.well-known/apple-developer-merchantid-domain-association
    ```
-   Beklenen: `HTTP/2 200`, `content-type: text/plain`, gövdede `7B227073...`
-   ile başlayan hex metin. `301`, `404` veya `text/html` gelirse Square reddeder.
+   Beklenen: `HTTP/2 200`, `content-type: text/plain`, gövdede `{"pspId":"...`
+   ile başlayan JSON metin. `301`, `404` veya `text/html` gelirse Square reddeder.
+   (Not: dosya bir ara yanlışlıkla bu JSON'ın hex-encode edilmiş hâliyle
+   commit edilmişti — Safari'de Apple Pay'in çalışmamasının sebebi de buydu.
+   Düzeltildi.)
 3. Square Developer Dashboard → **Apple Pay** → **Verify**
 
 ### Dikkat
