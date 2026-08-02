@@ -83,7 +83,14 @@ const translations = {
 
     "donate.title": "Bağış Yap",
     "donate.intro":
-      "Desteğinizle Türk kültürünü Nova Scotia'da yaşatıyor, etkinlikler ve yeni gelenlere destek sağlıyoruz.",
+      "Tek seferlik desteğinizle Türk kültürünü Nova Scotia'da yaşatıyor, etkinlikler ve yeni gelenlere destek sağlıyoruz.",
+    "membership.title": "Üye Ol",
+    "membership.intro":
+      "Yıllık üyelikle derneğe katılın. Üyeliğiniz her yıl otomatik yenilenir; topluluğun sürekliliğini bu sağlıyor.",
+    "donate.freq.yearly": "Üye Ol",
+    "donate.freq.yearlySub": "Yıllık, otomatik yenilenir",
+    "donate.freq.oneTime": "Bağış Yap",
+    "donate.freq.oneTimeSub": "Tek seferlik, 1 yıl üyelik",
     "volunteer.title": "Gönüllü Ol",
     "volunteer.intro":
       "Zamanınızı ve yeteneğinizi paylaşarak topluluğumuza katkıda bulunun. Aşağıdaki kısa formu doldurmanız yeterli.",
@@ -181,7 +188,14 @@ const translations = {
 
     "donate.title": "Donate",
     "donate.intro":
-      "Your support keeps Turkish culture alive in Nova Scotia — funding events, programs, and newcomer support.",
+      "Your one-time gift keeps Turkish culture alive in Nova Scotia — funding events, programs, and newcomer support.",
+    "membership.title": "Become a Member",
+    "membership.intro":
+      "Join with a yearly membership. It renews automatically each year — that is what keeps the community going.",
+    "donate.freq.yearly": "Become a Member",
+    "donate.freq.yearlySub": "Yearly, renews automatically",
+    "donate.freq.oneTime": "Donate",
+    "donate.freq.oneTimeSub": "One-time, 1 year membership",
     "volunteer.title": "Volunteer",
     "volunteer.intro":
       "Share your time and talent to strengthen our community. Just fill out the short form below.",

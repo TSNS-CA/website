@@ -34,10 +34,14 @@ function Layout() {
           <Route path="/" element={<HomePage lang={lang} />} />
           <Route path="/about" element={<AboutPage lang={lang} />} />
           <Route path="/contact" element={<ContactPage lang={lang} />} />
-          <Route path="/bagis" element={<DonatePage lang={lang} />} />
+          {/* Aynı sayfa, iki giriş: /uye-ol yıllık üyelikte, /bagis tek seferlik
+              bağışta açılır. key olmadan React aynı bileşeni yerinde tutar ve
+              rota değişse de useState ilk değerinde kalırdı. */}
+          <Route path="/bagis" element={<DonatePage key="bagis" lang={lang} defaultFrequency="one_time" />} />
+          <Route path="/uye-ol" element={<DonatePage key="uye-ol" lang={lang} defaultFrequency="yearly" />} />
           <Route path="/gonullu" element={<VolunteerPage lang={lang} />} />
           {/* Legacy/aliases */}
-          <Route path="/membership" element={<DonatePage lang={lang} />} />
+          <Route path="/membership" element={<DonatePage key="uye-ol" lang={lang} defaultFrequency="yearly" />} />
           <Route path="/confirmation" element={<ConfirmationPage />} />
           <Route path="*" element={<HomePage lang={lang} />} />
         </Routes>
