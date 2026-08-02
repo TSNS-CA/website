@@ -92,11 +92,16 @@ export async function onRequestGet({ request, env }) {
 
   // Read. `newsletter_subscribed` is selected on purpose: it only exists after
   // migration 0003, so a missing-column error here names the missing migration.
+  // limit(1), not head:true — a HEAD response carries no body, so PostgREST's
+  // error message comes back empty and the diagnostic says nothing.
   try {
     const { error, count } = await client
       .from("contacts")
-      .select("id, newsletter_subscribed", { count: "exact", head: true });
-    supabase.read = error ? `HATA: ${error.message}` : `ok — contacts: ${count ?? "?"} satır`;
+      .select("id, newsletter_subscribed", { count: "exact" })
+      .limit(1);
+    supabase.read = error
+      ? `HATA: ${error.message || error.code || JSON.stringify(error)}`
+      : `ok — contacts: ${count ?? "?"} satır`;
   } catch (e) {
     supabase.read = `İSTİSNA: ${e?.message || String(e)}`;
   }
