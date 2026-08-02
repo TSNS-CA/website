@@ -14,8 +14,8 @@ export default function LangToggle({ lang, onChange, className = "" }) {
           className={
             "rounded-full px-2.5 py-1 transition " +
             (lang === l
-              ? "bg-primary text-white"
-              : "text-slate-600 hover:text-primary dark:text-slate-300")
+              ? "bg-primary text-white dark:bg-primary-600"
+              : "text-slate-600 hover:text-accent-600 dark:text-slate-300 dark:hover:text-accent-300")
           }
         >
           {l.toUpperCase()}

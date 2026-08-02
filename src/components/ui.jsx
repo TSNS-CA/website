@@ -15,7 +15,7 @@ export function Section({ id, className = "", children }) {
 export function Eyebrow({ children, className = "" }) {
   return (
     <span
-      className={`inline-block text-xs font-bold uppercase tracking-[0.18em] text-accent ${className}`}
+      className={`inline-block text-xs font-bold uppercase tracking-[0.18em] text-brand-red ${className}`}
     >
       {children}
     </span>
@@ -48,7 +48,7 @@ const variants = {
   primary: "bg-accent text-white shadow-sm hover:bg-accent-600",
   secondary: "bg-primary text-white shadow-sm hover:bg-primary-600",
   outline:
-    "border border-slate-300 text-slate-800 hover:border-primary hover:text-primary dark:border-slate-600 dark:text-slate-100 dark:hover:border-slate-300",
+    "border border-slate-300 text-slate-800 hover:border-accent hover:text-accent-600 dark:border-slate-600 dark:text-slate-100 dark:hover:border-accent dark:hover:text-accent-300",
   ghostWhite: "bg-white/10 text-white ring-1 ring-inset ring-white/25 hover:bg-white/20",
   solidWhite: "bg-white text-primary hover:bg-slate-100",
 };
@@ -83,9 +83,15 @@ export function Button({ to, href, variant = "primary", size = "md", className =
 }
 
 export function Card({ className = "", children }) {
+  // Tailwind resolves conflicting utilities by their order in the stylesheet, not
+  // by their order in the class string — so a caller passing `bg-primary` used to
+  // lose to this component's own `bg-white` and render white-on-white. Only apply
+  // the default surface when the caller hasn't supplied one.
+  const hasSurface = /(^|\s)(bg-|surface-)/.test(className);
+  const surface = hasSurface ? "" : "bg-white dark:bg-primary-800";
   return (
     <div
-      className={`rounded-2xl border border-slate-200 bg-white p-6 shadow-card transition hover:shadow-lg dark:border-slate-800 dark:bg-primary-800 ${className}`}
+      className={`rounded-2xl border border-slate-200 p-6 shadow-card transition hover:shadow-lg dark:border-slate-800 ${surface} ${className}`}
     >
       {children}
     </div>

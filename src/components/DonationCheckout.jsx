@@ -34,6 +34,7 @@ export default function DonationCheckout({
   amountCents, // integer (one-time only; recurring uses plan)
   amountLabel, // e.g. "$25.00" or "$5.00/ay"
   buyer, // { name, email, phone }
+  couponCode, // optional student discount code
   onClose,
   onSuccess,
   lang = "tr",
@@ -124,7 +125,7 @@ export default function DonationCheckout({
     const url = isOneTime ? "/api/create-payment" : "/api/create-subscription";
     const body = isOneTime
       ? { sourceId, amountCents, currency: "CAD", buyer }
-      : { sourceId, frequency, buyer };
+      : { sourceId, frequency: "yearly", amountCents, couponCode: couponCode || undefined, buyer };
     const res = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -157,7 +158,7 @@ export default function DonationCheckout({
     }
   }
 
-  const isRecurring = frequency === "monthly" || frequency === "yearly";
+  const isRecurring = frequency === "yearly";
 
   return (
     <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/50 p-4">
@@ -179,7 +180,7 @@ export default function DonationCheckout({
             onClick={onClose}
             disabled={processing}
             aria-label={lang === "tr" ? "Kapat" : "Close"}
-            className="rounded-full p-1 text-slate-400 hover:text-slate-700 disabled:opacity-50 dark:hover:text-white"
+            className="rounded-full p-1 text-slate-500 hover:text-slate-800 disabled:opacity-50 dark:text-slate-300 dark:hover:text-white"
           >
             <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" /></svg>
           </button>
@@ -196,7 +197,7 @@ export default function DonationCheckout({
               aria-label="Apple Pay"
               lang="en"
             />
-            <div className="my-3 flex items-center gap-3 text-xs text-slate-400">
+            <div className="my-3 flex items-center gap-3 text-xs text-slate-600 dark:text-slate-300">
               <span className="h-px flex-1 bg-slate-200 dark:bg-slate-600" />
               {lang === "tr" ? "veya" : "or"}
               <span className="h-px flex-1 bg-slate-200 dark:bg-slate-600" />
@@ -214,19 +215,19 @@ export default function DonationCheckout({
           style={{ background: sdkReady ? undefined : "#f8fafc" }}
         />
         {!sdkReady && !initError && (
-          <p className="mt-2 text-xs text-slate-500">{lang === "tr" ? "Güvenli kart formu yükleniyor…" : "Loading secure card form…"}</p>
+          <p className="mt-2 text-xs text-slate-600 dark:text-slate-300">{lang === "tr" ? "Güvenli kart formu yükleniyor…" : "Loading secure card form…"}</p>
         )}
-        {initError && <p className="mt-2 text-xs text-accent">{initError}</p>}
+        {initError && <p className="mt-2 text-xs font-semibold text-brand-red">{initError}</p>}
 
         {SQUARE_ENV !== "production" && (
-          <div className="mt-3 rounded-lg bg-slate-50 p-3 text-xs text-slate-500 dark:bg-primary-700">
+          <div className="mt-3 rounded-lg bg-slate-50 p-3 text-xs text-slate-600 dark:bg-primary-700 dark:text-slate-200">
             <p className="font-semibold">{lang === "tr" ? "Sandbox test kartı" : "Sandbox test card"}</p>
             <p>4111 1111 1111 1111 · {lang === "tr" ? "ileriki son kullanma, herhangi CVV" : "any future expiry, any CVV"}</p>
           </div>
         )}
 
         {payError && (
-          <div className="mt-3 rounded-lg border border-accent/30 bg-accent/10 p-3 text-sm text-accent-700 dark:text-accent-300">
+          <div className="surface-red mt-3 rounded-lg border border-accent/30 p-3 text-sm">
             {payError}
           </div>
         )}
@@ -241,7 +242,7 @@ export default function DonationCheckout({
             : lang === "tr" ? "Bağış Yap" : "Donate"}
         </button>
 
-        <p className="mt-3 text-center text-xs text-slate-400">
+        <p className="mt-3 text-center text-xs text-slate-600 dark:text-slate-300">
           🔒 {lang === "tr" ? "Ödeme Square altyapısı ile güvenle işlenir." : "Payments processed securely by Square."}
         </p>
       </div>

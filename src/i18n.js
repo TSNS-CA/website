@@ -1,8 +1,8 @@
 // Turkish is the primary/default language; English is the secondary toggle.
 const translations = {
   tr: {
-    "brand.name": "Türkiye Derneği",
-    "brand.full": "Türkiye Derneği — Nova Scotia",
+    "brand.name": "Türk Derneği",
+    "brand.full": "Nova Scotia Türk Derneği",
     "brand.short": "TSNS",
 
     "nav.home": "Ana Sayfa",
@@ -25,7 +25,7 @@ const translations = {
     "home.hero.eyebrow": "2007'den beri • Nova Scotia, Kanada",
     "home.hero.title": "Kültürleri Buluşturuyoruz,\nToplumu İnşa Ediyoruz.",
     "home.hero.subtitle":
-      "Türkiye Derneği olarak Türk mirasını ve kültürünü Nova Scotia genelinde yaşatıyor; insanları bir araya getiriyoruz.",
+      "Nova Scotia Türk Derneği olarak Türk mirasını ve kültürünü Nova Scotia genelinde yaşatıyor; insanları bir araya getiriyoruz.",
     "home.promise": "Türk kültürünü Nova Scotia'da 2007'den beri yaşatıyoruz.",
 
     "home.why.eyebrow": "Neden Biz",
@@ -70,7 +70,7 @@ const translations = {
 
     "about.title": "Hakkımızda",
     "about.p1":
-      "Türkiye Derneği (TSNS), 2007'den bu yana Türk topluluğunu ve kültürünü Nova Scotia ile daha geniş Atlantik Kanada'da tanıtmaya adanmış, Türk kökenli insanları bir araya getiren bir sivil toplum kuruluşudur.",
+      "Nova Scotia Türk Derneği (TSNS), 2007'den bu yana Türk topluluğunu ve kültürünü Nova Scotia ile daha geniş Atlantik Kanada'da tanıtmaya adanmış, Türk kökenli insanları bir araya getiren bir sivil toplum kuruluşudur.",
     "about.p2":
       "Topluluğumuz ve üyelerimiz bölgemizin çeşitliliğine katkıda bulunur; kültürel gelişimi destekler, Türk işletmelerini öne çıkarır ve Türkiye ile Kanada'nın paylaştığı tarihi vurgular. Topluluk oluşturan etkinliklerimiz, kültürler arası köprüler kurma, yeni gelenleri ve uluslararası öğrencileri destekleme çabalarımızla biliniriz.",
     "about.p3":
@@ -90,11 +90,11 @@ const translations = {
 
     "footer.aboutTitle": "Hakkımızda",
     "footer.about":
-      "Türkiye Derneği, Türk kültürünü Nova Scotia'da yaşatan, gönüllüler tarafından yönetilen bir sivil toplum kuruluşudur.",
+      "Türk Derneği, Türk kültürünü Nova Scotia'da yaşatan, gönüllüler tarafından yönetilen bir sivil toplum kuruluşudur.",
     "footer.quickLinks": "Hızlı Bağlantılar",
     "footer.contact": "İletişim",
     "footer.follow": "Bizi Takip Edin",
-    "footer.rights": "© {year} Türkiye Derneği — Nova Scotia. Tüm hakları saklıdır.",
+    "footer.rights": "© {year} Nova Scotia Türk Derneği. Tüm hakları saklıdır.",
     "footer.madeWith": "Gönüllülerle 💛 ile yapıldı.",
   },
 

@@ -3,6 +3,16 @@ export default {
   content: ["./index.html", "./src/**/*.{js,jsx}"],
   darkMode: "class",
   theme: {
+    // Full list (not `extend`) so `xs` sorts before `sm` — an extended screen is
+    // appended last and would then win over `sm:` at large widths.
+    screens: {
+      xs: "400px",
+      sm: "640px",
+      md: "768px",
+      lg: "1024px",
+      xl: "1280px",
+      "2xl": "1536px",
+    },
     extend: {
       colors: {
         // TSNS brand tokens (from the original index.css)
@@ -19,18 +29,22 @@ export default {
           800: "#103754",
           900: "#0b253a",
         },
+        // Turkish red, split into two working tones:
+        //   DEFAULT/500 -> fills (buttons, bands, badges). White on it = 5.0:1.
+        //   600         -> small red text on cream/white.  5.7:1 on cream.
+        //   300         -> small red text on the dark theme. 7.1:1 on primary-900.
         accent: {
-          DEFAULT: "#E30A17", // Turkish red
-          50: "#fef2f3",
-          100: "#fde0e2",
-          200: "#fac5c9",
-          300: "#f59da4",
-          400: "#ed6671",
-          500: "#E30A17",
-          600: "#c80814",
-          700: "#a60710",
-          800: "#840a12",
-          900: "#6d0d13",
+          DEFAULT: "#D81E34",
+          50: "#FEF2F3",
+          100: "#FDE0E3",
+          200: "#FAC0C7",
+          300: "#F2949F",
+          400: "#E75A6C",
+          500: "#D81E34",
+          600: "#B8172A",
+          700: "#96101F",
+          800: "#7C0E1B",
+          900: "#690F1A",
         },
         gold: {
           DEFAULT: "#FFD200", // Nova Scotia yellow

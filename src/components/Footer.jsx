@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { t } from "../i18n";
 import { socials, departments } from "../content";
 import { Container, Button } from "./ui";
+import SocialLinks from "./SocialIcons";
 
 function Newsletter({ lang }) {
   const [done, setDone] = useState(false);
@@ -51,14 +52,14 @@ function Newsletter({ lang }) {
 export default function Footer({ lang }) {
   const year = new Date().getFullYear();
   return (
-    <footer className="bg-primary-900 text-slate-200">
+    <footer className="border-t-4 border-accent bg-primary-900 text-slate-200">
       <Container className="py-14">
         <div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-4">
           {/* About */}
           <div className="lg:col-span-1">
             <div className="flex items-center gap-2.5">
-              <img src="/tsns.jpeg" alt="" className="h-10 w-10 rounded-lg border-2 border-gold object-cover" />
-              <span className="text-base font-extrabold text-white">{t(lang, "brand.name")}</span>
+              <img src="/tsns.jpeg" alt="" className="h-10 w-10 rounded-lg border-2 border-gold bg-white p-1 object-contain" />
+              <span className="text-base font-extrabold text-white">{t(lang, "brand.full")}</span>
             </div>
             <p className="mt-4 text-sm leading-relaxed text-slate-300">{t(lang, "footer.about")}</p>
             <p className="mt-4 text-xs text-slate-400">{t(lang, "footer.madeWith")}</p>
@@ -89,15 +90,9 @@ export default function Footer({ lang }) {
               ))}
             </ul>
             <h3 className="mt-6 text-sm font-bold uppercase tracking-wider text-white">{t(lang, "footer.follow")}</h3>
-            <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm">
-              {socials.map((s) => (
-                <li key={s.name}>
-                  <a href={s.href} target="_blank" rel="noreferrer" className="text-slate-300 hover:text-white">
-                    {s.name}
-                  </a>
-                </li>
-              ))}
-            </ul>
+            <div className="mt-3">
+              <SocialLinks socials={socials} />
+            </div>
           </div>
 
           {/* Newsletter */}

@@ -30,7 +30,7 @@ export default function VolunteerPage({ lang }) {
       const res = await fetch("/api/volunteer", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, lang }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.ok) throw new Error(data.error || (tr ? "Bir hata oluştu." : "Something went wrong."));
@@ -76,7 +76,7 @@ export default function VolunteerPage({ lang }) {
               {tr ? "Ad Soyad *" : "Full name *"}
             </label>
             <input required type="text" value={form.name} onChange={(e) => setField("name", e.target.value)} className={inputCls} placeholder={tr ? "Adınız" : "Your name"} />
-            {errors.name && <p className="mt-1 text-xs text-accent">{errors.name}</p>}
+            {errors.name && <p className="mt-1 text-xs font-semibold text-brand-red">{errors.name}</p>}
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
@@ -84,7 +84,7 @@ export default function VolunteerPage({ lang }) {
                 {tr ? "E-posta *" : "Email *"}
               </label>
               <input required type="email" value={form.email} onChange={(e) => setField("email", e.target.value)} className={inputCls} placeholder="you@email.com" />
-              {errors.email && <p className="mt-1 text-xs text-accent">{errors.email}</p>}
+              {errors.email && <p className="mt-1 text-xs font-semibold text-brand-red">{errors.email}</p>}
             </div>
             <div>
               <label className="mb-1 block text-sm font-semibold text-slate-700 dark:text-slate-200">
@@ -101,7 +101,7 @@ export default function VolunteerPage({ lang }) {
           </div>
 
           {status === "error" && (
-            <div className="rounded-lg border border-accent/30 bg-accent/10 p-3 text-sm text-accent">{serverError}</div>
+            <div className="surface-red rounded-lg border border-accent/30 p-3 text-sm">{serverError}</div>
           )}
 
           <Button type="submit" variant="primary" size="lg" className="w-full sm:w-auto" >

@@ -22,25 +22,24 @@ export default function Header({ lang, onChangeLang }) {
   ];
 
   const linkBase =
-    "rounded-md px-3 py-2 text-sm font-semibold transition";
+    "relative rounded-md px-3 py-2 text-sm font-semibold transition";
+  const linkActive =
+    "text-brand after:absolute after:inset-x-3 after:-bottom-1 after:h-[3px] after:rounded-full after:bg-accent";
+  const linkIdle =
+    "text-slate-700 hover:text-accent-600 dark:text-slate-200 dark:hover:text-accent-300";
 
   return (
-    <header className="sticky top-0 z-50 border-b border-slate-200 bg-cream/90 backdrop-blur dark:border-slate-800 dark:bg-primary-900/90">
-      <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
-        {/* Brand */}
-        <Link to="/" className="flex items-center gap-2.5" onClick={() => setOpen(false)}>
+    <header className="sticky top-0 z-50 border-b-2 border-accent/70 bg-cream/90 backdrop-blur dark:border-accent/60 dark:bg-primary-900/90">
+      <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-1.5 px-4 sm:gap-3 sm:px-6 lg:px-8">
+        {/* Brand — always one line: "Nova Scotia Türk Derneği" */}
+        <Link to="/" className="flex min-w-0 items-center gap-1.5 sm:gap-2.5" onClick={() => setOpen(false)}>
           <img
             src="/tsns.jpeg"
-            alt="Türkiye Derneği — Nova Scotia logo"
-            className="h-10 w-10 rounded-lg border-2 border-gold object-cover"
+            alt="Nova Scotia Türk Derneği logo"
+            className="h-8 w-8 flex-none rounded-lg border-2 border-gold bg-white p-1 object-contain sm:h-10 sm:w-10"
           />
-          <span className="flex flex-col leading-tight">
-            <span className="text-sm font-extrabold text-primary dark:text-white">
-              {t(lang, "brand.name")}
-            </span>
-            <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
-              Nova Scotia
-            </span>
+          <span className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-[11px] font-extrabold leading-none tracking-tight text-primary xs:text-[13px] sm:text-sm dark:text-white">
+            {t(lang, "brand.full")}
           </span>
         </Link>
 
@@ -51,13 +50,7 @@ export default function Header({ lang, onChangeLang }) {
               key={item.to}
               to={item.to}
               end={item.to === "/"}
-              className={({ isActive }) =>
-                `${linkBase} ${
-                  isActive
-                    ? "text-accent"
-                    : "text-slate-700 hover:text-primary dark:text-slate-200 dark:hover:text-white"
-                }`
-              }
+              className={({ isActive }) => `${linkBase} ${isActive ? linkActive : linkIdle}`}
             >
               {item.label}
             </NavLink>
@@ -69,13 +62,25 @@ export default function Header({ lang, onChangeLang }) {
           <div className="hidden sm:block">
             <LangToggle lang={lang} onChange={onChangeLang} />
           </div>
-          <ThemeToggle />
+          <ThemeToggle className="hidden sm:inline-flex" />
           <Button to="/gonullu" variant="outline" size="sm" className="hidden lg:inline-flex">
             {t(lang, "action.volunteer")}
           </Button>
-          <Button to="/bagis" variant="primary" size="sm">
+          {/* Donate: full pill from `sm` up, heart-only circle on phones so the
+              one-line brand name always has room. */}
+          <Button to="/bagis" variant="primary" size="sm" className="hidden whitespace-nowrap sm:inline-flex">
             {t(lang, "action.donate")}
           </Button>
+          <Link
+            to="/bagis"
+            aria-label={t(lang, "action.donate")}
+            title={t(lang, "action.donate")}
+            className="inline-flex h-9 w-9 flex-none items-center justify-center rounded-full bg-accent text-white transition hover:bg-accent-600 sm:hidden"
+          >
+            <svg viewBox="0 0 24 24" fill="currentColor" className="h-[18px] w-[18px]" aria-hidden="true">
+              <path d="M12 21s-7.5-4.7-9.6-9A5.4 5.4 0 0 1 12 6.1 5.4 5.4 0 0 1 21.6 12c-2.1 4.3-9.6 9-9.6 9z" />
+            </svg>
+          </Link>
 
           {/* Hamburger */}
           <button
@@ -83,7 +88,7 @@ export default function Header({ lang, onChangeLang }) {
             onClick={() => setOpen((o) => !o)}
             aria-label="Menü"
             aria-expanded={open}
-            className="ml-1 inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-300 text-slate-700 md:hidden dark:border-slate-700 dark:text-slate-200"
+            className="inline-flex h-9 w-9 flex-none items-center justify-center rounded-full border border-slate-300 text-slate-700 sm:ml-1 md:hidden dark:border-slate-700 dark:text-slate-200"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5" aria-hidden="true">
               {open ? (
@@ -107,10 +112,10 @@ export default function Header({ lang, onChangeLang }) {
                 end={item.to === "/"}
                 onClick={() => setOpen(false)}
                 className={({ isActive }) =>
-                  `block rounded-lg px-3 py-3 text-base font-semibold ${
+                  `block rounded-lg border-l-4 px-3 py-3 text-base font-semibold ${
                     isActive
-                      ? "bg-accent/10 text-accent"
-                      : "text-slate-800 hover:bg-slate-100 dark:text-slate-100 dark:hover:bg-primary-800"
+                      ? "border-accent bg-accent/10 text-brand-red"
+                      : "border-transparent text-slate-800 hover:bg-slate-100 dark:text-slate-100 dark:hover:bg-primary-800"
                   }`
                 }
               >
@@ -118,10 +123,18 @@ export default function Header({ lang, onChangeLang }) {
               </NavLink>
             ))}
             <div className="flex items-center justify-between gap-3 pt-3">
-              <LangToggle lang={lang} onChange={onChangeLang} />
-              <Button to="/gonullu" variant="outline" size="sm" onClick={() => setOpen(false)}>
-                {t(lang, "action.volunteer")}
-              </Button>
+              <div className="flex items-center gap-2">
+                <LangToggle lang={lang} onChange={onChangeLang} />
+                <ThemeToggle />
+              </div>
+              <div className="flex items-center gap-2">
+                <Button to="/gonullu" variant="outline" size="sm" onClick={() => setOpen(false)}>
+                  {t(lang, "action.volunteer")}
+                </Button>
+                <Button to="/bagis" variant="primary" size="sm" onClick={() => setOpen(false)}>
+                  {t(lang, "action.donate")}
+                </Button>
+              </div>
             </div>
           </div>
         </div>

@@ -13,7 +13,7 @@ function Hero({ lang }) {
 
       <Container className="flex min-h-[78vh] flex-col items-start justify-center py-24">
         <div className="max-w-2xl">
-          <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white ring-1 ring-inset ring-white/25 backdrop-blur">
+          <span className="inline-flex items-center gap-2 rounded-full bg-accent px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider text-white shadow-sm ring-1 ring-inset ring-white/20">
             🇹🇷 {t(lang, "home.hero.eyebrow")}
           </span>
           <h1 className="mt-5 whitespace-pre-line font-display text-4xl font-black leading-[1.05] tracking-tight text-white sm:text-5xl lg:text-6xl">
@@ -85,10 +85,11 @@ function Stats({ lang }) {
       <div className="grid grid-cols-2 gap-6 text-center lg:grid-cols-4">
         {items.map((it) => (
           <div key={it.key}>
-            <div className="font-display text-4xl font-black text-accent sm:text-5xl">
+            <div className="font-display text-4xl font-black text-brand sm:text-5xl">
               {t(lang, `home.stats.${it.key}.value`)}
             </div>
-            <div className="mt-1 text-sm font-medium text-slate-600 dark:text-slate-300">
+            <div className="mx-auto mt-2 h-[3px] w-8 rounded-full bg-accent" />
+            <div className="mt-2 text-sm font-medium text-slate-600 dark:text-slate-300">
               {t(lang, `home.stats.${it.key}.label`)}
             </div>
           </div>
@@ -110,7 +111,7 @@ function Stories({ lang }) {
       <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-3">
         {stories.map((s) => (
           <Card key={s.name}>
-            <div className="text-3xl leading-none text-accent">“</div>
+            <div className="text-4xl leading-none text-brand-red">“</div>
             <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-200">{s.quote[lang]}</p>
             <div className="mt-5 flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-sm font-bold text-white">
@@ -139,7 +140,7 @@ function Events({ lang }) {
       <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-3">
         {events.map((e, i) => (
           <Card key={i} className="flex gap-4">
-            <div className="flex w-14 flex-none flex-col items-center justify-center rounded-xl bg-accent/10 text-accent">
+            <div className="surface-red flex w-14 flex-none flex-col items-center justify-center rounded-xl">
               <span className="text-lg font-black leading-none">{e.date[lang].split(" ")[0]}</span>
               <span className="text-[10px] font-bold uppercase">
                 {e.date[lang].split(" ").slice(1).join(" ")}
@@ -182,14 +183,17 @@ function Sponsors({ lang }) {
 function CTA({ lang }) {
   return (
     <Section className="pb-24">
-      <div className="overflow-hidden rounded-3xl bg-primary px-8 py-12 text-center sm:px-16 sm:py-16">
-        <h2 className="font-display text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-          {t(lang, "home.cta.title")}
-        </h2>
-        <p className="mx-auto mt-4 max-w-xl text-base text-slate-200">{t(lang, "home.cta.body")}</p>
-        <div className="mt-8 flex flex-wrap justify-center gap-3">
-          <Button to="/bagis" variant="primary" size="lg">{t(lang, "action.donate")}</Button>
-          <Button to="/gonullu" variant="solidWhite" size="lg">{t(lang, "action.volunteer")}</Button>
+      <div className="overflow-hidden rounded-3xl bg-primary text-center">
+        <div className="h-1.5 w-full bg-accent" />
+        <div className="px-8 py-12 sm:px-16 sm:py-16">
+          <h2 className="font-display text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
+            {t(lang, "home.cta.title")}
+          </h2>
+          <p className="mx-auto mt-4 max-w-xl text-base text-slate-200">{t(lang, "home.cta.body")}</p>
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
+            <Button to="/bagis" variant="primary" size="lg">{t(lang, "action.donate")}</Button>
+            <Button to="/gonullu" variant="solidWhite" size="lg">{t(lang, "action.volunteer")}</Button>
+          </div>
         </div>
       </div>
     </Section>

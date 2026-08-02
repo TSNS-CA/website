@@ -13,7 +13,7 @@ export default function ContactPage({ lang }) {
 
         {/* Socials */}
         <div className="mt-10">
-          <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+          <h2 className="text-sm font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
             {t(lang, "contact.social")}
           </h2>
           <ul className="mt-4 flex flex-wrap gap-3">
@@ -23,7 +23,7 @@ export default function ContactPage({ lang }) {
                   href={s.href}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-primary hover:border-primary hover:text-accent dark:border-slate-800 dark:bg-primary-800 dark:text-white"
+                  className="inline-flex items-center rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-brand hover:border-accent hover:text-accent-600 dark:border-slate-800 dark:bg-primary-800 dark:text-white dark:hover:text-accent-300"
                 >
                   {s.name}
                 </a>
@@ -34,7 +34,7 @@ export default function ContactPage({ lang }) {
 
         {/* Emails */}
         <div className="mt-10">
-          <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+          <h2 className="text-sm font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
             {t(lang, "contact.emails")}
           </h2>
           <div className="mt-4 overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800">
@@ -47,7 +47,7 @@ export default function ContactPage({ lang }) {
                   >
                     <td className="px-5 py-3 font-semibold text-slate-800 dark:text-slate-100">{d[lang]}</td>
                     <td className="px-5 py-3">
-                      <a href={`mailto:${d.email}`} className="text-accent hover:underline">
+                      <a href={`mailto:${d.email}`} className="font-medium text-brand hover:underline">
                         {d.email}
                       </a>
                     </td>
