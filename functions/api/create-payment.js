@@ -1,3 +1,13 @@
+import {
+  upsertContact,
+  recordActivity,
+  lookupPerson,
+  describeHistory,
+  normalizeEmail,
+  membershipWindow,
+} from "../_lib/supabase";
+import { sendMemberConfirmation, sendAdminNotice } from "../_lib/email";
+
 const SQUARE_API_VERSION = "2024-10-17";
 
 function json(status, body) {
@@ -7,7 +17,8 @@ function json(status, body) {
   });
 }
 
-export async function onRequestPost({ request, env }) {
+export async function onRequestPost(context) {
+  const { request, env } = context;
   const { SQUARE_ACCESS_TOKEN, SQUARE_LOCATION_ID, SQUARE_ENV } = env;
   if (!SQUARE_ACCESS_TOKEN || !SQUARE_LOCATION_ID) {
     console.error("create-payment: missing SQUARE_ACCESS_TOKEN or SQUARE_LOCATION_ID");
@@ -90,6 +101,60 @@ export async function onRequestPost({ request, env }) {
   }
 
   const payment = squareBody?.payment;
+  const email = normalizeEmail(buyer?.email);
+  const lang = buyer?.lang === "en" ? "en" : "tr";
+
+  // Read the person's history before recording this gift, so the internal
+  // notification can say whether they have supported us before.
+  const history = await lookupPerson(env, email);
+
+  // A one-off gift also grants a year of membership — it simply does not renew
+  // itself the way the yearly subscription does.
+  const { start: startDate, end: endDate } = membershipWindow();
+
+  const contactId = await upsertContact(env, {
+    email,
+    name: buyer?.name,
+    phone: buyer?.phone,
+    lang,
+  });
+  await recordActivity(env, contactId, {
+    kind: "donation",
+    amount_cents: amountCents,
+    currency: "CAD",
+    status: payment?.status || null,
+    membership_start: startDate,
+    membership_end: endDate,
+    square_payment_id: payment?.id || null,
+  });
+
+  sendMemberConfirmation(env, context, {
+    name: buyer?.name,
+    email,
+    lang,
+    type: "one_time",
+    amountCents,
+    membershipStart: startDate,
+    membershipEnd: endDate,
+    receiptUrl: payment?.receipt_url || null,
+  });
+
+  sendAdminNotice(env, context, {
+    kind: "donation",
+    replyTo: email || undefined,
+    rows: [
+      ["Ad", buyer?.name || null],
+      ["E-posta", email],
+      ["Telefon", buyer?.phone || null],
+      ["Tutar", `$${(amountCents / 100).toFixed(2)} CAD`],
+      ["Üyelik", `${startDate} → ${endDate} (yenilenmez)`],
+      ["Square ödeme", payment?.id || null],
+      ["Durum", payment?.status || null],
+      ["Geçmiş", describeHistory(history)],
+      ["Ortam", SQUARE_ENV === "production" ? "production" : "sandbox"],
+    ],
+  });
+
   return json(200, {
     ok: true,
     paymentId: payment?.id || null,
