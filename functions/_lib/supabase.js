@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { halifaxToday } from "./time";
 
 // Data model (see supabase/migrations/0002_contacts_activities.sql):
 //   contacts   — one row per person, keyed by lowercased email
@@ -142,12 +143,24 @@ export async function lookupPerson(env, email) {
   }
 }
 
-/** One-year membership window starting today, as `YYYY-MM-DD` strings. */
+/**
+ * One-year membership window starting today, as `YYYY-MM-DD` strings.
+ *
+ * Dated in Halifax, not UTC. Joining at 22:00 on 2 August used to be recorded
+ * as starting on the 3rd — UTC had already rolled over — so the member's card
+ * said a day they had not lived yet, and the membership expired a day late.
+ */
 export function membershipWindow(from = new Date()) {
-  const start = new Date(from);
-  const end = new Date(from);
-  end.setFullYear(end.getFullYear() + 1);
-  return { start: start.toISOString().slice(0, 10), end: end.toISOString().slice(0, 10) };
+  const start = halifaxToday(from);
+  const [y, m, d] = start.split("-").map(Number);
+  // Date.UTC here is plain calendar arithmetic on a date we have already
+  // resolved in Halifax — no zone involved, so nothing to get wrong.
+  const end = new Date(Date.UTC(y + 1, m - 1, d));
+  // 29 February has no anniversary: Date.UTC spills it to 1 March. Pull it
+  // back to the last day of February, which is how an anniversary is normally
+  // read — a year later, not a year and a day.
+  if (end.getUTCMonth() !== m - 1) end.setUTCDate(0);
+  return { start, end: end.toISOString().slice(0, 10) };
 }
 
 /** Short human summary of a person's history, for the internal notification. */
