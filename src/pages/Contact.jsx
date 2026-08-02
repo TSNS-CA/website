@@ -1,6 +1,7 @@
 import { t, upper } from "../i18n";
 import { Section, Eyebrow } from "../components/ui";
 import { socials, departments } from "../content";
+import SocialLinks from "../components/SocialIcons";
 
 export default function ContactPage({ lang }) {
   return (
@@ -16,20 +17,9 @@ export default function ContactPage({ lang }) {
           <h2 className="text-sm font-bold tracking-wider text-slate-600 dark:text-slate-400">
             {upper(lang, t(lang, "contact.social"))}
           </h2>
-          <ul className="mt-4 flex flex-wrap gap-3">
-            {socials.map((s) => (
-              <li key={s.name}>
-                <a
-                  href={s.href}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-brand hover:border-accent hover:text-accent-600 dark:border-slate-800 dark:bg-primary-800 dark:text-white dark:hover:text-accent-300"
-                >
-                  {s.name}
-                </a>
-              </li>
-            ))}
-          </ul>
+          {/* Footer'daki simgelerin aynısı — sayfanın alt ve orta kısmı aynı
+              bağlantılar için iki farklı görünüm göstermesin. */}
+          <SocialLinks socials={socials} variant="onLight" className="mt-4 gap-3" />
         </div>
 
         {/* Emails */}

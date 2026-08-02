@@ -23,7 +23,7 @@ const translations = {
     "action.subscribe": "Abone Ol",
 
     "home.hero.eyebrow": "2007'den beri • Nova Scotia, Kanada",
-    "home.hero.title": "Kültürler Arasında Köprü Kuruyoruz,\nTopluluğumuzu Büyütüyoruz.",
+    "home.hero.title": "Kültürler Arasında Köprü Kuruyoruz,\nTopluluğumuzu Güçlendiriyoruz.",
     "home.hero.subtitle":
       "Nova Scotia Türk Derneği olarak Türk mirasını ve kültürünü Nova Scotia genelinde yaşatıyor; insanları bir araya getiriyoruz.",
     "home.promise": "Türk kültürünü Nova Scotia'da 2007'den beri yaşatıyoruz.",

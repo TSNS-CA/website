@@ -36,9 +36,9 @@ export default function Header({ lang, onChangeLang }) {
           <img
             src="/tsns.jpeg"
             alt="Nova Scotia Türk Derneği logo"
-            className="h-8 w-8 flex-none rounded-lg border-2 border-gold bg-white p-1 object-contain sm:h-10 sm:w-10"
+            className="h-9 w-9 flex-none rounded-lg border-2 border-gold bg-white p-1 object-contain sm:h-11 sm:w-11"
           />
-          <span className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-[11px] font-extrabold leading-none tracking-tight text-primary xs:text-[13px] sm:text-sm dark:text-white">
+          <span className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-[13px] font-extrabold leading-none tracking-tight text-primary xs:text-[15px] sm:text-lg lg:text-xl dark:text-white">
             {t(lang, "brand.full")}
           </span>
         </Link>
