@@ -36,6 +36,29 @@ async function squarePost(env, path, body) {
   return { ok: res.ok, status: res.status, body: parsed };
 }
 
+/**
+ * Best-effort E.164 for Square's customer API.
+ *
+ * People type "(902) 555-0134", "902 555 0134" or "+90 532 ...". Square wants
+ * a phone number it recognises and rejects the whole customer otherwise.
+ * Returns null when there is nothing sensible to send — the caller then simply
+ * leaves the field out.
+ */
+function toE164(raw) {
+  if (!raw) return null;
+  const text = String(raw).trim();
+  const digits = text.replace(/\D/g, "");
+  if (!digits) return null;
+  if (text.startsWith("+")) return digits.length >= 8 && digits.length <= 15 ? `+${digits}` : null;
+  if (digits.length === 10) return `+1${digits}`; // Canada/US, no country code
+  if (digits.length === 11 && digits.startsWith("1")) return `+${digits}`;
+  // A leading zero is a national trunk prefix ("0532 ..." in Turkey). Without a
+  // country code there is nothing to prepend, and guessing would be worse than
+  // sending nothing — Supabase keeps the number either way.
+  if (digits.startsWith("0")) return null;
+  return digits.length >= 8 && digits.length <= 15 ? `+${digits}` : null;
+}
+
 function firstError(body) {
   return Array.isArray(body?.errors) && body.errors[0] ? body.errors[0] : null;
 }
@@ -86,13 +109,28 @@ export async function onRequestPost(context) {
   const family = names.slice(1).join(" ") || undefined;
 
   // 1) Customer
-  const custRes = await squarePost(env, "/v2/customers", {
+  //
+  // Phone is optional on our form but Square validates it, and a number it
+  // dislikes ("Expected phone_number to be a valid phone number") fails the
+  // whole customer — which used to fail the whole membership. An optional
+  // field must never cost us a donation, so on failure we drop the phone and
+  // try once more. Supabase still records whatever the person typed.
+  const customerBase = {
     idempotency_key: `${key}-c`,
     given_name: given,
     family_name: family,
     email_address: buyer.email,
-    phone_number: buyer.phone || undefined,
+  };
+  const phoneE164 = toE164(buyer.phone);
+
+  let custRes = await squarePost(env, "/v2/customers", {
+    ...customerBase,
+    phone_number: phoneE164 || undefined,
   });
+  if (!custRes.ok && phoneE164) {
+    console.warn("create-subscription: retrying customer without phone", firstError(custRes.body)?.detail);
+    custRes = await squarePost(env, "/v2/customers", { ...customerBase, idempotency_key: `${key}-c2` });
+  }
   if (!custRes.ok) {
     const e = firstError(custRes.body);
     console.error("create-subscription: customer failed", custRes.status, custRes.body);
