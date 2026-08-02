@@ -84,12 +84,18 @@ Dosya idempotent — tekrar çalıştırmak zararsız. Postgres 17'de test edild
 1. Resend → **Domains** → `tsns.ca`
 2. Resend'in verdiği kayıtları **Cloudflare DNS**'e ekle:
    - **MX** → Resend'in verdiği host
-   - **TXT (SPF)** → `v=spf1 include:amazonses.com ~all`
+   - **TXT (SPF)** → Resend hangi hostname'i verdiyse ona
    - **TXT (DKIM)** → `resend._domainkey` → uzun anahtar
    - *(önerilen)* **TXT (DMARC)** → `_dmarc` → `v=DMARC1; p=none; rua=mailto:info@tsns.ca`
 3. ⚠️ Bu kayıtlarda Cloudflare'de **proxy'yi kapat (gri bulut)**. Turuncu bulut
    e-posta doğrulamasını bozar.
-4. Resend'de **Verify** → "Verified" olana kadar bekle (genelde birkaç dakika)
+4. 🚨 **Apex MX kaydına dokunma.** `tsns.ca` üzerindeki MX kayıtları Google
+   Workspace'e ait (`aspmx.l.google.com`) — derneğin gelen e-postası oradan
+   geçiyor. Resend genelde `send.tsns.ca` gibi bir **alt alan** kullanır, o
+   yüzden çakışma olmaz. Resend apex'e SPF eklemeni isterse dikkat et: apex'te
+   zaten bir SPF varsa **iki ayrı SPF kaydı olamaz**, tek kayıtta birleştirmen
+   gerekir.
+5. Resend'de **Verify** → "Verified" olana kadar bekle (genelde birkaç dakika)
 
 ### 2.2 API anahtarı
 
@@ -110,7 +116,7 @@ docs/email-templates/volunteer-confirmation.html
 Önce **logoyu nereden servis edeceğine** karar ver (detay: Ek C):
 
 - **Şimdilik en kolayı:** Worker deploy olduktan sonra
-  `https://tsns-ca-website.<hesabin>.workers.dev/tsns.jpeg`
+  `https://website.<hesabin>.workers.dev/tsns.jpeg`
 - **Kalıcı:** `https://tsns.ca/tsns.jpeg` — şablonlarda zaten yazan adres.
   Domain taşınınca kendiliğinden çalışır, hiçbir şey yapman gerekmez.
 
@@ -193,7 +199,7 @@ Cloudflare → **Workers & Pages** → Worker'ın → **Settings → Build**:
 | Branch | `main` |
 
 > ⚠️ Panel'deki Worker adı ile `wrangler.toml` içindeki
-> `name = "tsns-ca-website"` **birebir aynı** olmalı. Değilse build daha
+> `name = "website"` **birebir aynı** olmalı. Değilse build daha
 > başlamadan patlar.
 
 Branch preview'ları istersen **Non-production branch builds** açık olsun.
@@ -244,10 +250,10 @@ application id ve location id zaten public değerler, sorun değil.)
 ### ✅ Doğrula
 
 ```bash
-curl -s https://tsns-ca-website.<hesabin>.workers.dev/ | grep -o "<title>[^<]*</title>"
+curl -s https://website.<hesabin>.workers.dev/ | grep -o "<title>[^<]*</title>"
 # → Nova Scotia Türk Derneği | Turkish Society of Nova Scotia
 
-curl -s -X POST https://tsns-ca-website.<hesabin>.workers.dev/api/coupon \
+curl -s -X POST https://website.<hesabin>.workers.dev/api/coupon \
   -H 'Content-Type: application/json' -d '{"code":"x"}'
 # → {"ok":true,"valid":false}
 ```
@@ -317,9 +323,24 @@ Nameserver zaten Cloudflare'de, registrar'a dokunmana gerek yok.
 
 ### Adımlar
 
-1. **Eski kayıtları sil.** Cloudflare → `tsns.ca` → **DNS**: `216.239.*` A
-   kayıtları ve `www` → `ghs.googlehosted.com` CNAME'i sil.
+1. **Eski kayıtları sil.** Cloudflare → `tsns.ca` → **DNS**:
+   - `tsns.ca` üzerindeki **4 adet A kaydı** (`216.239.32.21`, `216.239.34.21`,
+     `216.239.36.21`, `216.239.38.21`)
+   - `www` → `ghs.googlehosted.com` **CNAME**
+
    *(Silmeden önce ekran görüntüsü al.)*
+
+   > 🚨 **MX kayıtlarına DOKUNMA.** `tsns.ca` MX kayıtları
+   > `aspmx.l.google.com` vb. adreslere gidiyor — bunlar **Google Workspace
+   > e-postanız**, yani `info@tsns.ca`. Silersen derneğin e-postası çalışmaz
+   > hâle gelir. `google-site-verification` TXT kaydı da kalsın.
+   >
+   > Sadece **A** ve **CNAME** kayıtları silinecek; site nereye bakıyor onu
+   > belirleyen bunlar.
+
+   Cloudflare "already has externally managed DNS records" hatası veriyorsa
+   sebebi tam olarak bu: aynı hostname için hem manuel A kaydı hem Worker
+   route'u tutulamıyor. Önce sil, sonra ekle.
 2. **Worker'a domain ekle.** Workers & Pages → Worker'ın → **Settings → Domains
    & Routes** → **Add → Custom domain** → `tsns.ca`. Sonra `www.tsns.ca`'yı da ekle.
 3. **`www` → apex yönlendirmesi.** Cloudflare → **Rules → Redirect Rules** →
@@ -558,7 +579,7 @@ E-postadaki logo internetten erişilebilir **mutlak bir URL** olmalı:
 1. **Resend'e yükle** — Templates → editörde `/image` yaz → `public/tsns.jpeg`
    yükle → **code view** panelinden oluşan `<img src="https://...">` adresini al
 2. **`.workers.dev`** — Worker deploy olduğu anda
-   `https://tsns-ca-website.<hesabin>.workers.dev/tsns.jpeg` canlı
+   `https://website.<hesabin>.workers.dev/tsns.jpeg` canlı
 3. **`https://tsns.ca/tsns.jpeg`** — şablonlarda yazan adres; domain taşınınca
    kendiliğinden çalışır (kalıcı çözüm)
 
