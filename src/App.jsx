@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { getInitialLang, setLang } from "./i18n";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
+import ScrollToTop from "./components/ScrollToTop";
 import HomePage from "./pages/Home";
 import AboutPage from "./pages/About";
 import ContactPage from "./pages/Contact";
@@ -26,6 +27,7 @@ function Layout() {
 
   return (
     <div className="flex min-h-screen flex-col bg-cream dark:bg-primary-900">
+      <ScrollToTop />
       <Header lang={lang} onChangeLang={changeLanguage} />
       <main className="flex-1">
         <Routes>
