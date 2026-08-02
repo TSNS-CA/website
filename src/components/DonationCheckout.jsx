@@ -48,6 +48,9 @@ export default function DonationCheckout({
   const [sdkReady, setSdkReady] = useState(false);
   const [appleReady, setAppleReady] = useState(false);
   const [initError, setInitError] = useState(null);
+  // Kart formunun neden gelmediğini ayırt ediyoruz: yapılandırma eksikse
+  // yapılacak bir şey yok, engellenmişse kullanıcı kendi açabilir.
+  const [engellendi, setEngellendi] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [payError, setPayError] = useState(null);
 
@@ -62,13 +65,22 @@ export default function DonationCheckout({
         return;
       }
       try {
-        const Square = await loadSquareSdk();
+        // Firefox'un izleme koruması, Square'in iframe'ini üçüncü taraf sayıp
+        // depolamasını bölümlendirdiğinde SDK bazen hata vermeden asılı kalıyor
+        // (Square'in forumlarında bilinen bir durum, Android Firefox'ta koruma
+        // varsayılan açık). Süresiz bir "yükleniyor" yazısı bırakmamak için
+        // yarıştırıyoruz.
+        const zamanAsimi = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error("SQUARE_TIMEOUT")), 12000)
+        );
+
+        const Square = await Promise.race([loadSquareSdk(), zamanAsimi]);
         if (cancelled) return;
         const payments = Square.payments(APP_ID, LOCATION_ID);
 
-        card = await payments.card();
+        card = await Promise.race([payments.card(), zamanAsimi]);
         if (cancelled) return;
-        await card.attach(cardBoxRef.current);
+        await Promise.race([card.attach(cardBoxRef.current), zamanAsimi]);
         if (cancelled) {
           try { await card.destroy(); } catch (e) {}
           return;
@@ -100,7 +112,16 @@ export default function DonationCheckout({
         if (!cancelled) setSdkReady(true);
       } catch (err) {
         console.error("Square SDK init failed", err);
-        if (!cancelled) setInitError(lang === "tr" ? "Kart formu yüklenemedi." : "Could not load the card form.");
+        if (cancelled) return;
+        // Zaman aşımı ya da script/iframe'in hiç yüklenememesi: neredeyse her
+        // zaman tarayıcının üçüncü taraf içeriği engellemesinden geliyor.
+        const muhtemelenEngel =
+          err?.message === "SQUARE_TIMEOUT" ||
+          /load|network|blocked|storage/i.test(err?.message || "");
+        setEngellendi(muhtemelenEngel);
+        setInitError(
+          lang === "tr" ? "Kart formu yüklenemedi." : "Could not load the card form."
+        );
       }
     }
 
@@ -166,7 +187,9 @@ export default function DonationCheckout({
         <div className="mb-4 flex items-start justify-between gap-4">
           <div>
             <h2 className="text-xl font-extrabold text-primary dark:text-white">
-              {lang === "tr" ? "Bağış" : "Donate"} · {amountLabel}
+              {isRecurring
+                ? lang === "tr" ? "Üyelik" : "Membership"
+                : lang === "tr" ? "Bağış" : "Donate"} · {amountLabel}
             </h2>
             {isRecurring && (
               <p className="mt-1 text-xs text-slate-500 dark:text-slate-300">
@@ -215,7 +238,45 @@ export default function DonationCheckout({
         {!sdkReady && !initError && (
           <p className="mt-2 text-xs text-slate-600 dark:text-slate-300">{lang === "tr" ? "Güvenli kart formu yükleniyor…" : "Loading secure card form…"}</p>
         )}
-        {initError && <p className="mt-2 text-xs font-semibold text-brand-red">{initError}</p>}
+        {initError && (
+          <div className="mt-2">
+            <p className="text-xs font-semibold text-brand-red">{initError}</p>
+            {engellendi && (
+              <div className="mt-2 rounded-lg bg-slate-50 p-3 text-xs leading-relaxed text-slate-700 dark:bg-primary-700 dark:text-slate-200">
+                {lang === "tr" ? (
+                  <>
+                    <p className="font-semibold">Tarayıcınız ödeme formunu engelliyor olabilir.</p>
+                    <p className="mt-1">
+                      Firefox kullanıyorsanız adres çubuğundaki <strong>kalkan</strong> simgesine
+                      dokunup bu site için <strong>Gelişmiş İzleme Koruması</strong>'nı kapatın,
+                      sonra sayfayı yenileyin. Reklam engelleyici eklentiniz varsa onu da bu site
+                      için devre dışı bırakın.
+                    </p>
+                    <p className="mt-1">Sorun sürerse Chrome veya Safari ile deneyin.</p>
+                    <p className="mt-2">
+                      Yine olmazsa bize yazın:{" "}
+                      <a className="font-semibold underline" href="mailto:info@tsns.ca">info@tsns.ca</a>
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <p className="font-semibold">Your browser may be blocking the payment form.</p>
+                    <p className="mt-1">
+                      In Firefox, tap the <strong>shield</strong> icon in the address bar and turn
+                      off <strong>Enhanced Tracking Protection</strong> for this site, then reload.
+                      If you use an ad blocker, disable it here too.
+                    </p>
+                    <p className="mt-1">If it still fails, try Chrome or Safari.</p>
+                    <p className="mt-2">
+                      Still stuck? Email us at{" "}
+                      <a className="font-semibold underline" href="mailto:info@tsns.ca">info@tsns.ca</a>
+                    </p>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+        )}
 
         {SQUARE_ENV !== "production" && (
           <div className="mt-3 rounded-lg bg-slate-50 p-3 text-xs text-slate-600 dark:bg-primary-700 dark:text-slate-200">
@@ -237,7 +298,9 @@ export default function DonationCheckout({
         >
           {processing
             ? lang === "tr" ? "İşleniyor…" : "Processing…"
-            : lang === "tr" ? "Bağış Yap" : "Donate"}
+            : isRecurring
+              ? lang === "tr" ? "Üye Ol" : "Become a Member"
+              : lang === "tr" ? "Bağış Yap" : "Donate"}
         </button>
 
         <p className="mt-3 text-center text-xs text-slate-600 dark:text-slate-300">
