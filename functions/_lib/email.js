@@ -201,6 +201,7 @@ export function buildAdminNotice({ kind, rows, year = new Date().getFullYear() }
     volunteer: "Yeni gönüllü başvurusu",
     donation: "Yeni bağış",
     membership: "Yeni üyelik",
+    newsletter: "Yeni bülten aboneliği",
   };
   const title = titles[kind] || "Yeni kayıt";
   return {

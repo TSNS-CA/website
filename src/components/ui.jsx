@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { upper } from "../i18n";
 
 export function Container({ className = "", children }) {
   return <div className={`mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8 ${className}`}>{children}</div>;
@@ -12,20 +13,21 @@ export function Section({ id, className = "", children }) {
   );
 }
 
-export function Eyebrow({ children, className = "" }) {
+// `lang` şart: büyütme dile göre yapılıyor (bkz. i18n/upper).
+export function Eyebrow({ lang = "tr", children, className = "" }) {
   return (
     <span
-      className={`inline-block text-xs font-bold uppercase tracking-[0.18em] text-brand-red ${className}`}
+      className={`inline-block text-xs font-bold tracking-[0.18em] text-brand-red ${className}`}
     >
-      {children}
+      {typeof children === "string" ? upper(lang, children) : children}
     </span>
   );
 }
 
-export function SectionHeading({ eyebrow, title, subtitle, center = false, light = false, className = "" }) {
+export function SectionHeading({ lang = "tr", eyebrow, title, subtitle, center = false, light = false, className = "" }) {
   return (
     <div className={`${center ? "mx-auto max-w-2xl text-center" : "max-w-2xl"} ${className}`}>
-      {eyebrow && <Eyebrow>{eyebrow}</Eyebrow>}
+      {eyebrow && <Eyebrow lang={lang}>{eyebrow}</Eyebrow>}
       {title && (
         <h2
           className={`mt-3 font-display text-3xl font-extrabold tracking-tight sm:text-4xl ${

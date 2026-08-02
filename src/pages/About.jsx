@@ -5,7 +5,7 @@ export default function AboutPage({ lang }) {
   return (
     <Section className="py-20">
       <div className="max-w-3xl">
-        <Eyebrow>{t(lang, "nav.about")}</Eyebrow>
+        <Eyebrow lang={lang}>{t(lang, "nav.about")}</Eyebrow>
         <h1 className="mt-3 font-display text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl dark:text-white">
           {t(lang, "about.title")}
         </h1>

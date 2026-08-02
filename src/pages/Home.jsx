@@ -1,4 +1,4 @@
-import { t } from "../i18n";
+import { t, upper } from "../i18n";
 import { stories, events, sponsors } from "../content";
 import { Container, Section, SectionHeading, Eyebrow, Button, Card } from "../components/ui";
 
@@ -13,8 +13,8 @@ function Hero({ lang }) {
 
       <Container className="flex min-h-[78vh] flex-col items-start justify-center py-24">
         <div className="max-w-2xl">
-          <span className="inline-flex items-center gap-2 rounded-full bg-accent px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider text-white shadow-sm ring-1 ring-inset ring-white/20">
-            🇹🇷 {t(lang, "home.hero.eyebrow")}
+          <span className="inline-flex items-center gap-2 rounded-full bg-accent px-3.5 py-1.5 text-xs font-bold tracking-wider text-white shadow-sm ring-1 ring-inset ring-white/20">
+            🇹🇷 {upper(lang, t(lang, "home.hero.eyebrow"))}
           </span>
           <h1 className="mt-5 whitespace-pre-line font-display text-4xl font-black leading-[1.05] tracking-tight text-white sm:text-5xl lg:text-6xl">
             {t(lang, "home.hero.title")}
@@ -51,7 +51,7 @@ function WhySupport({ lang }) {
     <Section className="py-20">
       <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-2">
         <div>
-          <Eyebrow>{t(lang, "home.why.eyebrow")}</Eyebrow>
+          <Eyebrow lang={lang}>{t(lang, "home.why.eyebrow")}</Eyebrow>
           <h2 className="mt-3 font-display text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl dark:text-white">
             {t(lang, "home.why.title")}
           </h2>
@@ -103,6 +103,7 @@ function Stories({ lang }) {
   return (
     <Section className="py-20">
       <SectionHeading
+        lang={lang}
         center
         eyebrow={t(lang, "home.stories.eyebrow")}
         title={t(lang, "home.stories.title")}
@@ -133,25 +134,39 @@ function Events({ lang }) {
   return (
     <Section className="bg-cream-200 py-20 dark:bg-primary-800">
       <SectionHeading
+        lang={lang}
         eyebrow={t(lang, "home.events.eyebrow")}
         title={t(lang, "home.events.title")}
         subtitle={t(lang, "home.events.subtitle")}
       />
       <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-3">
-        {events.map((e, i) => (
-          <Card key={i} className="flex gap-4">
-            <div className="surface-red flex w-14 flex-none flex-col items-center justify-center rounded-xl">
-              <span className="text-lg font-black leading-none">{e.date[lang].split(" ")[0]}</span>
-              <span className="text-[10px] font-bold uppercase">
-                {e.date[lang].split(" ").slice(1).join(" ")}
-              </span>
-            </div>
-            <div>
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">{e.title[lang]}</h3>
-              <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{e.desc[lang]}</p>
-            </div>
-          </Card>
-        ))}
+        {events.map((e, i) => {
+          // Tarihler iki biçimde gelir: "29 Ekim" (gün + ay) ya da "Haziran"
+          // (yalnızca ay). Eski kod her zaman ilk parçayı büyük bir sayı sanıp
+          // text-lg ile basıyordu; "Haziran" tek başına büyük puntoyla tile'a
+          // sığmıyordu.
+          const parts = e.date[lang].split(" ");
+          const day = parts.length > 1 ? parts[0] : null;
+          const month = parts.length > 1 ? parts.slice(1).join(" ") : parts[0];
+          return (
+            <Card key={i} className="flex gap-4">
+              <div className="surface-red flex w-16 flex-none flex-col items-center justify-center rounded-xl px-1 text-center">
+                {day ? (
+                  <>
+                    <span className="text-lg font-black leading-none">{day}</span>
+                    <span className="text-[10px] font-bold leading-tight">{month}</span>
+                  </>
+                ) : (
+                  <span className="text-xs font-bold leading-tight">{month}</span>
+                )}
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">{e.title[lang]}</h3>
+                <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{e.desc[lang]}</p>
+              </div>
+            </Card>
+          );
+        })}
       </div>
     </Section>
   );
@@ -161,6 +176,7 @@ function Sponsors({ lang }) {
   return (
     <Section className="py-20">
       <SectionHeading
+        lang={lang}
         center
         eyebrow={t(lang, "home.sponsors.eyebrow")}
         title={t(lang, "home.sponsors.title")}

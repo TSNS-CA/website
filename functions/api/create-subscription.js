@@ -117,7 +117,7 @@ export async function onRequestPost(context) {
   const subRes = await squarePost(env, "/v2/subscriptions", {
     idempotency_key: `${key}-s`,
     location_id: SQUARE_LOCATION_ID,
-    plan_id: SQUARE_YEARLY_PLAN_ID,
+    plan_variation_id: SQUARE_YEARLY_PLAN_ID,
     customer_id: customerId,
     card_id: cardId,
     timezone: "America/Halifax",

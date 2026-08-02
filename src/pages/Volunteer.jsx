@@ -64,7 +64,7 @@ export default function VolunteerPage({ lang }) {
   return (
     <Section className="py-20">
       <div className="mx-auto max-w-xl">
-        <Eyebrow>{t(lang, "action.volunteer")}</Eyebrow>
+        <Eyebrow lang={lang}>{t(lang, "action.volunteer")}</Eyebrow>
         <h1 className="mt-3 font-display text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl dark:text-white">
           {t(lang, "volunteer.title")}
         </h1>
