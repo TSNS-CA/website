@@ -1,4 +1,11 @@
 import { recordVolunteer } from "../_lib/supabase";
+import {
+  sendEmail,
+  sendInBackground,
+  buildVolunteerEmail,
+  buildAdminNotice,
+  adminRecipients,
+} from "../_lib/email";
 
 function json(status, body) {
   return new Response(JSON.stringify(body), {
@@ -7,7 +14,9 @@ function json(status, body) {
   });
 }
 
-export async function onRequestPost({ request, env }) {
+export async function onRequestPost(context) {
+  const { request, env } = context;
+
   let payload;
   try {
     payload = await request.json();
@@ -15,7 +24,7 @@ export async function onRequestPost({ request, env }) {
     return json(400, { ok: false, error: "Invalid JSON body." });
   }
 
-  const { name, email, phone, interests } = payload || {};
+  const { name, email, phone, interests, lang } = payload || {};
 
   if (typeof name !== "string" || !name.trim()) {
     return json(400, { ok: false, error: "Name is required." });
@@ -24,17 +33,59 @@ export async function onRequestPost({ request, env }) {
     return json(400, { ok: false, error: "A valid email is required." });
   }
 
-  const data = await recordVolunteer(env, {
-    name: name.trim(),
-    email: email.trim(),
-    phone: (phone || "").trim() || null,
-    interests: (interests || "").trim() || null,
-    status: "new",
-  });
+  const volunteer = {
+    name: name.trim().slice(0, 200),
+    email: email.trim().toLowerCase().slice(0, 320),
+    phone: (phone || "").trim().slice(0, 60) || null,
+    interests: (interests || "").trim().slice(0, 2000) || null,
+  };
+
+  const data = await recordVolunteer(env, { ...volunteer, status: "new" });
+
+  // Confirmation to the volunteer + heads-up to the society. Both are
+  // best-effort and run after the response, so the form returns immediately.
+  const locale = lang === "en" ? "en" : "tr";
+  const mail = buildVolunteerEmail({ ...volunteer, lang: locale });
+  sendInBackground(
+    context,
+    sendEmail(env, {
+      to: volunteer.email,
+      subject: mail.subject,
+      html: mail.html,
+      text: mail.text,
+      tags: [{ name: "type", value: "volunteer_confirmation" }],
+    })
+  );
+
+  const admins = adminRecipients(env);
+  if (admins) {
+    const notice = buildAdminNotice({
+      kind: "volunteer",
+      rows: [
+        ["Ad Soyad", volunteer.name],
+        ["E-posta", volunteer.email],
+        ["Telefon", volunteer.phone],
+        ["İlgi alanları", volunteer.interests],
+        ["Dil", locale],
+        ["Supabase", data ? "kaydedildi" : "KAYDEDİLEMEDİ"],
+      ],
+    });
+    sendInBackground(
+      context,
+      sendEmail(env, {
+        to: admins,
+        subject: notice.subject,
+        html: notice.html,
+        text: notice.text,
+        replyTo: volunteer.email,
+        tags: [{ name: "type", value: "volunteer_admin" }],
+      })
+    );
+  }
 
   if (!data) {
-    // Supabase not configured or insert failed — still acknowledge to the user,
-    // but signal the operator this needs attention.
+    // Supabase not configured or the insert failed. The visitor is still
+    // acknowledged (and both emails went out), but this needs attention.
     console.error("volunteer: record not stored (Supabase misconfigured?)");
     return json(201, { ok: true, warning: "not_stored" });
   }

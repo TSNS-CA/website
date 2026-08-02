@@ -1,0 +1,8 @@
+# Cloudflare Pages custom headers (https://developers.cloudflare.com/pages/configuration/headers/)
+
+# Apple Pay domain verification. Square/Apple fetch this file over HTTPS and
+# expect the raw token back — no HTML wrapper, no transform.
+/.well-known/apple-developer-merchantid-domain-association
+  Content-Type: text/plain; charset=utf-8
+  Cache-Control: public, max-age=300
+  X-Robots-Tag: noindex

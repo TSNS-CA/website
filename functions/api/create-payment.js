@@ -1,4 +1,11 @@
 import { recordDonor } from "../_lib/supabase";
+import {
+  sendEmail,
+  sendInBackground,
+  buildMemberEmail,
+  buildAdminNotice,
+  adminRecipients,
+} from "../_lib/email";
 
 const SQUARE_API_VERSION = "2024-10-17";
 
@@ -9,7 +16,8 @@ function json(status, body) {
   });
 }
 
-export async function onRequestPost({ request, env }) {
+export async function onRequestPost(context) {
+  const { request, env } = context;
   const { SQUARE_ACCESS_TOKEN, SQUARE_LOCATION_ID, SQUARE_ENV } = env;
   if (!SQUARE_ACCESS_TOKEN || !SQUARE_LOCATION_ID) {
     console.error("create-payment: missing SQUARE_ACCESS_TOKEN or SQUARE_LOCATION_ID");
@@ -103,6 +111,56 @@ export async function onRequestPost({ request, env }) {
     status: payment?.status || null,
     square_payment_id: payment?.id || null,
   });
+
+  if (buyer?.email) {
+    const lang = buyer.lang === "en" ? "en" : "tr";
+    const mail = buildMemberEmail({
+      name: buyer.name,
+      email: buyer.email,
+      type: "one_time",
+      amountCents: amountCents,
+      endDate: null,
+      receiptUrl: payment?.receipt_url || null,
+      lang,
+    });
+    sendInBackground(
+      context,
+      sendEmail(env, {
+        to: buyer.email,
+        subject: mail.subject,
+        html: mail.html,
+        text: mail.text,
+        tags: [{ name: "type", value: "donation_receipt" }],
+      })
+    );
+  }
+
+  const admins = adminRecipients(env);
+  if (admins) {
+    const notice = buildAdminNotice({
+      kind: "donation",
+      rows: [
+        ["Ad", buyer?.name || null],
+        ["E-posta", buyer?.email || null],
+        ["Telefon", buyer?.phone || null],
+        ["Tutar", `$${(amountCents / 100).toFixed(2)} CAD`],
+        ["Square ödeme", payment?.id || null],
+        ["Durum", payment?.status || null],
+        ["Ortam", SQUARE_ENV === "production" ? "production" : "sandbox"],
+      ],
+    });
+    sendInBackground(
+      context,
+      sendEmail(env, {
+        to: admins,
+        subject: notice.subject,
+        html: notice.html,
+        text: notice.text,
+        replyTo: buyer?.email || undefined,
+        tags: [{ name: "type", value: "donation_admin" }],
+      })
+    );
+  }
 
   return json(200, {
     ok: true,
