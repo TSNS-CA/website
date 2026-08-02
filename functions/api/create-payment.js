@@ -1,4 +1,5 @@
 import { recordDonor } from "../_lib/supabase";
+import { sendTemplate, firstNameOf, membershipExpiryOneYear } from "../_lib/resend";
 
 const SQUARE_API_VERSION = "2024-10-17";
 
@@ -103,6 +104,17 @@ export async function onRequestPost({ request, env }) {
     status: payment?.status || null,
     square_payment_id: payment?.id || null,
   });
+
+  if (buyer?.email) {
+    await sendTemplate(env, {
+      to: buyer.email,
+      templateId: env.RESEND_MEMBERSHIP_TEMPLATE_ID,
+      variables: {
+        firstName: firstNameOf(buyer?.name),
+        membershipExpiryDate: membershipExpiryOneYear(),
+      },
+    });
+  }
 
   return json(200, {
     ok: true,
