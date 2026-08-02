@@ -1,4 +1,4 @@
-import { recordDonor } from "../_lib/supabase";
+import { recordDonor, lookupDonorHistory, membershipWindow } from "../_lib/supabase";
 import {
   sendEmail,
   sendInBackground,
@@ -47,11 +47,6 @@ function isStudentCoupon(env, code) {
   return typeof code === "string" && code.trim().length > 0 && validCodes.includes(code.trim().toLowerCase());
 }
 
-function formatEndDate() {
-  const d = new Date();
-  d.setFullYear(d.getFullYear() + 1);
-  return d.toISOString().slice(0, 10);
-}
 
 export async function onRequestPost(context) {
   const { request, env } = context;
@@ -133,19 +128,30 @@ export async function onRequestPost(context) {
     return json(400, { ok: false, error: e?.detail || "Could not start your yearly membership." });
   }
   const subscription = subRes.body?.subscription;
-  const endDate = formatEndDate();
+
+  // Membership runs one year from today. Square renews the subscription on its
+  // own cadence; this window is what we show the member and what the `members`
+  // view uses to decide who is currently active.
+  const { start: startDate, end: endDate } = membershipWindow();
+  const email = buyer.email.trim().toLowerCase();
+  const history = await lookupDonorHistory(env, email);
+  const now = new Date().toISOString();
 
   await recordDonor(env, {
     name: buyer.name || null,
-    email: buyer.email || null,
+    email,
     phone: buyer.phone || null,
     type: "yearly",
     amount_cents: finalAmountCents,
     currency: "CAD",
     status: subscription?.status || null,
+    membership_start: startDate,
+    membership_end: endDate,
+    is_first_time: history.isFirstTime,
+    first_joined_at: history.firstJoinedAt || now,
+    student_coupon: couponUsed,
     square_customer_id: customerId || null,
     square_subscription_id: subscription?.id || null,
-    raw: { couponUsed, endDate },
   });
 
   const lang = buyer.lang === "en" ? "en" : "tr";
@@ -178,6 +184,8 @@ export async function onRequestPost(context) {
         ["Telefon", buyer.phone || null],
         ["Tutar", `$${(finalAmountCents / 100).toFixed(2)} CAD / yıl`],
         ["Öğrenci kuponu", couponUsed ? "evet" : "hayır"],
+        ["İlk kez mi", history.isFirstTime ? "evet (yeni üye)" : "hayır (yenileme)"],
+        ["Başlangıç", startDate],
         ["Square abonelik", subscription?.id || null],
         ["Durum", subscription?.status || null],
         ["Bitiş", endDate],

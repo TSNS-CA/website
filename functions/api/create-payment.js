@@ -1,4 +1,4 @@
-import { recordDonor } from "../_lib/supabase";
+import { recordDonor, lookupDonorHistory } from "../_lib/supabase";
 import {
   sendEmail,
   sendInBackground,
@@ -100,15 +100,26 @@ export async function onRequestPost(context) {
   }
 
   const payment = squareBody?.payment;
+  const email = buyer?.email ? buyer.email.trim().toLowerCase() : null;
+
+  // A one-off gift carries no membership window, but we still record whether
+  // this is the person's first contact with us and when that first contact was.
+  const history = await lookupDonorHistory(env, email);
+  const now = new Date().toISOString();
 
   await recordDonor(env, {
     name: buyer?.name || null,
-    email: buyer?.email || null,
+    email,
     phone: buyer?.phone || null,
     type: "one_time",
     amount_cents: amountCents,
     currency: "CAD",
     status: payment?.status || null,
+    membership_start: null,
+    membership_end: null,
+    is_first_time: history.isFirstTime,
+    first_joined_at: history.firstJoinedAt || now,
+    student_coupon: false,
     square_payment_id: payment?.id || null,
   });
 
@@ -146,6 +157,7 @@ export async function onRequestPost(context) {
         ["Tutar", `$${(amountCents / 100).toFixed(2)} CAD`],
         ["Square ödeme", payment?.id || null],
         ["Durum", payment?.status || null],
+        ["İlk kez mi", history.isFirstTime ? "evet" : "hayır (daha önce destek olmuş)"],
         ["Ortam", SQUARE_ENV === "production" ? "production" : "sandbox"],
       ],
     });

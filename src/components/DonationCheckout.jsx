@@ -30,9 +30,9 @@ function loadSquareSdk() {
 }
 
 export default function DonationCheckout({
-  frequency, // 'one_time' | 'monthly' | 'yearly'
-  amountCents, // integer (one-time only; recurring uses plan)
-  amountLabel, // e.g. "$25.00" or "$5.00/ay"
+  frequency, // 'one_time' | 'yearly'
+  amountCents, // integer (one-time only; yearly uses the Square plan)
+  amountLabel, // e.g. "$25.00" or "$5.00/yıl"
   buyer, // { name, email, phone }
   couponCode, // optional student discount code
   onClose,
@@ -170,9 +170,7 @@ export default function DonationCheckout({
             </h2>
             {isRecurring && (
               <p className="mt-1 text-xs text-slate-500 dark:text-slate-300">
-                {frequency === "monthly"
-                  ? lang === "tr" ? "Her ay otomatik yenilenir." : "Auto-renews every month."
-                  : lang === "tr" ? "Her yıl otomatik yenilenir." : "Auto-renews every year."}
+                {lang === "tr" ? "Her yıl otomatik yenilenir." : "Auto-renews every year."}
               </p>
             )}
           </div>
