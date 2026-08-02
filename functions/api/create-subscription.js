@@ -52,12 +52,12 @@ function toE164(raw) {
   if (text.startsWith("+")) return digits.length >= 8 && digits.length <= 15 ? `+${digits}` : null;
   if (digits.length === 10) return `+1${digits}`; // Canada/US, no country code
   if (digits.length === 11 && digits.startsWith("1")) return `+${digits}`;
-  // "0532 111 22 33" — Turkish national format: trunk prefix 0, then ten
-  // digits. Our members are Turkish, so this is the second most likely thing
-  // to be typed after a Canadian number. Turkish numbers start with 5 (mobile)
-  // or 2-4 (landline area codes) once the 0 is dropped, which keeps a UK
-  // "07..." from being mistaken for one.
-  if (digits.length === 11 && digits.startsWith("0") && /[2-5]/.test(digits[1])) {
+  // "0532 111 22 33" — Turkish mobile: trunk prefix 0, then 5, then nine
+  // digits. Our members are Turkish, so after a Canadian number this is the
+  // most likely thing typed into the form. Mobiles only: a landline is no use
+  // for reaching a member, and insisting on the 5 keeps a UK "07911 ..." from
+  // being read as Turkish.
+  if (digits.length === 11 && digits.startsWith("05")) {
     return `+90${digits.slice(1)}`;
   }
   // Any other leading zero is a trunk prefix we cannot resolve without knowing
