@@ -264,7 +264,7 @@ Tüm kombinasyonlar test edildi:
 | Kişi | member_type | roles |
 | --- | --- | --- |
 | Sadece gönüllü | `volunteer` | `{volunteer}` |
-| Sadece tek seferlik bağış | `donor` | `{donor}` |
+| Sadece tek seferlik bağış (üyeliği sürüyor) | `donor` | `{member, donor}` |
 | Aktif üye | `member` | `{member}` |
 | Üyeliği bitmiş | `former_member` | `{former_member}` |
 | Gönüllü + aktif üye | `member` | `{member, volunteer}` |
@@ -314,10 +314,21 @@ görebilirsin.
 
 ## 3. Resend (e-posta)
 
-Kod Resend'in **REST API**'sini `fetch` ile çağırıyor
-(`functions/_lib/email.js`). Cloudflare Workers ortamında Node SDK'sı gerekmez —
-ayrı bir paket kurmana **gerek yok**, dolayısıyla "hangi dil?" sorusunun cevabı:
-zaten HTTP/REST kullanıyoruz, hazır.
+Onay e-postaları **Resend'de hazırlanmış template'ler** ile gidiyor. İki template
+var ve her ikisi de **iki dilli** (aynı e-postanın içinde hem Türkçe hem
+İngilizce), o yüzden dile göre ayrı id gerekmiyor:
+
+| Template | Ne zaman | Env değişkeni |
+| --- | --- | --- |
+| `membership-confirmation` | Yıllık üyelik **ve** tek seferlik bağış | `RESEND_MEMBERSHIP_TEMPLATE_ID` |
+| `volunteer-confirmation` | Gönüllü başvurusu | `RESEND_VOLUNTEER_TEMPLATE_ID` |
+
+Template'in kendi **from adresi, konusu ve tasarımı** Resend panelinde duruyor;
+kod yalnızca id ve değişkenleri gönderiyor. Yani metni değiştirmek için deploy
+gerekmiyor, Resend'den düzenlemen yeterli.
+
+Kod ayrı bir paket kurmuyor, Resend REST API'sini `fetch` ile çağırıyor —
+Cloudflare Workers'da doğrusu bu.
 
 ### 3.1 Domain doğrulama
 
@@ -343,25 +354,59 @@ Resend → **API Keys** → **Create API Key**
 | Değişken | Örnek | Zorunlu |
 | --- | --- | --- |
 | `RESEND_API_KEY` | `re_...` | evet |
-| `RESEND_FROM` | `Nova Scotia Türk Derneği <info@tsns.ca>` | evet |
+| `RESEND_MEMBERSHIP_TEMPLATE_ID` | template uuid'si | evet |
+| `RESEND_VOLUNTEER_TEMPLATE_ID` | template uuid'si | evet |
+| `RESEND_FROM` | `Nova Scotia Türk Derneği <info@tsns.ca>` | iç bildirimler için |
 | `RESEND_REPLY_TO` | `info@tsns.ca` | hayır |
 | `RESEND_ADMIN_TO` | `info@tsns.ca,baskan@tsns.ca` | hayır |
 
-`RESEND_FROM` içindeki domain **doğrulanmış domain olmak zorunda**, yoksa Resend
-403 döner.
+Template id'lerini Resend → **Templates** → ilgili template → ayarlarından
+alıyorsun.
+
+`RESEND_FROM` yalnızca **iç bildirimler** ve template id'si girilmediğindeki
+yedek için kullanılıyor; içindeki domain doğrulanmış olmalı yoksa Resend 403
+döner. Template id'si boş bırakılırsa kod sessizce kendi ürettiği HTML'e düşer
+ve loga uyarı yazar — akış kırılmaz ama tasarım senin template'in olmaz.
+
+### 3.3.1 Template'lerin kullanabileceği değişkenler
+
+Template yalnızca kendi kullandığı değişkeni işler, fazlası zararsız.
+
+**`membership-confirmation`**
+
+| Değişken | Örnek |
+| --- | --- |
+| `firstName` / `fullName` | `Ayşe` / `Ayşe Yılmaz` |
+| `email` | `ayse@example.ca` |
+| `amount` / `currency` | `$25.00` / `CAD` |
+| `membershipType` | `yearly` veya `one_time` |
+| `autoRenews` | `true` (yıllık) / `false` (tek seferlik) |
+| `membershipStartDate` / `membershipStartDateTr` | `August 2, 2026` / `2 Ağustos 2026` |
+| `membershipExpiryDate` / `membershipExpiryDateTr` | `August 2, 2027` / `2 Ağustos 2027` |
+| `receiptUrl` | Square makbuz linki (bağışlarda) |
+
+Tarihlerin hem İngilizce hem Türkçe hâli geçiliyor; template iki dilli olduğu
+için her yarısında uygun olanı kullanabilirsin. `autoRenews` ile "üyeliğiniz her
+yıl yenilenecek" / "bu üyelik yenilenmez" ayrımını yapabilirsin.
+
+**`volunteer-confirmation`**
+
+`firstName`, `fullName`, `email`, `phone`, `interests`
 
 ### 3.4 Hangi e-posta ne zaman gider
 
-| Tetikleyici | Kime | İçerik |
+| Tetikleyici | Kime | Nasıl |
 | --- | --- | --- |
-| Gönüllü formu | Gönüllüye | "Başvurun alındı" + verdiği bilgiler (TR/EN) |
-| Gönüllü formu | `RESEND_ADMIN_TO` | Yeni gönüllü bildirimi, `Reply-To` = gönüllü |
-| Tek seferlik bağış | Bağışçıya | Makbuz + Square receipt linki |
-| Tek seferlik bağış | `RESEND_ADMIN_TO` | Yeni bağış bildirimi |
-| Yıllık üyelik | Üyeye | Üyelik onayı + bitiş tarihi |
-| Yıllık üyelik | `RESEND_ADMIN_TO` | Yeni üyelik bildirimi (kupon kullanıldı mı dahil) |
+| Gönüllü formu | Gönüllüye | `volunteer-confirmation` template |
+| Gönüllü formu | `RESEND_ADMIN_TO` | İç bildirim (HTML), `Reply-To` = gönüllü |
+| Tek seferlik bağış | Bağışçıya | `membership-confirmation` template (`membershipType=one_time`) |
+| Tek seferlik bağış | `RESEND_ADMIN_TO` | İç bildirim + geçmiş özeti |
+| Yıllık üyelik | Üyeye | `membership-confirmation` template (`membershipType=yearly`) |
+| Yıllık üyelik | `RESEND_ADMIN_TO` | İç bildirim (kaçıncı yenileme, toplam destek dahil) |
 
-Dil, kullanıcının sitedeki dil tercihinden (`tr` / `en`) geliyor. E-postalar
+İç bildirimler template kullanmıyor — onlar operasyonel, tasarıma ihtiyaçları
+yok ve template'in bilmediği alanları taşıyorlar (Supabase'e yazıldı mı,
+kaçıncı yenileme, sandbox mı production mı). E-postalar
 `waitUntil` ile **yanıttan sonra** gönderiliyor; form anında dönüyor, Resend
 yavaşlarsa kullanıcı beklemiyor. Resend hata verirse ödeme/kayıt yine başarılı
 sayılır, hata Cloudflare loglarına düşer.
@@ -454,7 +499,9 @@ SQUARE_YEARLY_PLAN_ID      = <plan variation id>
 SUPABASE_URL               = https://xxxx.supabase.co
 SUPABASE_SERVICE_ROLE_KEY  = <service_role>     [Secret]
 
-RESEND_API_KEY             = re_...             [Secret]
+RESEND_API_KEY                = re_...          [Secret]
+RESEND_MEMBERSHIP_TEMPLATE_ID = <template uuid>
+RESEND_VOLUNTEER_TEMPLATE_ID  = <template uuid>
 RESEND_FROM                = Nova Scotia Türk Derneği <info@tsns.ca>
 RESEND_REPLY_TO            = info@tsns.ca
 RESEND_ADMIN_TO            = info@tsns.ca

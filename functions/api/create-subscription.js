@@ -6,13 +6,7 @@ import {
   membershipWindow,
   normalizeEmail,
 } from "../_lib/supabase";
-import {
-  sendEmail,
-  sendInBackground,
-  buildMemberEmail,
-  buildAdminNotice,
-  adminRecipients,
-} from "../_lib/email";
+import { sendMemberConfirmation, sendAdminNotice } from "../_lib/email";
 
 const SQUARE_API_VERSION = "2024-10-17";
 const MIN_AMOUNT_CENTS = 1000; // $10 minimum (unless a valid student coupon)
@@ -165,55 +159,33 @@ export async function onRequestPost(context) {
     square_subscription_id: subscription?.id || null,
   });
 
-  const mail = buildMemberEmail({
+  sendMemberConfirmation(env, context, {
     name: buyer.name,
     email,
+    lang,
     type: "yearly",
     amountCents: finalAmountCents,
-    endDate,
-    lang,
+    membershipStart: startDate,
+    membershipEnd: endDate,
   });
-  sendInBackground(
-    context,
-    sendEmail(env, {
-      to: email,
-      subject: mail.subject,
-      html: mail.html,
-      text: mail.text,
-      tags: [{ name: "type", value: "membership_welcome" }],
-    })
-  );
 
-  const admins = adminRecipients(env);
-  if (admins) {
-    const notice = buildAdminNotice({
-      kind: "membership",
-      rows: [
-        ["Ad", buyer.name || null],
-        ["E-posta", email],
-        ["Telefon", buyer.phone || null],
-        ["Tutar", `$${(finalAmountCents / 100).toFixed(2)} CAD / yıl`],
-        ["Öğrenci kuponu", couponUsed ? "evet" : "hayır"],
-        ["Geçmiş", describeHistory(history, { renewalLabel: true })],
-        ["Başlangıç", startDate],
-        ["Square abonelik", subscription?.id || null],
-        ["Durum", subscription?.status || null],
-        ["Bitiş", endDate],
-        ["Ortam", env.SQUARE_ENV === "production" ? "production" : "sandbox"],
-      ],
-    });
-    sendInBackground(
-      context,
-      sendEmail(env, {
-        to: admins,
-        subject: notice.subject,
-        html: notice.html,
-        text: notice.text,
-        replyTo: email,
-        tags: [{ name: "type", value: "membership_admin" }],
-      })
-    );
-  }
+  sendAdminNotice(env, context, {
+    kind: "membership",
+    replyTo: email,
+    rows: [
+      ["Ad", buyer.name || null],
+      ["E-posta", email],
+      ["Telefon", buyer.phone || null],
+      ["Tutar", `$${(finalAmountCents / 100).toFixed(2)} CAD / yıl`],
+      ["Öğrenci kuponu", couponUsed ? "evet" : "hayır"],
+      ["Geçmiş", describeHistory(history, { renewalLabel: true })],
+      ["Başlangıç", startDate],
+      ["Bitiş", endDate],
+      ["Square abonelik", subscription?.id || null],
+      ["Durum", subscription?.status || null],
+      ["Ortam", env.SQUARE_ENV === "production" ? "production" : "sandbox"],
+    ],
+  });
 
   return json(200, {
     ok: true,

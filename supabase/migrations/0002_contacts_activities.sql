@@ -70,7 +70,12 @@ create table if not exists public.activities (
   currency     text default 'CAD',
   status       text,
 
-  -- Üyelik penceresi (yalnızca kind = 'membership')
+  -- Üyelik penceresi.
+  --   kind='membership' -> yıllık üyelik, Square aboneliğiyle kendini yeniler
+  --   kind='donation'   -> tek seferlik bağış da 1 yıllık üyelik açar,
+  --                        ama yenilenmez; süre dolunca biter
+  -- Yani pencere ikisinde de olabilir; farkı `kind` söylüyor, ayrı bir
+  -- "yenilenir mi" kolonuna gerek yok.
   membership_start date,
   membership_end   date,
   student_coupon   boolean not null default false,
@@ -90,8 +95,8 @@ create table if not exists public.activities (
     (kind = 'volunteer_signup' and amount_cents is null)
     or (kind in ('membership', 'donation') and amount_cents is not null)
   ),
-  constraint activities_window_only_for_membership check (
-    kind = 'membership'
+  constraint activities_window_needs_payment check (
+    kind in ('membership', 'donation')
     or (membership_start is null and membership_end is null)
   ),
   constraint activities_window_ordered check (
@@ -101,6 +106,20 @@ create table if not exists public.activities (
     kind = 'volunteer_signup' or interests is null
   )
 );
+
+-- Daha önce 0002'nin eski hâlini çalıştırdıysan: bağışların da üyelik penceresi
+-- taşımasına izin ver.
+do $$
+begin
+  alter table public.activities drop constraint if exists activities_window_only_for_membership;
+  alter table public.activities drop constraint if exists activities_window_needs_payment;
+  alter table public.activities add constraint activities_window_needs_payment check (
+    kind in ('membership', 'donation')
+    or (membership_start is null and membership_end is null)
+  );
+exception
+  when undefined_table then null;
+end $$;
 
 create index if not exists activities_contact_idx    on public.activities (contact_id, created_at desc);
 create index if not exists activities_kind_idx       on public.activities (kind, created_at desc);
@@ -189,8 +208,15 @@ with act as (
     min(created_at)                                       as first_activity_at,
     max(created_at)                                       as last_activity_at,
     max(created_at) filter (where kind = 'membership')    as last_membership_at,
-    max(membership_end) filter (where kind = 'membership') as membership_end,
     min(created_at) filter (where kind = 'membership')    as first_membership_at,
+    min(created_at) filter (where kind = 'donation')      as first_donation_at,
+    max(created_at) filter (where kind = 'donation')      as last_donation_at,
+
+    -- Üyelik penceresi iki kaynaktan gelebilir. Hangisi daha ileri tarihliyse
+    -- kişinin güncel üyeliği odur; kaynağı da "yenilenir mi"yi belirliyor.
+    max(membership_end) filter (where kind = 'membership') as yearly_end,
+    max(membership_end) filter (where kind = 'donation')   as donation_end,
+    max(membership_end)                                    as membership_end,
 
     count(*) filter (where kind in ('membership', 'donation')) as payment_count,
     count(*) filter (where kind = 'membership')                as membership_count,
@@ -219,7 +245,22 @@ select
   a.last_activity_at,
   a.first_membership_at,
   a.last_membership_at,
+  a.first_donation_at,
+  a.last_donation_at,
   a.membership_end,
+
+  -- Güncel üyelik hangi kaynaktan geliyor ve kendini yeniler mi?
+  case
+    when a.membership_end is null then null
+    when a.yearly_end is not null
+     and (a.donation_end is null or a.yearly_end >= a.donation_end) then 'yearly'
+    else 'one_time'
+  end as membership_kind,
+  case
+    when a.membership_end is null then false
+    else a.yearly_end is not null
+     and (a.donation_end is null or a.yearly_end >= a.donation_end)
+  end as membership_auto_renews,
 
   coalesce(a.payment_count, 0)          as payment_count,
   coalesce(a.membership_count, 0)       as membership_count,
@@ -252,14 +293,20 @@ select
     case when coalesce(a.donation_count, 0) > 0                      then 'donor'         end
   ], null) as roles,
 
-  -- Tek etiket isteyen yerler için, öncelik sırası:
-  -- aktif üye > gönüllü > eski üye > bağışçı > (sadece kayıtlı kişi)
+  -- Tek etiket isteyen yerler için. Sıralama kasıtlı: tek seferlik bağış da bir
+  -- yıllık üyelik açıyor, ama o kişi "üye" değil "bağışçı" olarak anılmalı —
+  -- üyeliği kendini yenilemiyor. Bu yüzden aktif pencerenin kaynağına bakılıyor.
+  --   aktif yıllık üyelik > aktif bağış üyeliği > gönüllü > eski üye >
+  --   geçmişte bağış yapmış > sadece kayıtlı kişi
   case
-    when a.membership_end >= current_date                              then 'member'
+    when a.membership_end >= current_date
+     and a.yearly_end is not null
+     and (a.donation_end is null or a.yearly_end >= a.donation_end)         then 'member'
+    when a.membership_end >= current_date                                   then 'donor'
     when c.volunteer_status is not null and c.volunteer_status <> 'inactive' then 'volunteer'
-    when a.membership_end is not null                                  then 'former_member'
-    when coalesce(a.donation_count, 0) > 0                             then 'donor'
-    else                                                                    'contact'
+    when a.membership_end is not null                                       then 'former_member'
+    when coalesce(a.donation_count, 0) > 0                                  then 'donor'
+    else                                                                         'contact'
   end as member_type
 from public.contacts c
 left join act a on a.contact_id = c.id;

@@ -4,14 +4,9 @@ import {
   lookupPerson,
   describeHistory,
   normalizeEmail,
+  membershipWindow,
 } from "../_lib/supabase";
-import {
-  sendEmail,
-  sendInBackground,
-  buildMemberEmail,
-  buildAdminNotice,
-  adminRecipients,
-} from "../_lib/email";
+import { sendMemberConfirmation, sendAdminNotice } from "../_lib/email";
 
 const SQUARE_API_VERSION = "2024-10-17";
 
@@ -113,6 +108,10 @@ export async function onRequestPost(context) {
   // notification can say whether they have supported us before.
   const history = await lookupPerson(env, email);
 
+  // A one-off gift also grants a year of membership — it simply does not renew
+  // itself the way the yearly subscription does.
+  const { start: startDate, end: endDate } = membershipWindow();
+
   const contactId = await upsertContact(env, {
     email,
     name: buyer?.name,
@@ -124,58 +123,37 @@ export async function onRequestPost(context) {
     amount_cents: amountCents,
     currency: "CAD",
     status: payment?.status || null,
+    membership_start: startDate,
+    membership_end: endDate,
     square_payment_id: payment?.id || null,
   });
 
-  if (email) {
-    const mail = buildMemberEmail({
-      name: buyer.name,
-      email,
-      type: "one_time",
-      amountCents: amountCents,
-      endDate: null,
-      receiptUrl: payment?.receipt_url || null,
-      lang,
-    });
-    sendInBackground(
-      context,
-      sendEmail(env, {
-        to: email,
-        subject: mail.subject,
-        html: mail.html,
-        text: mail.text,
-        tags: [{ name: "type", value: "donation_receipt" }],
-      })
-    );
-  }
+  sendMemberConfirmation(env, context, {
+    name: buyer?.name,
+    email,
+    lang,
+    type: "one_time",
+    amountCents,
+    membershipStart: startDate,
+    membershipEnd: endDate,
+    receiptUrl: payment?.receipt_url || null,
+  });
 
-  const admins = adminRecipients(env);
-  if (admins) {
-    const notice = buildAdminNotice({
-      kind: "donation",
-      rows: [
-        ["Ad", buyer?.name || null],
-        ["E-posta", email],
-        ["Telefon", buyer?.phone || null],
-        ["Tutar", `$${(amountCents / 100).toFixed(2)} CAD`],
-        ["Square ödeme", payment?.id || null],
-        ["Durum", payment?.status || null],
-        ["Geçmiş", describeHistory(history)],
-        ["Ortam", SQUARE_ENV === "production" ? "production" : "sandbox"],
-      ],
-    });
-    sendInBackground(
-      context,
-      sendEmail(env, {
-        to: admins,
-        subject: notice.subject,
-        html: notice.html,
-        text: notice.text,
-        replyTo: email || undefined,
-        tags: [{ name: "type", value: "donation_admin" }],
-      })
-    );
-  }
+  sendAdminNotice(env, context, {
+    kind: "donation",
+    replyTo: email || undefined,
+    rows: [
+      ["Ad", buyer?.name || null],
+      ["E-posta", email],
+      ["Telefon", buyer?.phone || null],
+      ["Tutar", `$${(amountCents / 100).toFixed(2)} CAD`],
+      ["Üyelik", `${startDate} → ${endDate} (yenilenmez)`],
+      ["Square ödeme", payment?.id || null],
+      ["Durum", payment?.status || null],
+      ["Geçmiş", describeHistory(history)],
+      ["Ortam", SQUARE_ENV === "production" ? "production" : "sandbox"],
+    ],
+  });
 
   return json(200, {
     ok: true,

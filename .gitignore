@@ -8,3 +8,4 @@ dist/
 atlas-credentials.env
 worker/
 
+emails

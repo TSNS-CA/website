@@ -1,11 +1,5 @@
 import { upsertContact, recordActivity, lookupPerson, describeHistory } from "../_lib/supabase";
-import {
-  sendEmail,
-  sendInBackground,
-  buildVolunteerEmail,
-  buildAdminNotice,
-  adminRecipients,
-} from "../_lib/email";
+import { sendVolunteerConfirmation, sendAdminNotice } from "../_lib/email";
 
 function json(status, body) {
   return new Response(JSON.stringify(body), {
@@ -60,44 +54,21 @@ export async function onRequestPost(context) {
     interests: volunteer.interests,
   });
 
-  const mail = buildVolunteerEmail({ ...volunteer, lang: locale });
-  sendInBackground(
-    context,
-    sendEmail(env, {
-      to: volunteer.email,
-      subject: mail.subject,
-      html: mail.html,
-      text: mail.text,
-      tags: [{ name: "type", value: "volunteer_confirmation" }],
-    })
-  );
+  sendVolunteerConfirmation(env, context, { ...volunteer, lang: locale });
 
-  const admins = adminRecipients(env);
-  if (admins) {
-    const notice = buildAdminNotice({
-      kind: "volunteer",
-      rows: [
-        ["Ad Soyad", volunteer.name],
-        ["E-posta", volunteer.email],
-        ["Telefon", volunteer.phone],
-        ["İlgi alanları", volunteer.interests],
-        ["Dil", locale],
-        ["Geçmiş", describeHistory(person)],
-        ["Supabase", stored ? "kaydedildi" : "KAYDEDİLEMEDİ"],
-      ],
-    });
-    sendInBackground(
-      context,
-      sendEmail(env, {
-        to: admins,
-        subject: notice.subject,
-        html: notice.html,
-        text: notice.text,
-        replyTo: volunteer.email,
-        tags: [{ name: "type", value: "volunteer_admin" }],
-      })
-    );
-  }
+  sendAdminNotice(env, context, {
+    kind: "volunteer",
+    replyTo: volunteer.email,
+    rows: [
+      ["Ad Soyad", volunteer.name],
+      ["E-posta", volunteer.email],
+      ["Telefon", volunteer.phone],
+      ["İlgi alanları", volunteer.interests],
+      ["Dil", locale],
+      ["Geçmiş", describeHistory(person)],
+      ["Supabase", stored ? "kaydedildi" : "KAYDEDİLEMEDİ"],
+    ],
+  });
 
   if (!stored) {
     // Supabase unconfigured or the write failed. The visitor is acknowledged

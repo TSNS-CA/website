@@ -1,8 +1,29 @@
-// Transactional email via Resend (https://resend.com/docs/api-reference/emails/send-email).
-// Requires env: RESEND_API_KEY, RESEND_FROM. Optional: RESEND_ADMIN_TO, RESEND_REPLY_TO.
+// Email content and orchestration.
 //
-// Every send here is best-effort: a failed email must never fail a payment or a
-// volunteer signup, so nothing in this module throws.
+// Confirmations to members, donors and volunteers go out as **Resend-hosted
+// templates** (authored in the Resend dashboard, which owns their from-address,
+// subject and design). We only pass the template id and the variables it
+// references.
+//
+// The HTML builders below are the fallback used when a template id has not been
+// configured yet, and are what the internal notifications always use — there is
+// no template for those and they only need to be legible.
+//
+// Env: RESEND_API_KEY, RESEND_MEMBERSHIP_TEMPLATE_ID, RESEND_VOLUNTEER_TEMPLATE_ID.
+// Optional: per-language ids with a _TR / _EN suffix, RESEND_FROM (fallback),
+// RESEND_REPLY_TO, RESEND_ADMIN_TO.
+
+import {
+  sendTemplate,
+  sendRaw,
+  resolveTemplateId,
+  firstNameOf,
+  formatDate,
+  formatAmount,
+  sendInBackground,
+} from "./resend";
+
+export { sendInBackground };
 
 const BRAND = "Nova Scotia Türk Derneği";
 const BRAND_EN = "Turkish Society of Nova Scotia";
@@ -25,60 +46,6 @@ function esc(v) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
-}
-
-/**
- * POST an email to Resend. Returns the Resend response body, or null when the
- * integration is unconfigured or the send failed (both are logged, not thrown).
- */
-export async function sendEmail(env, { to, subject, html, text, replyTo, tags }) {
-  const key = env?.RESEND_API_KEY;
-  const from = env?.RESEND_FROM;
-  if (!key || !from) {
-    console.warn("email: RESEND_API_KEY or RESEND_FROM not set — skipping email to", to);
-    return null;
-  }
-  if (!to) return null;
-
-  const body = {
-    from,
-    to: Array.isArray(to) ? to : [to],
-    subject,
-    html,
-  };
-  if (text) body.text = text;
-  const reply = replyTo || env.RESEND_REPLY_TO;
-  if (reply) body.reply_to = reply;
-  if (tags) body.tags = tags;
-
-  try {
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
-    if (!res.ok) {
-      console.error("email: send failed", res.status, await res.text());
-      return null;
-    }
-    return await res.json();
-  } catch (e) {
-    console.error("email: send error", e);
-    return null;
-  }
-}
-
-/**
- * Run an email send without making the visitor wait for Resend. Falls back to
- * awaiting when the runtime gives us no `waitUntil`.
- */
-export function sendInBackground(ctx, promise) {
-  const p = Promise.resolve(promise).catch((e) => console.error("email: background send error", e));
-  if (ctx && typeof ctx.waitUntil === "function") {
-    ctx.waitUntil(p);
-    return null;
-  }
-  return p;
 }
 
 function rowsHtml(rows) {
@@ -134,7 +101,16 @@ export function buildMemberEmail({ name, email, type, amountCents, endDate, rece
     [tr ? "Tür" : "Type", typeLabel],
     [tr ? "Tutar" : "Amount", amount],
   ];
-  if (endDate) rows.push([tr ? "Üyelik Bitiş Tarihi" : "Membership Ends", endDate]);
+  // A one-off gift grants a year of membership too — say so, and be explicit
+  // that it will not renew itself, unlike the yearly subscription.
+  if (endDate) {
+    rows.push([
+      tr ? "Üyelik Bitiş Tarihi" : "Membership Ends",
+      type === "yearly"
+        ? endDate
+        : `${endDate} ${tr ? "(otomatik yenilenmez)" : "(does not auto-renew)"}`,
+    ]);
+  }
 
   const subject = tr
     ? `${BRAND} — ${type === "yearly" ? "Üyeliğiniz Onaylandı" : "Bağışınız Alındı"}`
@@ -148,9 +124,14 @@ export function buildMemberEmail({ name, email, type, amountCents, endDate, rece
 
   const html = layout({
     heading: tr ? `Merhaba ${esc(name)},` : `Hello ${esc(name)},`,
-    lead: tr
-      ? "Desteğiniz bize ulaştı. Aşağıda kaydınızın detaylarını bulabilirsiniz:"
-      : "We received your support. Here are the details of your record:",
+    lead:
+      type === "yearly"
+        ? tr
+          ? "Desteğiniz bize ulaştı. Aşağıda üyelik detaylarınızı bulabilirsiniz:"
+          : "We received your support. Here are your membership details:"
+        : tr
+        ? "Bağışınız bize ulaştı. Bağışınız size bir yıllık üyelik de kazandırıyor; bu üyelik kendiliğinden yenilenmez."
+        : "We received your donation. It also grants you a year of membership, which will not renew itself.",
     rows: rowsHtml(rows),
     extraHtml: receiptLink,
     closing: tr ? "Topluluğumuza katıldığınız için teşekkür ederiz." : "Thank you for being part of our community.",
@@ -240,4 +221,147 @@ export function adminRecipients(env) {
   if (!raw) return null;
   const list = raw.split(",").map((s) => s.trim()).filter(Boolean);
   return list.length ? list : null;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Sending. Template first, generated HTML only as a fallback.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Confirmation for a donation or a yearly membership, sent with the
+ * `membership-confirmation` template.
+ *
+ * The template is bilingual, so both the English and the Turkish rendering of
+ * each date is passed and the design picks whichever its half needs. A template
+ * only renders the variables it references, so passing the full set is free:
+ *
+ *   firstName, fullName, email
+ *   amount ("$25.00"), currency
+ *   membershipType ("yearly" | "one_time"), autoRenews ("true" | "false")
+ *   membershipStartDate    / membershipStartDateTr
+ *   membershipExpiryDate   / membershipExpiryDateTr
+ *   receiptUrl
+ */
+export function sendMemberConfirmation(env, ctx, opts) {
+  const {
+    name,
+    email,
+    lang = "tr",
+    type,
+    amountCents,
+    membershipStart,
+    membershipEnd,
+    receiptUrl,
+  } = opts;
+  if (!email) return null;
+
+  const templateId = resolveTemplateId(env, "MEMBERSHIP");
+  if (templateId) {
+    return sendInBackground(
+      ctx,
+      sendTemplate(env, {
+        to: email,
+        templateId,
+        variables: {
+          firstName: firstNameOf(name),
+          fullName: name || "",
+          email,
+          amount: formatAmount(amountCents),
+          currency: "CAD",
+          membershipType: type,
+          autoRenews: type === "yearly" ? "true" : "false",
+          membershipStartDate: formatDate(membershipStart, "en"),
+          membershipStartDateTr: formatDate(membershipStart, "tr"),
+          membershipExpiryDate: formatDate(membershipEnd, "en"),
+          membershipExpiryDateTr: formatDate(membershipEnd, "tr"),
+          receiptUrl: receiptUrl || "",
+        },
+        tags: [{ name: "type", value: type === "yearly" ? "membership_welcome" : "donation_receipt" }],
+      })
+    );
+  }
+
+  console.warn("email: no membership template configured — falling back to built-in HTML");
+  const mail = buildMemberEmail({
+    name,
+    email,
+    type,
+    amountCents,
+    endDate: membershipEnd,
+    receiptUrl,
+    lang,
+  });
+  return sendInBackground(
+    ctx,
+    sendRaw(env, {
+      to: email,
+      subject: mail.subject,
+      html: mail.html,
+      text: mail.text,
+      tags: [{ name: "type", value: type === "yearly" ? "membership_welcome" : "donation_receipt" }],
+    })
+  );
+}
+
+/**
+ * Confirmation for a volunteer application, sent with the
+ * `volunteer-confirmation` template (bilingual, like the membership one).
+ * Variables: firstName, fullName, email, phone, interests
+ */
+export function sendVolunteerConfirmation(env, ctx, opts) {
+  const { name, email, phone, interests, lang = "tr" } = opts;
+  if (!email) return null;
+
+  const templateId = resolveTemplateId(env, "VOLUNTEER");
+  if (templateId) {
+    return sendInBackground(
+      ctx,
+      sendTemplate(env, {
+        to: email,
+        templateId,
+        variables: {
+          firstName: firstNameOf(name),
+          fullName: name || "",
+          email,
+          phone: phone || "",
+          interests: interests || "",
+        },
+        tags: [{ name: "type", value: "volunteer_confirmation" }],
+      })
+    );
+  }
+
+  console.warn("email: no volunteer template configured — falling back to built-in HTML");
+  const mail = buildVolunteerEmail({ name, email, phone, interests, lang });
+  return sendInBackground(
+    ctx,
+    sendRaw(env, {
+      to: email,
+      subject: mail.subject,
+      html: mail.html,
+      text: mail.text,
+      tags: [{ name: "type", value: "volunteer_confirmation" }],
+    })
+  );
+}
+
+/**
+ * Internal "new signup" notice to the society. Always generated HTML — these
+ * are operational, not designed, and carry fields no template knows about.
+ */
+export function sendAdminNotice(env, ctx, { kind, rows, replyTo, tag }) {
+  const admins = adminRecipients(env);
+  if (!admins) return null;
+  const notice = buildAdminNotice({ kind, rows });
+  return sendInBackground(
+    ctx,
+    sendRaw(env, {
+      to: admins,
+      subject: notice.subject,
+      html: notice.html,
+      text: notice.text,
+      replyTo,
+      tags: [{ name: "type", value: tag || `${kind}_admin` }],
+    })
+  );
 }

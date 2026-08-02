@@ -33,7 +33,10 @@ export default function DonatePage({ lang }) {
   }
 
   function chooseFrequency(f) {
-    if (locked) return;
+    if (f === frequency) return;
+    // The student discount only exists for yearly membership, so switching to a
+    // one-off gift drops it rather than blocking the switch.
+    if (f === "one_time" && coupon) removeCoupon();
     setFrequency(f);
   }
 
@@ -128,15 +131,14 @@ export default function DonatePage({ lang }) {
             <div className="grid grid-cols-2 gap-2">
               {[
                 { id: "yearly", label: tr ? "Yıllık Üyelik" : "Yearly Membership", sub: tr ? "Her yıl yenilenir" : "Renews yearly" },
-                { id: "one_time", label: tr ? "Tek Seferlik" : "One-time", sub: tr ? "Tek bağış" : "Single gift" },
+                { id: "one_time", label: tr ? "Tek Seferlik" : "One-time", sub: tr ? "1 yıl üyelik, yenilenmez" : "1 year, no renewal" },
               ].map((f) => (
                 <button
                   key={f.id}
                   type="button"
-                  disabled={locked}
                   onClick={() => chooseFrequency(f.id)}
                   className={
-                    "rounded-xl border p-3 text-center transition disabled:opacity-60 " +
+                    "rounded-xl border p-3 text-center transition " +
                     (frequency === f.id
                       ? "border-accent bg-accent/10 ring-1 ring-accent"
                       : "border-slate-300 hover:border-accent dark:border-slate-700")
@@ -209,7 +211,8 @@ export default function DonatePage({ lang }) {
             <p className="text-xs text-slate-600 dark:text-slate-400">{tr ? "Üyelik bilgileriniz bu e-postaya gönderilecek." : "Membership details will be sent to this email."}</p>
           </div>
 
-          {/* Student coupon */}
+          {/* Student coupon — yearly membership only */}
+          {frequency === "yearly" && (
           <div className="rounded-xl border border-slate-200 bg-cream-200/60 p-4 dark:border-slate-700 dark:bg-primary-700/40">
             {coupon ? (
               <div className="flex items-center justify-between gap-3">
@@ -240,6 +243,7 @@ export default function DonatePage({ lang }) {
               </>
             )}
           </div>
+          )}
 
           <button type="submit" className="w-full rounded-full bg-accent px-6 py-3 font-bold text-white transition hover:bg-accent-600">
             {tr ? "Devam Et" : "Continue"} · {amountLabel}
