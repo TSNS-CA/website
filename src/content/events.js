@@ -39,8 +39,8 @@ export const events = [
     slug: "cumhuriyet-bayrami-2026",
     featured: true,
     title: {
-      tr: "Cumhuriyet Bayramı Kutlaması",
-      en: "Republic Day Celebration",
+      tr: "29 Ekim Cumhuriyet Bayramı Kutlaması",
+      en: "October 29 Republic Day Celebration",
     },
     summary: {
       tr: "Cumhuriyetimizin 103. yılını Halifax'ta birlikte kutluyoruz: akşam yemeği, gece programı ve Türk-Kanada dostluğu.",
