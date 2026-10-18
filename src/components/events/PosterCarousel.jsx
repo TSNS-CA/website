@@ -91,7 +91,7 @@ export default function PosterCarousel({ images, alt = "", lang = "tr", classNam
   return (
     <div
       ref={rootRef}
-      className={`group/carousel relative select-none ${className}`}
+      className="group/carousel relative select-none"
       role="region"
       aria-roledescription="carousel"
       aria-label={alt}
@@ -106,7 +106,7 @@ export default function PosterCarousel({ images, alt = "", lang = "tr", classNam
       tabIndex={0}
     >
       <div
-        className="touch-pan-y overflow-hidden rounded-3xl"
+        className={`touch-pan-y overflow-hidden rounded-3xl ${className}`}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
@@ -132,32 +132,20 @@ export default function PosterCarousel({ images, alt = "", lang = "tr", classNam
         </div>
       </div>
 
-      {/* Oklar */}
-      <button
-        type="button"
-        onClick={() => goTo(index - 1)}
-        aria-label={prevLabel}
-        className="absolute left-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-slate-900 shadow-lg ring-1 ring-black/10 transition hover:bg-white focus-visible:outline-none"
-      >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="h-5 w-5" aria-hidden="true">
-          <path d="M15 5l-7 7 7 7" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      </button>
-      <button
-        type="button"
-        onClick={() => goTo(index + 1)}
-        aria-label={nextLabel}
-        className="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-slate-900 shadow-lg ring-1 ring-black/10 transition hover:bg-white focus-visible:outline-none"
-      >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="h-5 w-5" aria-hidden="true">
-          <path d="M9 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      </button>
-
-      {/* Sayaç + noktalar */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-3 flex items-center justify-center">
-        <div className="pointer-events-auto flex items-center gap-2 rounded-full bg-primary-900/80 px-3 py-1.5 text-white shadow-lg ring-1 ring-white/15 backdrop-blur">
-          <span className="text-[11px] font-bold tabular-nums">
+      {/* Kontrol çubuğu — görselin ALTINDA; afişteki yazıları kapatmaz. */}
+      <div className="mt-3 flex items-center justify-center gap-3">
+        <button
+          type="button"
+          onClick={() => goTo(index - 1)}
+          aria-label={prevLabel}
+          className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white ring-1 ring-inset ring-white/25 transition hover:bg-white/20 focus-visible:outline-none"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="h-4 w-4" aria-hidden="true">
+            <path d="M15 5l-7 7 7 7" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+        <div className="flex items-center gap-2.5 rounded-full bg-white/10 px-3.5 py-1.5 text-white ring-1 ring-inset ring-white/20">
+          <span className="text-xs font-bold tabular-nums">
             {index + 1} / {count}
           </span>
           <span className="h-3 w-px bg-white/30" aria-hidden="true" />
@@ -175,6 +163,16 @@ export default function PosterCarousel({ images, alt = "", lang = "tr", classNam
             ))}
           </div>
         </div>
+        <button
+          type="button"
+          onClick={() => goTo(index + 1)}
+          aria-label={nextLabel}
+          className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white ring-1 ring-inset ring-white/25 transition hover:bg-white/20 focus-visible:outline-none"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="h-4 w-4" aria-hidden="true">
+            <path d="M9 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
       </div>
     </div>
   );
