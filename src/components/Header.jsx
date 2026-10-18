@@ -18,6 +18,8 @@ export default function Header({ lang, onChangeLang }) {
   const navItems = [
     { to: "/", label: t(lang, "nav.home") },
     { to: "/about", label: t(lang, "nav.about") },
+    { to: "/etkinlikler", label: t(lang, "nav.events") },
+    { to: "/yeni-gelenler", label: t(lang, "nav.newcomers") },
     { to: "/contact", label: t(lang, "nav.contact") },
   ];
 
@@ -49,7 +51,7 @@ export default function Header({ lang, onChangeLang }) {
         </Link>
 
         {/* Desktop nav */}
-        <nav className="hidden items-center gap-1 md:flex">
+        <nav className="hidden items-center gap-0.5 lg:flex">
           {navItems.map((item) => (
             <NavLink
               key={item.to}
@@ -68,7 +70,7 @@ export default function Header({ lang, onChangeLang }) {
             <LangToggle lang={lang} onChange={onChangeLang} />
           </div>
           <ThemeToggle className="hidden sm:inline-flex" />
-          <Button to="/gonullu" variant="outline" size="sm" className="hidden lg:inline-flex">
+          <Button to="/gonullu" variant="outline" size="sm" className="hidden xl:inline-flex">
             {t(lang, "action.volunteer")}
           </Button>
           {/* Donate: full pill from `sm` up, heart-only circle on phones so the
@@ -93,7 +95,7 @@ export default function Header({ lang, onChangeLang }) {
             onClick={() => setOpen((o) => !o)}
             aria-label="Menü"
             aria-expanded={open}
-            className="inline-flex h-9 w-9 flex-none items-center justify-center rounded-full border border-slate-300 text-slate-700 sm:ml-1 md:hidden dark:border-slate-700 dark:text-slate-200"
+            className="inline-flex h-9 w-9 flex-none items-center justify-center rounded-full border border-slate-300 text-slate-700 sm:ml-1 lg:hidden dark:border-slate-700 dark:text-slate-200"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5" aria-hidden="true">
               {open ? (
@@ -108,7 +110,7 @@ export default function Header({ lang, onChangeLang }) {
 
       {/* Mobile menu */}
       {open && (
-        <div className="md:hidden">
+        <div className="lg:hidden">
           <div className="space-y-1 border-t border-slate-200 bg-white px-4 py-4 dark:border-slate-800 dark:bg-primary-900">
             {navItems.map((item) => (
               <NavLink
