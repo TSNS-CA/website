@@ -324,7 +324,7 @@ export default function EventDetailPage({ lang }) {
             </Link>
           </nav>
 
-          <div className="mt-8 grid grid-cols-1 items-center gap-10 lg:grid-cols-[1fr_400px]">
+          <div className="mt-8 grid grid-cols-1 items-center gap-10 lg:grid-cols-[1fr_460px] xl:grid-cols-[1fr_500px]">
             <div>
               <div className="flex items-center gap-4">
                 <DateLeaf date={start} lang={lang} size="lg" muted={past} />
@@ -336,7 +336,7 @@ export default function EventDetailPage({ lang }) {
                 </div>
               </div>
 
-              <h1 className="mt-7 font-display text-4xl font-black leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl">{event.title[lang]}</h1>
+              <h1 className="mt-7 font-display text-4xl font-black leading-[1.05] tracking-tight sm:text-5xl 2xl:text-6xl">{event.title[lang]}</h1>
               <p className="mt-5 max-w-2xl text-lg leading-relaxed text-slate-200">{event.summary[lang]}</p>
 
               {(v.name || address) && (
@@ -372,8 +372,8 @@ export default function EventDetailPage({ lang }) {
             </div>
 
             {event.poster && (
-              <div className="relative mx-auto w-full max-w-xs sm:max-w-sm lg:max-w-none">
-                <div className="absolute -inset-3 rounded-[2rem] bg-gradient-to-br from-gold/40 via-accent/30 to-transparent blur-xl" aria-hidden="true" />
+              <div className="relative mx-auto w-full sm:max-w-md lg:max-w-none">
+                <div className="absolute -inset-2 rounded-[2rem] bg-gradient-to-br from-gold/40 via-accent/30 to-transparent blur-xl" aria-hidden="true" />
                 <PosterCarousel
                   images={[event.poster, ...(event.gallery || [])]}
                   alt={event.poster.alt?.[lang] || event.title[lang]}
