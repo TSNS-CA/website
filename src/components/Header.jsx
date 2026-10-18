@@ -24,9 +24,9 @@ export default function Header({ lang, onChangeLang }) {
   ];
 
   const linkBase =
-    "relative rounded-md px-3 py-2 text-sm font-semibold transition";
+    "relative whitespace-nowrap rounded-md px-2.5 py-2 text-[13px] font-semibold transition xl:px-3 xl:text-sm";
   const linkActive =
-    "text-brand after:absolute after:inset-x-3 after:-bottom-1 after:h-[3px] after:rounded-full after:bg-accent";
+    "text-brand after:absolute after:inset-x-2.5 after:-bottom-1 after:h-[3px] after:rounded-full after:bg-accent";
   const linkIdle =
     "text-slate-700 hover:text-accent-600 dark:text-slate-200 dark:hover:text-accent-300";
 
@@ -45,7 +45,7 @@ export default function Header({ lang, onChangeLang }) {
             alt="Nova Scotia Türk Derneği logo"
             className="h-9 w-9 flex-none rounded-lg border-2 border-gold bg-white p-1 object-contain sm:h-11 sm:w-11"
           />
-          <span className="min-w-0 overflow-hidden text-ellipsis text-[15px] font-extrabold leading-[1.15] tracking-tight text-primary xs:text-base sm:whitespace-nowrap sm:text-lg sm:leading-none lg:text-xl dark:text-white">
+          <span className="min-w-0 overflow-hidden text-ellipsis text-[15px] font-extrabold leading-[1.15] tracking-tight text-primary xs:text-base sm:whitespace-nowrap sm:text-lg sm:leading-none dark:text-white">
             {t(lang, "brand.full")}
           </span>
         </Link>
@@ -70,7 +70,7 @@ export default function Header({ lang, onChangeLang }) {
             <LangToggle lang={lang} onChange={onChangeLang} />
           </div>
           <ThemeToggle className="hidden sm:inline-flex" />
-          <Button to="/gonullu" variant="outline" size="sm" className="hidden xl:inline-flex">
+          <Button to="/gonullu" variant="outline" size="sm" className="hidden whitespace-nowrap 2xl:inline-flex">
             {t(lang, "action.volunteer")}
           </Button>
           {/* Donate: full pill from `sm` up, heart-only circle on phones so the

@@ -124,7 +124,7 @@ function DrivingCard({ lang }) {
           {t(lang, "newcomers.visitSite")} ↗
         </Button>
       </div>
-      <div className="mt-5 grid grid-cols-1 gap-6 md:grid-cols-[1fr_auto]">
+      <div className="mt-5 grid grid-cols-1 gap-6 md:grid-cols-[1fr_260px]">
         <div>
           <div className="text-sm font-bold text-slate-900 dark:text-white">{p.packageTitle[lang]}</div>
           <div className="text-xs text-slate-500 dark:text-slate-400">{p.packageFor[lang]}</div>
@@ -138,7 +138,7 @@ function DrivingCard({ lang }) {
           </ul>
           <p className="mt-4 text-sm leading-relaxed text-slate-700 dark:text-slate-200">{p.pitch[lang]}</p>
         </div>
-        <div className="surface-red flex min-w-[200px] flex-col justify-between rounded-xl p-5">
+        <div className="surface-red flex flex-col justify-between rounded-xl p-5">
           <div>
             <div className="text-3xl font-black">{p.price[lang]}</div>
             <div className="mt-2 text-[11px] font-bold tracking-[0.14em]">{upper(lang, t(lang, "newcomers.memberDiscount"))}</div>

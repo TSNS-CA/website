@@ -84,7 +84,7 @@ export function Button({ to, href, variant = "primary", size = "md", className =
   );
 }
 
-export function Card({ className = "", children }) {
+export function Card({ id, className = "", children }) {
   // Tailwind resolves conflicting utilities by their order in the stylesheet, not
   // by their order in the class string — so a caller passing `bg-primary` used to
   // lose to this component's own `bg-white` and render white-on-white. Only apply
@@ -93,6 +93,7 @@ export function Card({ className = "", children }) {
   const surface = hasSurface ? "" : "bg-white dark:bg-primary-800";
   return (
     <div
+      id={id}
       className={`rounded-2xl border border-slate-200 p-6 shadow-card transition hover:shadow-lg dark:border-slate-800 ${surface} ${className}`}
     >
       {children}
