@@ -45,7 +45,7 @@ export default function Header({ lang, onChangeLang }) {
             alt="Nova Scotia Türk Derneği logo"
             className="h-9 w-9 flex-none rounded-lg border-2 border-gold bg-white p-1 object-contain sm:h-11 sm:w-11"
           />
-          <span className="min-w-0 overflow-hidden text-ellipsis text-[15px] font-extrabold leading-[1.15] tracking-tight text-primary xs:text-base sm:whitespace-nowrap sm:text-lg sm:leading-none dark:text-white">
+          <span className="min-w-0 overflow-hidden text-ellipsis py-0.5 text-[15px] font-extrabold leading-[1.2] tracking-tight text-primary xs:text-base sm:whitespace-nowrap sm:text-lg sm:leading-[1.25] dark:text-white">
             {t(lang, "brand.full")}
           </span>
         </Link>
