@@ -1,6 +1,6 @@
 import { t, upper } from "../i18n";
 import { Section, Eyebrow, Button, Card } from "../components/ui";
-import { guide, partnerships, supportOrgs, linkGroups, verifyList, lastReviewed, sourceYear } from "../content/newcomers.js";
+import { guide, partnerships, supportOrgs, linkGroups, lastReviewed } from "../content/newcomers.js";
 import { usePageMeta } from "../lib/usePageMeta";
 
 const EXT = { target: "_blank", rel: "noopener noreferrer" };
@@ -25,17 +25,6 @@ function LinkList({ links, lang, title }) {
   );
 }
 
-function VerifyBadge({ lang, note }) {
-  return (
-    <div className="mt-4 flex items-start gap-2 rounded-lg border border-gold/60 bg-gold/15 px-3 py-2 text-xs text-slate-800 dark:border-gold/40 dark:bg-gold/10 dark:text-slate-100">
-      <span aria-hidden="true">⚠️</span>
-      <span>
-        <span className="font-bold">{t(lang, "newcomers.verifyBadge")}:</span> {note[lang]}
-      </span>
-    </div>
-  );
-}
-
 function GuideSection({ section, lang }) {
   return (
     <section id={section.id} className="scroll-mt-28 border-t border-slate-200 pt-10 first:border-t-0 first:pt-0 dark:border-slate-800">
@@ -51,7 +40,6 @@ function GuideSection({ section, lang }) {
         ))}
       </div>
       <LinkList links={section.links} lang={lang} title={t(lang, "newcomers.sectionLinks")} />
-      {section.verify && <VerifyBadge lang={lang} note={section.verify} />}
     </section>
   );
 }
@@ -149,7 +137,6 @@ function DrivingCard({ lang }) {
           </Button>
         </div>
       </div>
-      <VerifyBadge lang={lang} note={p.verify} />
     </Card>
   );
 }
@@ -188,9 +175,6 @@ export default function NewcomersPage({ lang }) {
             {guide.title[lang]}
           </h1>
           <p className="mt-6 text-lg leading-relaxed text-slate-600 dark:text-slate-300">{t(lang, "newcomers.intro")}</p>
-          <p className="mt-5 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600 dark:border-slate-700 dark:bg-primary-800 dark:text-slate-300">
-            🗓️ {t(lang, "newcomers.lastReviewed", { date: lastReviewed, year: sourceYear })}
-          </p>
         </div>
 
         {/* Mobil içindekiler: yatay chip satırı */}
@@ -308,22 +292,6 @@ export default function NewcomersPage({ lang }) {
               </div>
             </div>
 
-            {/* Teyit listesi */}
-            <div className="rounded-2xl border border-gold/50 bg-gold/10 p-6 dark:border-gold/30 dark:bg-gold/5">
-              <h2 className="text-sm font-bold tracking-wider text-slate-900 dark:text-white">{upper(lang, t(lang, "newcomers.verifyTitle"))}</h2>
-              <p className="mt-2 text-sm text-slate-700 dark:text-slate-200">{t(lang, "newcomers.verifyIntro")}</p>
-              <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-slate-700 dark:text-slate-200">
-                {verifyList[lang].map((x) => (
-                  <li key={x}>{x}</li>
-                ))}
-              </ul>
-              <p className="mt-4 text-sm text-slate-700 dark:text-slate-200">
-                {t(lang, "newcomers.suggest")}{" "}
-                <a href="mailto:info@tsns.ca" className="font-semibold text-brand-red hover:underline">
-                  info@tsns.ca
-                </a>
-              </p>
-            </div>
           </div>
         </div>
       </Section>
