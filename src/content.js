@@ -43,32 +43,7 @@ export const stories = [
   },
 ];
 
-export const events = [
-  {
-    date: { tr: "29 Ekim", en: "Oct 29" },
-    title: { tr: "Cumhuriyet Bayramı", en: "Republic Day Celebration" },
-    desc: {
-      tr: "Türk Cumhuriyeti'nin kuruluşunu ve Türk-Kanada dostluğunu birlikte kutluyoruz.",
-      en: "Celebrating the founding of the Republic and Turkish–Canadian friendship.",
-    },
-  },
-  {
-    date: { tr: "23 Nisan", en: "Apr 23" },
-    title: { tr: "23 Nisan Çocuk Bayramı", en: "Children's Day" },
-    desc: {
-      tr: "Çocuklarımıza ve geleceğimize adanmış, renkli bir kültür şöleni.",
-      en: "A colorful cultural gathering dedicated to our children and the future.",
-    },
-  },
-  {
-    date: { tr: "Haziran", en: "June" },
-    title: { tr: "Yıllık Genel Kurul", en: "Annual General Meeting" },
-    desc: {
-      tr: "Topluluk olarak bir yılın değerlendirmesini ve gelecek planlarımızı paylaşıyoruz.",
-      en: "Reviewing the year together and sharing our plans ahead.",
-    },
-  },
-];
+// Etkinlikler artık src/content/events.js içinde (tarih/mekân/bilet modeliyle).
 
 export const sponsors = [
   "MediTerra Kitchen & Grocery",
