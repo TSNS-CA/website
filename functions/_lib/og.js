@@ -142,7 +142,7 @@ export async function renderWithMeta(request, env, meta) {
     .on('meta[name^="twitter:"]', removable)
     .on('link[rel="canonical"]', {
       element(el) {
-        el.setAttribute("href", meta.url);
+        el.remove(); // sayfaya özel canonical aşağıda head sonuna eklenir
       },
     })
     .on("head", {
