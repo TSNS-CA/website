@@ -19,7 +19,7 @@ export default function EventMeta({ event, lang, compact = false }) {
     <div className={compact ? "space-y-3" : "space-y-5"}>
       <Row label={t(lang, "events.when")} lang={lang}>
         <div className="font-semibold">{fmtLongDate(start, lang)}</div>
-        <div>{fmtTimeRange(start, end, lang)}</div>
+        <div>{fmtTimeRange(start, event.showEndTime === false ? null : end, lang)}</div>
       </Row>
       {(v.name || address) && (
         <Row label={t(lang, "events.venue")} lang={lang}>

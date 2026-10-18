@@ -113,7 +113,77 @@ export const events = [
         en: "Republic Day Celebration poster — November 6, 2026, Steel Wheels Motor Museum",
       },
     },
+    program: [
+      { time: "19:00 – 19:30", title: { tr: "Karşılama ve Giriş", en: "Welcome & Reception" } },
+      { time: "19:30 – 19:45", title: { tr: "Resmî Açılış", en: "Official Opening" } },
+      { time: "19:45 – 20:05", title: { tr: "Konuşmalar", en: "Speeches" } },
+      { time: "20:05 – 20:15", title: { tr: "Çocukların Sahneye Çıkışı", en: "Children's Performance" } },
+      { time: "20:15 – 21:30", title: { tr: "Cumhuriyet Yemeği", en: "Republic Dinner" } },
+      { time: "21:30 – 22:15", title: { tr: "Şimal – DJ Performansı", en: "Şimal – DJ Set" } },
+      {
+        time: "22:15 →",
+        title: { tr: "Driven Music – DJ Performansı", en: "Driven Music – DJ Set" },
+        note: { tr: "Anadolu tarzı müzik eşliğinde serbest eğlence.", en: "Open dance floor with Anatolian-style music." },
+      },
+    ],
+    menu: {
+      tr: ["Çorba", "Dolma", "Közlenmiş Kırmızı Biber", "Patlıcan Salatası", "Ispanaklı Börek (Vegan)", "Tavuk Şiş", "Tavuk Köfte", "Kuzu Köfte", "Baklava"],
+      en: ["Soup", "Dolma", "Roasted Red Peppers", "Eggplant Salad", "Spinach Börek (Vegan)", "Chicken Shish", "Chicken Köfte", "Lamb Köfte", "Baklava"],
+    },
+    sponsorNote: {
+      tr: "The Bertossi Group katkılarıyla ücretsiz şarap ikramı.",
+      en: "Complimentary wine courtesy of The Bertossi Group.",
+    },
+    gallery: [
+      {
+        src: "/events/cumhuriyet-2026-program.jpg",
+        alt: { tr: "Gecenin programı ve akşam menüsü afişi", en: "Evening program and dinner menu poster" },
+      },
+    ],
     tags: ["republic-day", "gala"],
+  },
+
+  {
+    id: "bayrak-cekme-2026",
+    slug: "bayrak-cekme-2026",
+    title: { tr: "29 Ekim Bayrak Çekme Töreni", en: "Republic Day Flag-Raising Ceremony" },
+    summary: {
+      tr: "Cumhuriyetimizin 103. yılında şanlı bayrağımızı Halifax Belediye Binası önünde birlikte göndere çekiyoruz. Herkese açık, ücretsiz.",
+      en: "On the 103rd anniversary of the Republic, we raise our flag together at Halifax City Hall. Free and open to everyone.",
+    },
+    description: {
+      tr: [
+        "29 Ekim Cumhuriyet Bayramı'nda, Cumhuriyetimizin 103. yılını kutlamak üzere Halifax City Hall önünde bayrak çekme töreni düzenliyoruz. Şanlı bayrağımızı birlikte göndere çekmek üzere tüm vatandaşlarımızı ve dostlarımızı törenimize davet ediyoruz.",
+        "Tören öğle saatinde kısa sürecek; aileler ve çocuklar için uygundur. Kayıt gerekmez.",
+      ],
+      en: [
+        "On October 29, Turkish Republic Day, we hold a flag-raising ceremony at Halifax City Hall to mark the 103rd anniversary of the Republic of Türkiye. Everyone is cordially invited to join us as we raise our flag together.",
+        "The ceremony is short and family-friendly. No registration needed.",
+      ],
+    },
+    start: "2026-10-29T13:00",
+    end: "2026-10-29T13:45",
+    showEndTime: false,
+    timezone: EVENTS_TZ,
+    venue: {
+      name: "Halifax City Hall",
+      street: "1841 Argyle St",
+      city: "Halifax",
+      region: "NS",
+      postalCode: "B3J 3A5",
+      mapUrl: "https://www.google.com/maps/search/?api=1&query=Halifax+City+Hall+1841+Argyle+St+Halifax+NS",
+    },
+    status: "scheduled",
+    registration: { mode: "none", free: true },
+    tiers: [],
+    poster: {
+      src: "/events/bayrak-cekme-2026.jpg",
+      alt: {
+        tr: "29 Ekim Bayrak Çekme Töreni afişi — 29 Ekim 2026 Perşembe 13:00, Halifax City Hall",
+        en: "Flag-Raising Ceremony poster — Thursday October 29, 2026, 1:00 PM, Halifax City Hall",
+      },
+    },
+    tags: ["republic-day", "ceremony", "free"],
   },
 
   // ---- Geçmiş etkinlikler (arşiv; eski Google Sites duyurularından aktarıldı) ----

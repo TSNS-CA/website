@@ -83,6 +83,18 @@ const translations = {
     "events.externalNote": "Bilet satışı {provider} üzerinden yapılmaktadır; satın alma güvenli bir dış sayfada tamamlanır.",
     "events.dressCode": "Kıyafet",
     "events.contactNote": "Sorularınız için:",
+    "events.program": "Gecenin Programı",
+    "events.menu": "Akşam Menüsü",
+    "events.gallery": "Afişler",
+    "events.freeEntry": "Ücretsiz · Herkese açık",
+    "events.noRegistration": "Kayıt gerekmez, doğrudan gelin.",
+    "events.about": "Etkinlik Hakkında",
+    "events.share": "Paylaş",
+    "events.copied": "Bağlantı kopyalandı",
+    "events.moreUpcoming": "{count} etkinlik daha",
+    "events.heroEyebrow": "Nova Scotia Türk Derneği etkinliği",
+    "events.ticketsFrom": "{price} $'dan başlayan biletler",
+    "events.pastEyebrow": "Arşiv",
 
     "newcomers.title": "Yeni Gelenler",
     "newcomers.intro":
@@ -241,6 +253,18 @@ const translations = {
     "events.externalNote": "Tickets are sold through {provider}; checkout completes on a secure external page.",
     "events.dressCode": "Dress code",
     "events.contactNote": "Questions?",
+    "events.program": "Evening Program",
+    "events.menu": "Dinner Menu",
+    "events.gallery": "Posters",
+    "events.freeEntry": "Free · Open to all",
+    "events.noRegistration": "No registration needed — just come.",
+    "events.about": "About the Event",
+    "events.share": "Share",
+    "events.copied": "Link copied",
+    "events.moreUpcoming": "{count} more event",
+    "events.heroEyebrow": "A Turkish Society of Nova Scotia event",
+    "events.ticketsFrom": "Tickets from ${price}",
+    "events.pastEyebrow": "Archive",
 
     "newcomers.title": "Newcomers",
     "newcomers.intro":
@@ -353,7 +377,7 @@ export function t(lang, key, vars = {}) {
 // Türkçe metinde geçen ama Türkçe kurallarıyla büyütülmemesi gereken özel
 // adlar: "Nova Scotia" → "NOVA SCOTİA" değil, "NOVA SCOTIA". Yeni bir yabancı
 // yer/marka adı eklenirse listeye yazılmalı.
-const LATIN_NAMES = ["Nova Scotia", "Halifax", "Dartmouth", "Pier 21", "Otter Lake", "Steel Wheels", "ISANS", "Six Sigma"];
+const LATIN_NAMES = ["Nova Scotia", "Halifax", "Dartmouth", "Pier 21", "Otter Lake", "Steel Wheels", "City Hall", "ISANS", "Six Sigma"];
 const LATIN_NAMES_RE = new RegExp(`(${LATIN_NAMES.join("|")})`, "gi");
 
 // Büyütmeyi CSS'in `text-transform: uppercase`ına bırakamıyoruz: o hem

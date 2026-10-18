@@ -1,7 +1,7 @@
 import { t, upper } from "../i18n";
 import { stories, sponsors } from "../content";
 import { Container, Section, SectionHeading, Eyebrow, Button, Card } from "../components/ui";
-import { splitEvents, getFeatured } from "../content/events.js";
+import { splitEvents } from "../content/events.js";
 import EventCard from "../components/events/EventCard";
 import NextEventBanner from "../components/events/NextEventBanner";
 
@@ -206,11 +206,11 @@ function CTA({ lang }) {
 }
 
 export default function HomePage({ lang }) {
-  const featured = getFeatured();
+  const { upcoming } = splitEvents();
   return (
     <>
       <Hero lang={lang} />
-      {featured ? <NextEventBanner event={featured} lang={lang} /> : <Promise lang={lang} />}
+      {upcoming.length ? <NextEventBanner events={upcoming} lang={lang} /> : <Promise lang={lang} />}
       <WhySupport lang={lang} />
       <Stats lang={lang} />
       <Stories lang={lang} />
