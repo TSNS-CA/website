@@ -58,12 +58,26 @@ export function priceFrom(event, lang, now = new Date()) {
   return t(lang, "events.ticketsFrom", { price: min });
 }
 
-// Poster yoksa (eski genel kurullar gibi) bayrak kırmızısı bir desen.
+// Poster yoksa (eski genel kurullar gibi) yuvarlak Türk bayrağı rozeti.
+// Inline SVG: emoji bayrak Windows'ta "TR" harfleri olarak çıkıyor.
+export function TurkishFlagBadge({ className = "h-20 w-20" }) {
+  return (
+    <svg viewBox="0 0 100 100" className={className} role="img" aria-label="Türk bayrağı">
+      <circle cx="50" cy="50" r="50" fill="#E30A17" />
+      <circle cx="40" cy="50" r="25" fill="#fff" />
+      <circle cx="46" cy="50" r="20" fill="#E30A17" />
+      <polygon points="53.00,50.00 61.79,46.94 61.98,37.64 67.61,45.05 76.52,42.36 71.20,50.00 76.52,57.64 67.61,54.95 61.98,62.36 61.79,53.06" fill="#fff" />
+    </svg>
+  );
+}
+
 function PosterFallback({ past }) {
   return (
-    <div className={`flex h-full w-full items-center justify-center bg-gradient-to-br from-primary-700 via-primary-800 to-primary-900 ${past ? "" : ""}`}>
-      <div className="flex h-20 w-20 items-center justify-center rounded-full bg-accent/90 shadow-lg">
-        <span className="text-4xl" aria-hidden="true">☪</span>
+    <div className="relative flex h-full w-full items-center justify-center overflow-hidden bg-gradient-to-br from-primary-700 via-primary-800 to-primary-900">
+      <div className="pointer-events-none absolute -left-10 -top-10 h-40 w-40 rounded-full bg-white/5" aria-hidden="true" />
+      <div className="pointer-events-none absolute -bottom-12 -right-12 h-48 w-48 rounded-full bg-accent/15" aria-hidden="true" />
+      <div className={`rounded-full p-1.5 ring-2 ring-white/25 shadow-xl ${past ? "opacity-90" : ""}`}>
+        <TurkishFlagBadge className="h-20 w-20 drop-shadow-lg" />
       </div>
     </div>
   );
