@@ -99,6 +99,38 @@ const translations = {
     "events.partnersIntro": "Bu geceyi birlikte mümkün kılan iş ortaklarımıza teşekkür ederiz.",
     "events.visitPartner": "Web sitesine git",
 
+    "nav.photos": "Fotoğraflar",
+    "photos.eyebrow": "Fotoğraf Arşivi",
+    "photos.title": "Fotoğraf Arşivi",
+    "photos.intro":
+      "Bayramlar, anma günleri, piknikler ve galalar: 2015'ten bugüne topluluğumuzun hatıraları. Etkinliğe ya da tarihe göre gezin, beğendiğiniz kareyi büyütün.",
+    "photos.stats": "{albums} albüm · {photos} fotoğraf · {from}–{to}",
+    "photos.viewLabel": "Görünüm",
+    "photos.byEvent": "Etkinliğe göre",
+    "photos.byDate": "Tarihe göre",
+    "photos.year": "Yıl",
+    "photos.category": "Kategori",
+    "photos.all": "Tümü",
+    "photos.view": "Albümü aç",
+    "photos.empty": "Bu filtreye uyan albüm yok.",
+    "photos.albumCount": "{count} albüm",
+    "photos.photoCount": "{count} fotoğraf",
+    "photos.notFound": "Böyle bir albüm bulunamadı.",
+    "photos.backToArchive": "Fotoğraf Arşivi",
+    "photos.eventPage": "Etkinlik sayfası",
+    "photos.hint": "Büyütmek için fotoğrafa tıklayın; ok tuşları veya kaydırma ile gezinin.",
+    "photos.older": "Daha eski",
+    "photos.newer": "Daha yeni",
+    "photos.related": "Benzer albümler",
+    "photos.contributeEyebrow": "Arşive katkı",
+    "photos.contributeTitle": "Sizde de etkinlik fotoğrafları var mı?",
+    "photos.contributeBody": "Eski yıllardan kareleriniz varsa arşive eklemek isteriz. Fotoğraflarda yer alan kişilerin onayı alınır.",
+    "photos.contributeCta": "Fotoğraf gönder",
+    "home.photos.eyebrow": "Fotoğraf Arşivi",
+    "home.photos.title": "Hatıralarımız",
+    "home.photos.subtitle": "2015'ten bugüne bayramlar, anmalar ve buluşmalar.",
+    "home.photos.cta": "Arşive göz at",
+
     "newcomers.title": "Yeni Gelenler",
     "newcomers.intro":
       "Halifax'a yeni mi geldiniz? Topluluğumuzun hazırladığı pratik rehber, yerleşim ortaklıklarımız ve işinize yarayacak bağlantılar burada. Birlikte daha güçlüyüz.",
@@ -272,6 +304,38 @@ const translations = {
     "events.partnersIntro": "Our thanks to the partners who make this evening possible.",
     "events.visitPartner": "Visit website",
 
+    "nav.photos": "Photos",
+    "photos.eyebrow": "Photo Archive",
+    "photos.title": "Photo Archive",
+    "photos.intro":
+      "National days, remembrance ceremonies, picnics and galas: our community's memories since 2015. Browse by event or by date and open any photo full-size.",
+    "photos.stats": "{albums} albums · {photos} photos · {from}–{to}",
+    "photos.viewLabel": "View",
+    "photos.byEvent": "By event",
+    "photos.byDate": "By date",
+    "photos.year": "Year",
+    "photos.category": "Category",
+    "photos.all": "All",
+    "photos.view": "Open album",
+    "photos.empty": "No albums match this filter.",
+    "photos.albumCount": "{count} albums",
+    "photos.photoCount": "{count} photos",
+    "photos.notFound": "We couldn't find that album.",
+    "photos.backToArchive": "Photo Archive",
+    "photos.eventPage": "Event page",
+    "photos.hint": "Click a photo to enlarge; use the arrow keys or swipe to navigate.",
+    "photos.older": "Older",
+    "photos.newer": "Newer",
+    "photos.related": "Related albums",
+    "photos.contributeEyebrow": "Contribute",
+    "photos.contributeTitle": "Do you have photos from our events?",
+    "photos.contributeBody": "We'd love to add your photos from past years to the archive. We ask for consent from the people pictured.",
+    "photos.contributeCta": "Send photos",
+    "home.photos.eyebrow": "Photo Archive",
+    "home.photos.title": "Our Memories",
+    "home.photos.subtitle": "National days, remembrance and gatherings since 2015.",
+    "home.photos.cta": "Browse the archive",
+
     "newcomers.title": "Newcomers",
     "newcomers.intro":
       "New to Halifax? Here is our community's practical guide, our settlement partnerships and the links you will actually use. We are stronger together.",
@@ -383,7 +447,7 @@ export function t(lang, key, vars = {}) {
 // Türkçe metinde geçen ama Türkçe kurallarıyla büyütülmemesi gereken özel
 // adlar: "Nova Scotia" → "NOVA SCOTİA" değil, "NOVA SCOTIA". Yeni bir yabancı
 // yer/marka adı eklenirse listeye yazılmalı.
-const LATIN_NAMES = ["Nova Scotia", "Halifax", "Dartmouth", "Pier 21", "Otter Lake", "Steel Wheels", "City Hall", "ISANS", "Six Sigma"];
+const LATIN_NAMES = ["Nova Scotia", "Halifax", "Dartmouth", "Pier 21", "Otter Lake", "Steel Wheels", "City Hall", "Grand Parade", "Wolfville", "Annapolis", "ISANS", "Six Sigma"];
 const LATIN_NAMES_RE = new RegExp(`(${LATIN_NAMES.join("|")})`, "gi");
 
 // Büyütmeyi CSS'in `text-transform: uppercase`ına bırakamıyoruz: o hem

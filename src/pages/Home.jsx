@@ -4,6 +4,8 @@ import { Container, Section, SectionHeading, Eyebrow, Button, Card } from "../co
 import { splitEvents } from "../content/events.js";
 import EventCard from "../components/events/EventCard";
 import NextEventBanner from "../components/events/NextEventBanner";
+import { Link } from "react-router-dom";
+import { getAlbums, photoCount, formatAlbumDate } from "../content/photos.js";
 
 function Hero({ lang }) {
   return (
@@ -161,6 +163,42 @@ function Events({ lang }) {
   );
 }
 
+function PhotoStrip({ lang }) {
+  const albums = getAlbums();
+  // 9 kareli mozaik: ilk kare 2x2 büyük. En yeni albümden 5 kare + sonraki 4 albümün kapakları.
+  const tiles = [
+    ...albums[0].photos.slice(0, 5).map((p) => ({ ...p, album: albums[0] })),
+    ...albums.slice(1, 5).map((a) => ({ src: a.cover, thumb: a.coverThumb, album: a })),
+  ].slice(0, 9);
+  return (
+    <Section className="py-20">
+      <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+        <SectionHeading lang={lang} eyebrow={t(lang, "home.photos.eyebrow")} title={t(lang, "home.photos.title")} subtitle={t(lang, "home.photos.subtitle")} />
+        <Button to="/fotograflar" variant="outline" className="self-start sm:self-auto">
+          {t(lang, "home.photos.cta")} →
+        </Button>
+      </div>
+      <div className="mt-10 grid grid-cols-3 gap-3 sm:grid-cols-6 sm:grid-rows-2">
+        {tiles.map((tile, i) => (
+          <Link
+            key={tile.src}
+            to={`/fotograflar/${tile.album.slug}`}
+            className={`group relative overflow-hidden rounded-2xl bg-primary-900 ring-1 ring-black/5 ${i === 0 ? "col-span-2 row-span-2 aspect-square" : "aspect-square"}`}
+            aria-label={tile.album.title[lang]}
+          >
+            <img src={i === 0 ? tile.src : tile.thumb} alt="" loading="lazy" className="h-full w-full object-cover transition duration-700 group-hover:scale-105" />
+            <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-primary-900/90 to-transparent p-3 text-white opacity-0 transition group-hover:opacity-100">
+              <span className="block truncate text-xs font-bold">{tile.album.title[lang]}</span>
+              <span className="block text-[10px] text-slate-200">{formatAlbumDate(tile.album, lang)}</span>
+            </span>
+          </Link>
+        ))}
+      </div>
+      <p className="mt-4 text-xs text-slate-500 dark:text-slate-400">{t(lang, "photos.stats", { albums: getAlbums().length, photos: photoCount(), from: "2015", to: getAlbums()[0].date.slice(0, 4) })}</p>
+    </Section>
+  );
+}
+
 function Sponsors({ lang }) {
   return (
     <Section className="py-20">
@@ -215,6 +253,7 @@ export default function HomePage({ lang }) {
       <Stats lang={lang} />
       <Stories lang={lang} />
       <Events lang={lang} />
+      <PhotoStrip lang={lang} />
       <Sponsors lang={lang} />
       <CTA lang={lang} />
     </>

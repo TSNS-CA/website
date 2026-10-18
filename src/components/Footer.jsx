@@ -97,6 +97,7 @@ export default function Footer({ lang }) {
               <li><Link to="/about" className="text-slate-300 hover:text-white">{t(lang, "nav.about")}</Link></li>
               <li><Link to="/etkinlikler" className="text-slate-300 hover:text-white">{t(lang, "nav.events")}</Link></li>
               <li><Link to="/yeni-gelenler" className="text-slate-300 hover:text-white">{t(lang, "nav.newcomers")}</Link></li>
+              <li><Link to="/fotograflar" className="text-slate-300 hover:text-white">{t(lang, "nav.photos")}</Link></li>
               <li><Link to="/uye-ol" className="text-slate-300 hover:text-white">{t(lang, "action.becomeMember")}</Link></li>
               <li><Link to="/bagis" className="text-slate-300 hover:text-white">{t(lang, "action.donate")}</Link></li>
               <li><Link to="/gonullu" className="text-slate-300 hover:text-white">{t(lang, "action.volunteer")}</Link></li>

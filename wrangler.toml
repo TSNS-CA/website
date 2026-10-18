@@ -45,4 +45,5 @@ run_worker_first = [
   # Sunucu tarafı Open Graph (WhatsApp/Facebook önizlemesi) — functions/_lib/og.js
   "/etkinlikler", "/etkinlikler/*", "/events", "/events/*",
   "/yeni-gelenler", "/newcomers", "/announcements-events",
+  "/fotograflar", "/fotograflar/*", "/galeri", "/photos", "/about/photos",
 ]
