@@ -166,6 +166,7 @@ export const events = [
       {
         src: "/events/cumhuriyet-2026-program.jpg",
         alt: { tr: "Gecenin programı ve akşam menüsü afişi", en: "Evening program and dinner menu poster" },
+        dwellMs: 7000, // program/menü sayfası okunabilsin diye daha uzun kalır (ilk sayfa 2 sn)
       },
     ],
     tags: ["republic-day", "gala"],

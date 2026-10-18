@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { t, upper } from "../i18n";
 import { Container, Section, Button, Card } from "../components/ui";
 import EventMeta from "../components/events/EventMeta";
+import PosterCarousel from "../components/events/PosterCarousel";
 import { DateLeaf, StatusBadge } from "../components/events/EventCard";
 import { getEventBySlug, tierIsAvailable, organizer } from "../content/events.js";
 import { eventInstants, isoWithOffset, isPast, fmtLongDate, fmtMediumDate, fmtTimeRange, zonedToDate } from "../lib/dates.js";
@@ -373,10 +374,11 @@ export default function EventDetailPage({ lang }) {
             {event.poster && (
               <div className="relative mx-auto w-full max-w-xs sm:max-w-sm lg:max-w-none">
                 <div className="absolute -inset-3 rounded-[2rem] bg-gradient-to-br from-gold/40 via-accent/30 to-transparent blur-xl" aria-hidden="true" />
-                <img
-                  src={event.poster.src}
+                <PosterCarousel
+                  images={[event.poster, ...(event.gallery || [])]}
                   alt={event.poster.alt?.[lang] || event.title[lang]}
-                  className={`relative w-full rounded-3xl shadow-2xl ring-1 ring-white/20 ${past ? "grayscale-[50%]" : ""}`}
+                  lang={lang}
+                  className={`relative overflow-hidden rounded-3xl shadow-2xl ring-1 ring-white/20 ${past ? "grayscale-[50%]" : ""}`}
                 />
               </div>
             )}
@@ -410,18 +412,6 @@ export default function EventDetailPage({ lang }) {
             <Menu event={event} lang={lang} />
             <Partners event={event} lang={lang} />
 
-            {event.gallery?.length > 0 && (
-              <div>
-                <h2 className="font-display text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">🖼️ {t(lang, "events.gallery")}</h2>
-                <div className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2">
-                  {event.gallery.map((g) => (
-                    <a key={g.src} href={g.src} target="_blank" rel="noopener noreferrer" className="group block overflow-hidden rounded-2xl shadow-card ring-1 ring-slate-200 dark:ring-white/10">
-                      <img src={g.src} alt={g.alt?.[lang] || ""} loading="lazy" className="w-full transition duration-500 group-hover:scale-[1.02]" />
-                    </a>
-                  ))}
-                </div>
-              </div>
-            )}
           </article>
 
           <aside className="lg:sticky lg:top-24 lg:self-start">
