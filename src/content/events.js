@@ -130,9 +130,37 @@ export const events = [
       tr: ["Çorba", "Dolma", "Közlenmiş Kırmızı Biber", "Patlıcan Salatası", "Ispanaklı Börek (Vegan)", "Tavuk Şiş", "Tavuk Köfte", "Kuzu Köfte", "Baklava"],
       en: ["Soup", "Dolma", "Roasted Red Peppers", "Eggplant Salad", "Spinach Börek (Vegan)", "Chicken Shish", "Chicken Köfte", "Lamb Köfte", "Baklava"],
     },
-    sponsorNote: {
-      tr: "The Bertossi Group katkılarıyla ücretsiz şarap ikramı.",
-      en: "Complimentary wine courtesy of The Bertossi Group.",
+    // Katkıda bulunanlar: logo varsa `logo`, yoksa `wordmark` metin olarak çizilir.
+    partners: [
+      {
+        id: "turkuaz",
+        name: "Turkuaz Restaurant",
+        href: "https://turkuazrestaurant.ca/",
+        logo: { src: "/events/partners/turkuaz.jpg", alt: "Turkuaz Restaurant" },
+        icon: "🍽️",
+        role: { tr: "Akşam yemeği", en: "Dinner" },
+        blurb: {
+          tr: "Cumhuriyet Yemeği'nin tüm lezzetleri Halifax'ın Türk restoranı Turkuaz'ın mutfağından.",
+          en: "Every dish of the Republic Dinner comes from the kitchen of Turkuaz, Halifax's Turkish restaurant.",
+        },
+      },
+      {
+        id: "bertossi",
+        name: "The Bertossi Group",
+        href: "https://bertossigroup.com/",
+        wordmark: "The Bertossi Group",
+        mark: { src: "/events/partners/bertossi-mark.png", alt: "" },
+        icon: "🍷",
+        role: { tr: "Şarap ikramı", en: "Wine" },
+        blurb: {
+          tr: "Gece boyunca ücretsiz şarap ikramı The Bertossi Group'un katkılarıyla.",
+          en: "Complimentary wine throughout the evening, courtesy of The Bertossi Group.",
+        },
+      },
+    ],
+    menuNote: {
+      tr: "Menü Turkuaz Restaurant tarafından hazırlanmaktadır.",
+      en: "Menu prepared by Turkuaz Restaurant.",
     },
     gallery: [
       {

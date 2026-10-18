@@ -95,6 +95,9 @@ const translations = {
     "events.heroEyebrow": "Nova Scotia Türk Derneği etkinliği",
     "events.ticketsFrom": "{price} $'dan başlayan biletler",
     "events.pastEyebrow": "Arşiv",
+    "events.partners": "Katkılarıyla",
+    "events.partnersIntro": "Bu geceyi birlikte mümkün kılan iş ortaklarımıza teşekkür ederiz.",
+    "events.visitPartner": "Web sitesine git",
 
     "newcomers.title": "Yeni Gelenler",
     "newcomers.intro":
@@ -265,6 +268,9 @@ const translations = {
     "events.heroEyebrow": "A Turkish Society of Nova Scotia event",
     "events.ticketsFrom": "Tickets from ${price}",
     "events.pastEyebrow": "Archive",
+    "events.partners": "With the support of",
+    "events.partnersIntro": "Our thanks to the partners who make this evening possible.",
+    "events.visitPartner": "Visit website",
 
     "newcomers.title": "Newcomers",
     "newcomers.intro":
