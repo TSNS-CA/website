@@ -1,6 +1,9 @@
 import { t, upper } from "../i18n";
-import { stories, events, sponsors } from "../content";
+import { stories, sponsors } from "../content";
 import { Container, Section, SectionHeading, Eyebrow, Button, Card } from "../components/ui";
+import { splitEvents } from "../content/events.js";
+import EventCard from "../components/events/EventCard";
+import NextEventBanner from "../components/events/NextEventBanner";
 
 function Hero({ lang }) {
   return (
@@ -131,42 +134,28 @@ function Stories({ lang }) {
 }
 
 function Events({ lang }) {
+  const now = new Date();
+  const { upcoming, past } = splitEvents(now);
+  // Yaklaşan yoksa son üç etkinliği göster; bölüm hiç boş kalmasın.
+  const list = upcoming.length ? upcoming.slice(0, 3) : past.slice(0, 3);
+  const title = upcoming.length ? t(lang, "home.events.title") : t(lang, "home.events.recentTitle");
   return (
     <Section className="bg-cream-200 py-20 dark:bg-primary-800">
-      <SectionHeading
-        lang={lang}
-        eyebrow={t(lang, "home.events.eyebrow")}
-        title={t(lang, "home.events.title")}
-        subtitle={t(lang, "home.events.subtitle")}
-      />
-      <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-3">
-        {events.map((e, i) => {
-          // Tarihler iki biçimde gelir: "29 Ekim" (gün + ay) ya da "Haziran"
-          // (yalnızca ay). Eski kod her zaman ilk parçayı büyük bir sayı sanıp
-          // text-lg ile basıyordu; "Haziran" tek başına büyük puntoyla tile'a
-          // sığmıyordu.
-          const parts = e.date[lang].split(" ");
-          const day = parts.length > 1 ? parts[0] : null;
-          const month = parts.length > 1 ? parts.slice(1).join(" ") : parts[0];
-          return (
-            <Card key={i} className="flex gap-4">
-              <div className="surface-red flex w-16 flex-none flex-col items-center justify-center rounded-xl px-1 text-center">
-                {day ? (
-                  <>
-                    <span className="text-lg font-black leading-none">{day}</span>
-                    <span className="text-[10px] font-bold leading-tight">{month}</span>
-                  </>
-                ) : (
-                  <span className="text-xs font-bold leading-tight">{month}</span>
-                )}
-              </div>
-              <div>
-                <h3 className="text-base font-bold text-slate-900 dark:text-white">{e.title[lang]}</h3>
-                <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{e.desc[lang]}</p>
-              </div>
-            </Card>
-          );
-        })}
+      <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+        <SectionHeading
+          lang={lang}
+          eyebrow={t(lang, "home.events.eyebrow")}
+          title={title}
+          subtitle={t(lang, "home.events.subtitle")}
+        />
+        <Button to="/etkinlikler" variant="outline" className="self-start sm:self-auto">
+          {t(lang, "action.viewAll")} →
+        </Button>
+      </div>
+      <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {list.map((e) => (
+          <EventCard key={e.slug} event={e} lang={lang} now={now} />
+        ))}
       </div>
     </Section>
   );
@@ -217,10 +206,11 @@ function CTA({ lang }) {
 }
 
 export default function HomePage({ lang }) {
+  const { upcoming } = splitEvents();
   return (
     <>
       <Hero lang={lang} />
-      <Promise lang={lang} />
+      {upcoming.length ? <NextEventBanner events={upcoming} lang={lang} /> : <Promise lang={lang} />}
       <WhySupport lang={lang} />
       <Stats lang={lang} />
       <Stories lang={lang} />

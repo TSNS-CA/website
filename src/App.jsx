@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate, useParams } from "react-router-dom";
 import { getInitialLang, setLang } from "./i18n";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
@@ -10,6 +10,16 @@ import ContactPage from "./pages/Contact";
 import DonatePage from "./pages/Donate";
 import VolunteerPage from "./pages/Volunteer";
 import ConfirmationPage from "./pages/ConfirmationPage";
+import EventsPage from "./pages/Events";
+import EventDetailPage from "./pages/EventDetail";
+import NewcomersPage from "./pages/Newcomers";
+
+// /events/:slug → /etkinlikler/:slug. Türkçe yol kanonik (canonical + JSON-LD
+// tek URL'de kalsın diye İngilizce takma adlar kopya değil, yönlendirme).
+function RedirectEvent() {
+  const { slug } = useParams();
+  return <Navigate to={`/etkinlikler/${slug}`} replace />;
+}
 
 function Layout() {
   const [lang, setLangState] = useState(getInitialLang());
@@ -40,8 +50,15 @@ function Layout() {
           <Route path="/bagis" element={<DonatePage key="bagis" lang={lang} defaultFrequency="one_time" />} />
           <Route path="/uye-ol" element={<DonatePage key="uye-ol" lang={lang} defaultFrequency="yearly" />} />
           <Route path="/gonullu" element={<VolunteerPage lang={lang} />} />
+          <Route path="/etkinlikler" element={<EventsPage lang={lang} />} />
+          <Route path="/etkinlikler/:slug" element={<EventDetailPage lang={lang} />} />
+          <Route path="/yeni-gelenler" element={<NewcomersPage lang={lang} />} />
           {/* Legacy/aliases */}
           <Route path="/membership" element={<DonatePage key="uye-ol" lang={lang} defaultFrequency="yearly" />} />
+          <Route path="/events" element={<Navigate to="/etkinlikler" replace />} />
+          <Route path="/events/:slug" element={<RedirectEvent />} />
+          <Route path="/newcomers" element={<Navigate to="/yeni-gelenler" replace />} />
+          <Route path="/announcements-events" element={<Navigate to="/etkinlikler" replace />} />
           <Route path="/confirmation" element={<ConfirmationPage />} />
           <Route path="*" element={<HomePage lang={lang} />} />
         </Routes>
