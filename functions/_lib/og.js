@@ -8,6 +8,7 @@
 // gelir (src/content/events.js — React içermez, Worker'da da çalışır).
 import { getEventBySlug, splitEvents } from "../../src/content/events.js";
 import { eventInstants, fmtMediumDate, fmtTimeRange } from "../../src/lib/dates.js";
+import { getAlbums, getAlbumBySlug, formatAlbumDate, photoCount } from "../../src/content/photos.js";
 
 export const SITE = "https://tsns.ca";
 const SITE_NAME = { tr: "Nova Scotia Türk Derneği", en: "Turkish Society of Nova Scotia" };
@@ -68,6 +69,38 @@ export function metaForPath(pathname, lang = "tr") {
       image,
       imageAlt: next?.poster?.alt?.[lang] || SITE_NAME[lang],
       url: `${SITE}/etkinlikler`,
+      type: "website",
+      lang,
+    };
+  }
+
+  const pm = path.match(/^\/fotograflar\/([^/]+)$/);
+  if (pm) {
+    const album = getAlbumBySlug(decodeURIComponent(pm[1]));
+    if (album) {
+      return {
+        title: `${album.title[lang]} — ${formatAlbumDate(album, lang)}`,
+        description: `${album.description[lang]} (${album.photos.length} ${lang === "en" ? "photos" : "fotoğraf"})`,
+        image: { url: SITE + album.cover, width: album.photos.find((p) => p.src === album.cover)?.w, height: album.photos.find((p) => p.src === album.cover)?.h },
+        imageAlt: album.title[lang],
+        url: `${SITE}/fotograflar/${album.slug}`,
+        type: "article",
+        lang,
+      };
+    }
+  }
+  if (path === "/fotograflar" || path === "/galeri" || path === "/photos" || path === "/about/photos") {
+    const albums = getAlbums();
+    const latest = albums[0];
+    return {
+      title: lang === "en" ? "Photo Archive — Turkish Society of Nova Scotia" : "Fotoğraf Arşivi — Nova Scotia Türk Derneği",
+      description:
+        lang === "en"
+          ? `${albums.length} albums and ${photoCount()} photos from our community's national days, remembrance ceremonies and gatherings since 2015.`
+          : `2015'ten bugüne bayramlar, anma günleri ve buluşmalardan ${albums.length} albüm, ${photoCount()} fotoğraf.`,
+      image: latest ? { url: SITE + latest.cover } : DEFAULT_IMAGE,
+      imageAlt: latest?.title[lang] || SITE_NAME[lang],
+      url: `${SITE}/fotograflar`,
       type: "website",
       lang,
     };
@@ -152,7 +185,9 @@ export async function renderWithMeta(request, env, meta) {
     })
     .transform(res);
   const headers = new Headers(rewritten.headers);
-  headers.set("Cache-Control", "public, max-age=300");
+  // HTML önbelleğe alınmaz: deploy sonrası eski index.html, silinmiş hash'li JS'i
+  // göstermesin. (Önizleme botları için önbellek gerekmiyor; görseller zaten uzun ömürlü.)
+  headers.set("Cache-Control", "no-cache, must-revalidate");
   headers.set("Vary", "Accept-Language");
   return new Response(rewritten.body, { status: rewritten.status, headers });
 }

@@ -35,6 +35,9 @@ yazma — repo public. `keep_vars = true` dashboard değerlerini korur.
   gerektirmez; `/api/*` `run_worker_first` ile Worker'a gider.
 - Etkinlik verisi `src/content/events.js`; bileşenler yalnızca `getEvents/getEventBySlug/
   splitEvents/getFeatured` adaptörlerini çağırır (Faz 2'de Supabase'e geçiş için).
+- Fotoğraf arşivi `src/content/photos.js` (albüm = etkinlik; `public/photos/<slug>/NN.jpg` ≤1600 px +
+  `NN-t.jpg` 480 px, EXIF/GPS temizlenmiş; `w/h` gerçek boyut — masonry için şart). Yeni albüm:
+  görselleri iki boyutta kaydet, kayıt ekle, kategori seç; sayfa/OG kendiliğinden güncellenir.
 - **Paylaşım önizlemesi (WhatsApp/Facebook):** botlar JS çalıştırmaz. `functions/_lib/og.js`
   etkinlik ve yeni gelenler sayfalarında index.html'i HTMLRewriter ile sunucu tarafında
   og:/twitter: etiketleriyle zenginleştirir; bu yollar `wrangler.toml` `run_worker_first`

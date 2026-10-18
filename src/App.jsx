@@ -13,6 +13,8 @@ import ConfirmationPage from "./pages/ConfirmationPage";
 import EventsPage from "./pages/Events";
 import EventDetailPage from "./pages/EventDetail";
 import NewcomersPage from "./pages/Newcomers";
+import PhotosPage from "./pages/Photos";
+import AlbumPage from "./pages/Album";
 
 // /events/:slug → /etkinlikler/:slug. Türkçe yol kanonik (canonical + JSON-LD
 // tek URL'de kalsın diye İngilizce takma adlar kopya değil, yönlendirme).
@@ -53,12 +55,17 @@ function Layout() {
           <Route path="/etkinlikler" element={<EventsPage lang={lang} />} />
           <Route path="/etkinlikler/:slug" element={<EventDetailPage lang={lang} />} />
           <Route path="/yeni-gelenler" element={<NewcomersPage lang={lang} />} />
+          <Route path="/fotograflar" element={<PhotosPage lang={lang} />} />
+          <Route path="/fotograflar/:slug" element={<AlbumPage lang={lang} />} />
           {/* Legacy/aliases */}
           <Route path="/membership" element={<DonatePage key="uye-ol" lang={lang} defaultFrequency="yearly" />} />
           <Route path="/events" element={<Navigate to="/etkinlikler" replace />} />
           <Route path="/events/:slug" element={<RedirectEvent />} />
           <Route path="/newcomers" element={<Navigate to="/yeni-gelenler" replace />} />
           <Route path="/announcements-events" element={<Navigate to="/etkinlikler" replace />} />
+          <Route path="/galeri" element={<Navigate to="/fotograflar" replace />} />
+          <Route path="/photos" element={<Navigate to="/fotograflar" replace />} />
+          <Route path="/about/photos" element={<Navigate to="/fotograflar" replace />} />
           <Route path="/confirmation" element={<ConfirmationPage />} />
           <Route path="*" element={<HomePage lang={lang} />} />
         </Routes>
