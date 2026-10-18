@@ -12,8 +12,12 @@ compatibility_date = "2026-08-02"
 # static asset, which saves needing an .assetsignore.
 main = "./worker/index.js"
 
-# Per-branch preview URLs (the Workers equivalent of Pages preview deployments).
-preview_urls = true
+# Per-branch preview URLs KAPALI. Workers'ta ortam bazlı değişken ayrımı yok:
+# preview adresleri production Worker'ının Square/Supabase/Resend anahtarlarını
+# kullanır — bir preview'da ödeme denemek gerçek kart çeker. Test için
+# `npm run dev:api` (yerel) kullanın. Dashboard'daki "Non-production branch
+# builds" ayarı da kapalı tutulmalı (bkz. docs/SETUP.md §8).
+preview_urls = false
 
 # Runtime config (SUPABASE_*, SQUARE_*, RESEND_*, STUDENT_COUPON_CODES) is
 # entered in the dashboard under Settings -> Variables and Secrets, not here.
