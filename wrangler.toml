@@ -40,4 +40,9 @@ not_found_handling = "single-page-application"
 # SPA handling on, /api/* would otherwise be answered with index.html instead of
 # reaching the API. This flips the order back for the API only, so page loads
 # stay pure asset hits (not billed as Worker invocations).
-run_worker_first = ["/api/*"]
+run_worker_first = [
+  "/api/*",
+  # Sunucu tarafı Open Graph (WhatsApp/Facebook önizlemesi) — functions/_lib/og.js
+  "/etkinlikler", "/etkinlikler/*", "/events", "/events/*",
+  "/yeni-gelenler", "/newcomers", "/announcements-events",
+]

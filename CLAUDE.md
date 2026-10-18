@@ -35,6 +35,11 @@ yazma — repo public. `keep_vars = true` dashboard değerlerini korur.
   gerektirmez; `/api/*` `run_worker_first` ile Worker'a gider.
 - Etkinlik verisi `src/content/events.js`; bileşenler yalnızca `getEvents/getEventBySlug/
   splitEvents/getFeatured` adaptörlerini çağırır (Faz 2'de Supabase'e geçiş için).
+- **Paylaşım önizlemesi (WhatsApp/Facebook):** botlar JS çalıştırmaz. `functions/_lib/og.js`
+  etkinlik ve yeni gelenler sayfalarında index.html'i HTMLRewriter ile sunucu tarafında
+  og:/twitter: etiketleriyle zenginleştirir; bu yollar `wrangler.toml` `run_worker_first`
+  listesinde olmalı. Yeni bir SEO'lu sayfa eklersen: `functions/<yol>.js` + `metaForPath`
+  + `run_worker_first`. Yeni afiş eklersen `IMAGE_DIMS`'e boyutunu yaz; og:image < 300 KB tut.
 - Supabase migration'ları `supabase/migrations/` altında, idempotent, SQL Editor'da elle
   çalıştırılır. Tarayıcı Supabase'e doğrudan konuşmaz; her şey Worker üzerinden.
 - API rotaları: `onRequestPost({ request, env })`, `400 {ok:false,error}` / `201 {ok:true}`;
