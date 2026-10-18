@@ -10,3 +10,6 @@ worker/
 
 emails
 docs/email-templates/*.preview.html
+
+# Claude Code local settings and worktrees
+.claude/
