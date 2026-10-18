@@ -10,7 +10,7 @@ import { useEffect, useRef, useState } from "react";
 //   durur; elle geçişten sonra iki tur bekler.
 //   prefers-reduced-motion açıksa otomatik kayma yok.
 // - "1 / 2" sayacı, nokta göstergesi, ok butonları, klavye okları.
-export default function PosterCarousel({ images, alt = "", lang = "tr", className = "", autoplayMs = 2000 }) {
+export default function PosterCarousel({ images, alt = "", lang = "tr", className = "", autoplayMs = 4500 }) {
   const list = (images || []).filter(Boolean);
   const count = list.length;
   const [index, setIndex] = useState(0);
