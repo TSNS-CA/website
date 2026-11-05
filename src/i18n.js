@@ -154,7 +154,15 @@ const translations = {
     "newcomers.suggest": "Eksik ya da güncellenmesi gereken bir bilgi mi gördünüz?",
 
     "home.sponsors.eyebrow": "Teşekkürler",
-    "home.sponsors.title": "Sponsorlarımız & Ortaklarımız",
+    "home.sponsors.title": "{season} Sponsorlarımız",
+    "home.sponsors.tier.gold": "Gold Sponsor",
+    "home.sponsors.tier.gold.plural": "Gold Sponsorlar",
+    "home.sponsors.tier.silver": "Silver Sponsor",
+    "home.sponsors.tier.silver.plural": "Silver Sponsorlar",
+    "home.sponsors.tier.bronze": "Bronze Sponsor",
+    "home.sponsors.tier.bronze.plural": "Bronze Sponsorlar",
+    "home.sponsors.about": "Hakkında",
+    "home.sponsors.visit": "Web sitesini ziyaret edin",
     "home.sponsors.subtitle": "Topluluğumuzu büyütenleri destekleyen herkese minnettarız.",
 
     "home.cta.title": "Topluluğumuzun bir parçası olun",
@@ -361,7 +369,15 @@ const translations = {
     "newcomers.suggest": "Spotted something missing or out of date?",
 
     "home.sponsors.eyebrow": "Thank You",
-    "home.sponsors.title": "Our Sponsors & Partners",
+    "home.sponsors.title": "Our {season} Sponsors",
+    "home.sponsors.tier.gold": "Gold Sponsor",
+    "home.sponsors.tier.gold.plural": "Gold Sponsors",
+    "home.sponsors.tier.silver": "Silver Sponsor",
+    "home.sponsors.tier.silver.plural": "Silver Sponsors",
+    "home.sponsors.tier.bronze": "Bronze Sponsor",
+    "home.sponsors.tier.bronze.plural": "Bronze Sponsors",
+    "home.sponsors.about": "About",
+    "home.sponsors.visit": "Visit website",
     "home.sponsors.subtitle": "Grateful to everyone who helps our community grow.",
 
     "home.cta.title": "Be part of our community",
@@ -451,7 +467,7 @@ export function t(lang, key, vars = {}) {
 // Türkçe metinde geçen ama Türkçe kurallarıyla büyütülmemesi gereken özel
 // adlar: "Nova Scotia" → "NOVA SCOTİA" değil, "NOVA SCOTIA". Yeni bir yabancı
 // yer/marka adı eklenirse listeye yazılmalı.
-const LATIN_NAMES = ["Nova Scotia", "Halifax", "Dartmouth", "Pier 21", "Otter Lake", "Steel Wheels", "City Hall", "Grand Parade", "Wolfville", "Annapolis", "ISANS", "Six Sigma"];
+const LATIN_NAMES = ["Nova Scotia", "Halifax", "Dartmouth", "Pier 21", "Otter Lake", "Steel Wheels", "City Hall", "Grand Parade", "Wolfville", "Annapolis", "ISANS", "Six Sigma", "Gold", "Silver", "Bronze", "Royal LePage", "Bosphorus"];
 const LATIN_NAMES_RE = new RegExp(`(${LATIN_NAMES.join("|")})`, "gi");
 
 // Büyütmeyi CSS'in `text-transform: uppercase`ına bırakamıyoruz: o hem
