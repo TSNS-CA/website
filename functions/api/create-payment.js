@@ -7,15 +7,18 @@ import {
   membershipWindow,
 } from "../_lib/supabase";
 import { sendMemberConfirmation, sendAdminNotice } from "../_lib/email";
+import { json, rateLimit, requireHuman } from "../_lib/guard";
 
 const SQUARE_API_VERSION = "2024-10-17";
 
-function json(status, body) {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { "Content-Type": "application/json" },
-  });
-}
+// Tek seferlik bağış da bir yıllık üyelik veriyor (aşağıda membershipWindow),
+// bu yüzden alt sınır yıllık üyelikle aynı olmalı. Eskiden burada $1 vardı ve
+// yalnızca formdaki $10 kontrolü vardı: API'yi doğrudan çağıran biri $1'a üye
+// olabiliyordu. Küçük tutarlar ayrıca kart deneme botlarının tercihi.
+// src/pages/Donate.jsx'teki MIN_AMOUNT ile aynı tutulmalı.
+const MIN_AMOUNT_CENTS = 1000;
+// Yazım hatasına karşı üst sınır ($10.000). Daha büyük bir bağış elle alınır.
+const MAX_AMOUNT_CENTS = 1_000_000;
 
 export async function onRequestPost(context) {
   const { request, env } = context;
@@ -25,6 +28,9 @@ export async function onRequestPost(context) {
     return json(500, { ok: false, error: "Server is not configured for payments." });
   }
 
+  const blocked = await rateLimit(context, "PAYMENT_LIMITER");
+  if (blocked) return blocked;
+
   let payload;
   try {
     payload = await request.json();
@@ -32,17 +38,24 @@ export async function onRequestPost(context) {
     return json(400, { ok: false, error: "Invalid JSON body." });
   }
 
-  const { sourceId, amountCents, currency, buyer, idempotencyKey } = payload || {};
+  const { sourceId, amountCents, currency, buyer, idempotencyKey, turnstileToken } = payload || {};
 
   if (typeof sourceId !== "string" || sourceId.length === 0) {
     return json(400, { ok: false, error: "Missing card token." });
   }
-  if (!Number.isInteger(amountCents) || amountCents < 100) {
-    return json(400, { ok: false, error: "Amount must be at least $1.00 CAD." });
+  if (!Number.isInteger(amountCents) || amountCents < MIN_AMOUNT_CENTS) {
+    return json(400, { ok: false, error: "Amount must be at least $10.00 CAD." });
+  }
+  if (amountCents > MAX_AMOUNT_CENTS) {
+    return json(400, { ok: false, error: "For gifts over $10,000 please contact info@tsns.ca." });
   }
   if (currency !== "CAD") {
     return json(400, { ok: false, error: "Only CAD is supported." });
   }
+
+  // Ucuz kontroller önce, Turnstile (ağ çağrısı) en son — Square'e gitmeden.
+  const notHuman = await requireHuman(context, turnstileToken);
+  if (notHuman) return notHuman;
 
   const key =
     typeof idempotencyKey === "string" && idempotencyKey.length >= 8

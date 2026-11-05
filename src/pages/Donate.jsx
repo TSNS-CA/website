@@ -54,6 +54,10 @@ export default function DonatePage({ lang, defaultFrequency = "yearly" }) {
         body: JSON.stringify({ code: couponInput.trim() }),
       });
       const data = await res.json().catch(() => ({}));
+      if (res.status === 429) {
+        setCouponMsg({ ok: false, text: data.error || (tr ? "Çok fazla deneme. Bir dakika sonra tekrar deneyin." : "Too many attempts. Try again in a minute.") });
+        return;
+      }
       if (data.valid) {
         setCoupon(data);
         setFrequency("yearly");

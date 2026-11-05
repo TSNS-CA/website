@@ -1,18 +1,29 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { t, upper } from "../i18n";
 import { socials, departments } from "../content";
 import { Container, Button } from "./ui";
 import SocialLinks from "./SocialIcons";
+import Turnstile, { turnstileEnabled } from "./Turnstile";
 
 function Newsletter({ lang }) {
   const tr = lang === "tr";
   const [done, setDone] = useState(false);
   const [error, setError] = useState("");
+  // Altbilgi her sayfada var; Turnstile betiğini her sayfa yüklemesin diye
+  // widget ancak biri forma odaklanınca çiziliyor.
+  const [engaged, setEngaged] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState("");
+  const turnstileRef = useRef(null);
 
   async function onSubmit(e) {
     e.preventDefault();
     setError("");
+    if (turnstileEnabled && !turnstileToken) {
+      setEngaged(true);
+      setError(t(lang, "turnstile.wait"));
+      return;
+    }
     const form = e.currentTarget;
     const name = form.elements.name.value;
     const email = form.elements.email.value;
@@ -20,8 +31,9 @@ function Newsletter({ lang }) {
       const res = await fetch("/api/newsletter", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, lang }),
+        body: JSON.stringify({ name, email, lang, turnstileToken: turnstileToken || undefined }),
       });
+      turnstileRef.current?.reset();
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.ok) throw new Error(data.error || (tr ? "Bir hata oluştu." : "Something went wrong."));
       setDone(true);
@@ -38,7 +50,7 @@ function Newsletter({ lang }) {
     );
   }
   return (
-    <form onSubmit={onSubmit} className="space-y-3">
+    <form onSubmit={onSubmit} onFocus={() => setEngaged(true)} className="space-y-3">
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
         <input
           required
@@ -61,6 +73,7 @@ function Newsletter({ lang }) {
         <input required type="checkbox" className="mt-0.5 accent-gold" />
         {t(lang, "newsletter.consent")}
       </label>
+      {engaged && <Turnstile ref={turnstileRef} lang={lang} onToken={setTurnstileToken} />}
       {error && <p className="text-xs font-semibold text-red-300">{error}</p>}
       <Button type="submit" variant="solidWhite" size="sm">
         {t(lang, "action.subscribe")}

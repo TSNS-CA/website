@@ -1,15 +1,13 @@
 import { upsertContact, recordActivity, lookupPerson, describeHistory } from "../_lib/supabase";
 import { sendVolunteerConfirmation, sendAdminNotice } from "../_lib/email";
+import { json, rateLimit, requireHuman } from "../_lib/guard";
 
-function json(status, body) {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { "Content-Type": "application/json" },
-  });
-}
 
 export async function onRequestPost(context) {
   const { request, env } = context;
+
+  const blocked = await rateLimit(context, "FORM_LIMITER");
+  if (blocked) return blocked;
 
   let payload;
   try {
@@ -18,7 +16,7 @@ export async function onRequestPost(context) {
     return json(400, { ok: false, error: "Invalid JSON body." });
   }
 
-  const { name, email, phone, interests, lang } = payload || {};
+  const { name, email, phone, interests, lang, turnstileToken } = payload || {};
 
   if (typeof name !== "string" || !name.trim()) {
     return json(400, { ok: false, error: "Name is required." });
@@ -26,6 +24,15 @@ export async function onRequestPost(context) {
   if (typeof email !== "string" || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return json(400, { ok: false, error: "A valid email is required." });
   }
+
+  // Bu form, girilen adrese bizim alan adımızdan e-posta gönderiyor (ve
+  // admin'e bildirim). Korumasızken bir bot herhangi bir adresi bizim
+  // adımıza bombalayabilir, Resend kotasını ve alan adı itibarını
+  // tüketebilirdi. Turnstile + IP ve adres başına hız sınırı.
+  const notHuman = await requireHuman(context, turnstileToken);
+  if (notHuman) return notHuman;
+  const perAddress = await rateLimit(context, "EMAIL_LIMITER", [`email:${email.trim().toLowerCase()}`], { perIp: false });
+  if (perAddress) return perAddress;
 
   const locale = lang === "en" ? "en" : "tr";
   const volunteer = {
