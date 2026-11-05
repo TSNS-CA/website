@@ -223,7 +223,7 @@ function SponsorLogo({ sponsor, className = "" }) {
 function LogoPlate({ sponsor, className = "" }) {
   return (
     <div
-      className={`flex items-center justify-center rounded-xl p-5 ring-1 ring-slate-200 dark:ring-white/10 ${className}`}
+      className={`flex items-center justify-center overflow-hidden rounded-xl ring-1 ring-slate-200 dark:ring-white/10 ${className}`}
       style={{ background: sponsor.logoBg || "#ffffff" }}
     >
       <SponsorLogo sponsor={sponsor} />
@@ -253,7 +253,7 @@ function GoldSponsor({ sponsor, lang }) {
           {...(sponsor.url ? { href: sponsor.url, target: "_blank", rel: "noopener noreferrer" } : {})}
           className="block"
         >
-          <LogoPlate sponsor={sponsor} className="h-44 sm:h-52" />
+          <LogoPlate sponsor={sponsor} className="aspect-[3/2] p-3" />
         </Plate>
         <div>
           <TierLabel lang={lang} tier="gold" className="md:justify-start" />
@@ -322,7 +322,7 @@ function Sponsors({ lang }) {
             <TierLabel lang={lang} tier="silver" plural={silver.length > 1} />
             <div className="mx-auto mt-4 grid max-w-md gap-4">
               {silver.map((s) => (
-                <PlainSponsor key={s.slug} sponsor={s} className="h-32 sm:h-36" />
+                <PlainSponsor key={s.slug} sponsor={s} className="h-36 p-6 sm:h-40" />
               ))}
             </div>
           </div>
@@ -333,7 +333,7 @@ function Sponsors({ lang }) {
             <TierLabel lang={lang} tier="bronze" plural={bronze.length > 1} />
             <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3">
               {bronze.map((s) => (
-                <PlainSponsor key={s.slug} sponsor={s} className="h-24 sm:h-28" />
+                <PlainSponsor key={s.slug} sponsor={s} className="aspect-[3/2] p-3" />
               ))}
             </div>
           </div>
