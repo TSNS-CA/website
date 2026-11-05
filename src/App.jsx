@@ -15,7 +15,6 @@ import EventDetailPage from "./pages/EventDetail";
 import NewcomersPage from "./pages/Newcomers";
 import PhotosPage from "./pages/Photos";
 import AlbumPage from "./pages/Album";
-import SponsorsPage from "./pages/Sponsors";
 
 // /events/:slug → /etkinlikler/:slug. Türkçe yol kanonik (canonical + JSON-LD
 // tek URL'de kalsın diye İngilizce takma adlar kopya değil, yönlendirme).
@@ -58,7 +57,9 @@ function Layout() {
           <Route path="/yeni-gelenler" element={<NewcomersPage lang={lang} />} />
           <Route path="/fotograflar" element={<PhotosPage lang={lang} />} />
           <Route path="/fotograflar/:slug" element={<AlbumPage lang={lang} />} />
-          <Route path="/sponsorlar" element={<SponsorsPage lang={lang} />} />
+          {/* Ayrı sayfa değil: ana sayfa açılır ve sponsor bölümüne kayar. Paylaşım
+              önizlemesi yine sponsorlara özel (functions/sponsorlar.js). */}
+          <Route path="/sponsorlar" element={<HomePage lang={lang} focus="sponsorlar" />} />
           {/* Legacy/aliases */}
           <Route path="/membership" element={<DonatePage key="uye-ol" lang={lang} defaultFrequency="yearly" />} />
           <Route path="/events" element={<Navigate to="/etkinlikler" replace />} />

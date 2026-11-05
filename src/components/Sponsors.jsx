@@ -1,8 +1,7 @@
 import { t, upper } from "../i18n";
 import { getSponsorsByTier } from "../content/sponsors.js";
 
-// Sponsor vitrini: ana sayfadaki bölüm ve /sponsorlar sayfası aynı bileşeni
-// kullanır. Veri src/content/sponsors.js'te.
+// Sponsor vitrini (ana sayfa, #sponsorlar). Veri src/content/sponsors.js'te.
 
 // Logo her zaman kendi zemininde (varsayılan beyaz) durur: sponsor logoları
 // açık zemine göre tasarlanıyor, dark mode'da lacivert üstünde kaybolurlar.

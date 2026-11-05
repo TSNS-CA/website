@@ -45,7 +45,8 @@ yazma — repo public. `keep_vars = true` dashboard değerlerini korur.
   listesinde olmalı. Yeni bir SEO'lu sayfa eklersen: `functions/<yol>.js` + `metaForPath`
   + `run_worker_first`. Yeni afiş eklersen `IMAGE_DIMS`'e boyutunu yaz; og:image < 300 KB tut.
 - Sponsorlar `src/content/sponsors.js` (kademe gold/silver/bronze, logo `public/sponsor-logos/*.webp`).
-  Vitrin `src/components/Sponsors.jsx`: ana sayfa ve `/sponsorlar` aynı bileşeni kullanır. Liste
+  Vitrin `src/components/Sponsors.jsx`, ana sayfada `#sponsorlar`. `/sponsorlar` ayrı sayfa değil: ana
+  sayfayı açıp o bölüme kayar (`HomePage focus`), önizlemesi sunucuda sponsorlara özel. Liste
   değişince paylaşım görselini `python3 scripts/sponsor-og.py` ile yeniden üret. `/sponsors/*`
   eski site linkleri için 301 yönlendirmesi — bu yüzden logolar `/sponsors/` altına konmaz.
 - Supabase migration'ları `supabase/migrations/` altında, idempotent, SQL Editor'da elle
