@@ -7,33 +7,65 @@ import {
   normalizeEmail,
 } from "../_lib/supabase";
 import { sendMemberConfirmation, sendAdminNotice } from "../_lib/email";
+import { json, rateLimit, requireHuman } from "../_lib/guard";
 
 const SQUARE_API_VERSION = "2024-10-17";
 const MIN_AMOUNT_CENTS = 1000; // $10 minimum (unless a valid student coupon)
 const STUDENT_AMOUNT_CENTS = 500; // $5 with student coupon
-
-function json(status, body) {
-  return new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
-}
+const MAX_AMOUNT_CENTS = 1_000_000; // $10,000 — yazım hatasına karşı
 
 function base(env) {
   return env.SQUARE_ENV === "production" ? "https://connect.squareup.com" : "https://connect.squareupsandbox.com";
 }
 
-async function squarePost(env, path, body) {
+async function squareRequest(env, method, path, body) {
   const res = await fetch(`${base(env)}${path}`, {
-    method: "POST",
+    method,
     headers: {
       Authorization: `Bearer ${env.SQUARE_ACCESS_TOKEN}`,
       "Square-Version": SQUARE_API_VERSION,
       "Content-Type": "application/json",
       Accept: "application/json",
     },
-    body: JSON.stringify(body),
+    body: body === undefined ? undefined : JSON.stringify(body),
   });
   let parsed = null;
   try { parsed = await res.json(); } catch (e) {}
   return { ok: res.ok, status: res.status, body: parsed };
+}
+
+const squarePost = (env, path, body) => squareRequest(env, "POST", path, body);
+
+/**
+ * Yarıda kalan bir üyeliğin Square'de bıraktığı izleri siler.
+ *
+ * Akış üç adım: müşteri → kayıtlı kart → abonelik. Kart ya da abonelik adımı
+ * düşerse önceki adımlar Square'de kalıyordu: her başarısız denemede (ve
+ * her kart deneme botu isteğinde) sahipsiz bir müşteri, bazen de üzerinde
+ * aktif kayıtlı bir kart. Kart bilgisi saklamamak için kartı devre dışı
+ * bırakır, müşteriyi sileriz.
+ *
+ * En iyi çaba: buradaki bir hata kullanıcıya dönen yanıtı değiştirmez, yalnızca
+ * loglanır. Yanıtı geciktirmesin diye waitUntil ile arka planda çalışır.
+ *
+ * Müşteri her istekte yeni oluşturuluyor (frontend idempotencyKey
+ * göndermiyor, sunucu her seferinde randomUUID üretiyor), yani sildiğimiz
+ * müşteri başka bir üyeliğe ait olamaz.
+ */
+function cleanupSquare(context, { customerId, cardId }) {
+  const { env } = context;
+  const work = (async () => {
+    if (cardId) {
+      const r = await squarePost(env, `/v2/cards/${encodeURIComponent(cardId)}/disable`);
+      if (!r.ok) console.error("create-subscription: cleanup card disable failed", r.status, r.body);
+    }
+    if (customerId) {
+      const r = await squareRequest(env, "DELETE", `/v2/customers/${encodeURIComponent(customerId)}`);
+      if (!r.ok) console.error("create-subscription: cleanup customer delete failed", r.status, r.body);
+    }
+  })().catch((e) => console.error("create-subscription: cleanup error", e));
+  if (typeof context.waitUntil === "function") context.waitUntil(work);
+  return work;
 }
 
 /**
@@ -87,10 +119,13 @@ export async function onRequestPost(context) {
     return json(500, { ok: false, error: "Server is not configured for payments." });
   }
 
+  const blocked = await rateLimit(context, "PAYMENT_LIMITER");
+  if (blocked) return blocked;
+
   let payload;
   try { payload = await request.json(); } catch { return json(400, { ok: false, error: "Invalid JSON body." }); }
 
-  const { sourceId, amountCents, couponCode, buyer, idempotencyKey } = payload || {};
+  const { sourceId, amountCents, couponCode, buyer, idempotencyKey, turnstileToken } = payload || {};
 
   if (typeof sourceId !== "string" || sourceId.length === 0) {
     return json(400, { ok: false, error: "Missing card token." });
@@ -104,8 +139,17 @@ export async function onRequestPost(context) {
 
   // Resolve the final charge: student coupon -> $5; otherwise the chosen amount (min $10).
   const couponUsed = couponCode ? isStudentCoupon(env, couponCode) : false;
+
+  // Square'e dokunmadan önce: hiçbir müşteri/kart kaydı bot için oluşmasın.
+  // Kupon kontrolünden de önce — yoksa bu uç, Turnstile'sız bir kupon
+  // tahmin kapısı olurdu.
+  const notHuman = await requireHuman(context, turnstileToken);
+  if (notHuman) return notHuman;
   if (couponCode && !couponUsed) {
     return json(400, { ok: false, error: "Invalid discount code." });
+  }
+  if (!couponUsed && Number.isInteger(amountCents) && amountCents > MAX_AMOUNT_CENTS) {
+    return json(400, { ok: false, error: "For amounts over $10,000 please contact info@tsns.ca." });
   }
   const finalAmountCents = couponUsed
     ? STUDENT_AMOUNT_CENTS
@@ -155,6 +199,7 @@ export async function onRequestPost(context) {
   if (!cardRes.ok) {
     const e = firstError(cardRes.body);
     console.error("create-subscription: card failed", cardRes.status, cardRes.body);
+    cleanupSquare(context, { customerId });
     return json(400, { ok: false, error: e?.detail || "Could not save card." });
   }
   const cardId = cardRes.body?.card?.id;
@@ -172,6 +217,7 @@ export async function onRequestPost(context) {
   if (!subRes.ok) {
     const e = firstError(subRes.body);
     console.error("create-subscription: subscription failed", subRes.status, subRes.body);
+    cleanupSquare(context, { customerId, cardId });
     return json(400, { ok: false, error: e?.detail || "Could not start your yearly membership." });
   }
   const subscription = subRes.body?.subscription;
