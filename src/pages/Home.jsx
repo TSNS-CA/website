@@ -2,6 +2,9 @@ import { t, upper } from "../i18n";
 import { stories } from "../content";
 import { SPONSOR_SEASON } from "../content/sponsors.js";
 import SponsorShowcase from "../components/Sponsors";
+import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
+import { usePageMeta } from "../lib/usePageMeta";
 import { Container, Section, SectionHeading, Eyebrow, Button, Card } from "../components/ui";
 import { splitEvents } from "../content/events.js";
 import EventCard from "../components/events/EventCard";
@@ -203,7 +206,8 @@ function PhotoStrip({ lang }) {
 
 function Sponsors({ lang }) {
   return (
-    <Section id="sponsorlar" className="py-20">
+    // scroll-mt: yapışkan başlık bölümün üstünü örtmesin (/sponsorlar buraya kayar).
+    <Section id="sponsorlar" className="scroll-mt-20 py-20">
       <SectionHeading
         lang={lang}
         center
@@ -212,6 +216,16 @@ function Sponsors({ lang }) {
         subtitle={t(lang, "home.sponsors.subtitle")}
       />
       <SponsorShowcase lang={lang} className="mt-12" />
+
+      <div className="mx-auto mt-12 max-w-2xl rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-card dark:border-slate-800 dark:bg-primary-800">
+        <h3 className="font-display text-2xl font-extrabold text-slate-900 dark:text-white">
+          {t(lang, "sponsors.page.ctaTitle")}
+        </h3>
+        <p className="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-300">{t(lang, "sponsors.page.ctaBody")}</p>
+        <div className="mt-6">
+          <Button href="mailto:partners@tsns.ca" variant="secondary">partners@tsns.ca</Button>
+        </div>
+      </div>
     </Section>
   );
 }
@@ -236,10 +250,50 @@ function CTA({ lang }) {
   );
 }
 
-export default function HomePage({ lang }) {
+// /sponsorlar: sekme başlığı ve canonical sponsorlara özel olsun.
+function SponsorsMeta({ lang }) {
+  usePageMeta({
+    title: t(lang, "home.sponsors.title", { season: SPONSOR_SEASON }),
+    description: t(lang, "sponsors.page.description"),
+    canonical: "/sponsorlar",
+  });
+  return null;
+}
+
+// `focus` verilirse (ör. /sponsorlar) sayfa o bölüme kayar. Üstteki görseller
+// geç yüklenip bölümü aşağı itebildiği için yükleme bitince bir kez daha
+// hizalanır; ziyaretçi bu arada kendisi kaydırmaya başlarsa bırakılır.
+function useScrollToSection(id) {
+  const { key } = useLocation();
+  useEffect(() => {
+    if (!id) return undefined;
+    let userMoved = false;
+    const stop = () => { userMoved = true; };
+    const go = () => {
+      if (userMoved) return;
+      const el = document.getElementById(id);
+      if (!el) return;
+      try { el.scrollIntoView({ behavior: "instant", block: "start" }); } catch (e) { el.scrollIntoView(); }
+    };
+    const events = ["wheel", "touchstart", "keydown"];
+    events.forEach((e) => window.addEventListener(e, stop, { passive: true, once: true }));
+    go();
+    const timers = [250, 800, 1600].map((ms) => setTimeout(go, ms));
+    window.addEventListener("load", go, { once: true });
+    return () => {
+      timers.forEach(clearTimeout);
+      window.removeEventListener("load", go);
+      events.forEach((e) => window.removeEventListener(e, stop));
+    };
+  }, [id, key]);
+}
+
+export default function HomePage({ lang, focus }) {
   const { upcoming } = splitEvents();
+  useScrollToSection(focus);
   return (
     <>
+      {focus === "sponsorlar" && <SponsorsMeta lang={lang} />}
       <Hero lang={lang} />
       {upcoming.length ? <NextEventBanner events={upcoming} lang={lang} /> : <Promise lang={lang} />}
       <WhySupport lang={lang} />
