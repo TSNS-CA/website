@@ -163,6 +163,10 @@ const translations = {
     "home.sponsors.tier.bronze.plural": "Bronze Sponsorlar",
     "home.sponsors.about": "Hakkında",
     "home.sponsors.visit": "Web sitesini ziyaret edin",
+    "sponsors.page.description": "Nova Scotia Türk Derneği'nin 2026–2027 sponsorları: Gold sponsor John Atacan (Royal LePage Atlantic), Silver sponsor Bosphorus Home Construction ve Bronze sponsorlarımız.",
+    "sponsors.page.intro": "Etkinliklerimizi, bayramlarımızı ve topluluğumuzu ayakta tutan destekçilerimize teşekkür ederiz. İşletmelerini ziyaret ederek siz de onlara destek olabilirsiniz.",
+    "sponsors.page.ctaTitle": "Sponsorumuz olmak ister misiniz?",
+    "sponsors.page.ctaBody": "Nova Scotia'daki Türk topluluğuna ulaşın ve kültürümüzü yaşatmamıza destek olun. Sponsorluk paketleri için bize yazın.",
     "home.sponsors.subtitle": "Topluluğumuzu büyütenleri destekleyen herkese minnettarız.",
 
     "home.cta.title": "Topluluğumuzun bir parçası olun",
@@ -378,6 +382,10 @@ const translations = {
     "home.sponsors.tier.bronze.plural": "Bronze Sponsors",
     "home.sponsors.about": "About",
     "home.sponsors.visit": "Visit website",
+    "sponsors.page.description": "The Turkish Society of Nova Scotia's 2026–2027 sponsors: Gold sponsor John Atacan (Royal LePage Atlantic), Silver sponsor Bosphorus Home Construction and our Bronze sponsors.",
+    "sponsors.page.intro": "Thank you to the supporters who keep our events, celebrations and community going. You can support them too by visiting their businesses.",
+    "sponsors.page.ctaTitle": "Interested in sponsoring?",
+    "sponsors.page.ctaBody": "Reach the Turkish community in Nova Scotia and help us keep our culture alive. Write to us for sponsorship packages.",
     "home.sponsors.subtitle": "Grateful to everyone who helps our community grow.",
 
     "home.cta.title": "Be part of our community",

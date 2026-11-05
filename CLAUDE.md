@@ -44,6 +44,10 @@ yazma — repo public. `keep_vars = true` dashboard değerlerini korur.
   og:/twitter: etiketleriyle zenginleştirir; bu yollar `wrangler.toml` `run_worker_first`
   listesinde olmalı. Yeni bir SEO'lu sayfa eklersen: `functions/<yol>.js` + `metaForPath`
   + `run_worker_first`. Yeni afiş eklersen `IMAGE_DIMS`'e boyutunu yaz; og:image < 300 KB tut.
+- Sponsorlar `src/content/sponsors.js` (kademe gold/silver/bronze, logo `public/sponsor-logos/*.webp`).
+  Vitrin `src/components/Sponsors.jsx`: ana sayfa ve `/sponsorlar` aynı bileşeni kullanır. Liste
+  değişince paylaşım görselini `python3 scripts/sponsor-og.py` ile yeniden üret. `/sponsors/*`
+  eski site linkleri için 301 yönlendirmesi — bu yüzden logolar `/sponsors/` altına konmaz.
 - Supabase migration'ları `supabase/migrations/` altında, idempotent, SQL Editor'da elle
   çalıştırılır. Tarayıcı Supabase'e doğrudan konuşmaz; her şey Worker üzerinden.
 - API rotaları: `onRequestPost({ request, env })`, `400 {ok:false,error}` / `201 {ok:true}`;
