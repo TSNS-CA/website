@@ -125,9 +125,13 @@ export default function SponsorShowcase({ lang, className = "" }) {
       {bronze.length > 0 && (
         <div>
           <TierLabel lang={lang} tier="bronze" plural={bronze.length > 1} />
-          <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3">
+          {/* Izgara değil, ortalanmış flex: son satır eksik kalınca (7 sponsor gibi)
+              yarım satır sola yaslanmasın. Genişlikler gap-4 (1rem) düşülerek. */}
+          <div className="mt-4 flex flex-wrap justify-center gap-4">
             {bronze.map((s) => (
-              <PlainSponsor key={s.slug} sponsor={s} className="aspect-[3/2] p-3" />
+              <div key={s.slug} className="w-[calc(50%-0.5rem)] sm:w-[calc((100%-2rem)/3)]">
+                <PlainSponsor sponsor={s} className="aspect-[3/2] p-3" />
+              </div>
             ))}
           </div>
         </div>

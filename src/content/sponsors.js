@@ -36,8 +36,9 @@ export const sponsors = [
     logo: "/sponsor-logos/bosphorus.webp",
     url: "https://maps.app.goo.gl/VNFL2zTVbSMtQr518",
   },
-  // Bronze — alfabetik. Bir bronze daha gelecek (Şeyma netleştirecek).
+  // Bronze — alfabetik.
   { slug: "abaci-cleaning", tier: "bronze", name: "Abacı Cleaning Services", logo: "/sponsor-logos/abaci-cleaning.webp", logoBg: "#fdfcf7", url: "https://maps.app.goo.gl/CUE5CjNf3uNNZ96C9" },
+  { slug: "ata-painting", tier: "bronze", name: "ATA Painting", logo: "/sponsor-logos/ata-painting.webp", url: "https://atapainting.ca/" },
   { slug: "craig-spicer", tier: "bronze", name: "Craig Spicer Mortgages", logo: "/sponsor-logos/craig-spicer.webp", url: "https://www.craigspicermortgages.ca/" },
   { slug: "emin-gulenc", tier: "bronze", name: "Emin Gulenc", org: "Scotiabank", logo: "/sponsor-logos/emin-gulenc.webp", url: "https://ca.linkedin.com/in/emingulenc" },
   { slug: "er-construction", tier: "bronze", name: "ER Construction & Property Development", logo: "/sponsor-logos/er-construction.webp", url: "https://erdevelopmentgroup.com/" },

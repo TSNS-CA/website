@@ -38,11 +38,12 @@ card((48,top+30,560,top+368),'/sponsor-logos/john-atacan.webp',border=GOLD)
 label(600,top,"SILVER SPONSOR",(148,163,184))
 card((600,top+30,1152,top+130),'/sponsor-logos/bosphorus.webp',pad=10)
 label(600,top+150,"BRONZE SPONSORLAR",(176,112,60))
-bronze=[('/sponsor-logos/abaci-cleaning.webp',(253,252,247)),('/sponsor-logos/craig-spicer.webp',None),('/sponsor-logos/emin-gulenc.webp',None),
+bronze=[('/sponsor-logos/abaci-cleaning.webp',(253,252,247)),('/sponsor-logos/ata-painting.webp',None),('/sponsor-logos/craig-spicer.webp',None),('/sponsor-logos/emin-gulenc.webp',None),
         ('/sponsor-logos/er-construction.webp',None),('/sponsor-logos/nikki-jafari.webp',None),('/sponsor-logos/tonys.webp',None)]
-cw,ch,gap=172,89,14; bx,by=600,top+178
+# 4 sütun: 8 yere kadar sığar. Daha fazlası için ch/satır sayısını değiştirin.
+cols=4; gap=12; cw=(552-(cols-1)*gap)//cols; ch=89; bx,by=600,top+178
 for i,(p,bg) in enumerate(bronze):
-    c,r=i%3,i//3
+    c,r=i%cols,i//cols
     x=bx+c*(cw+gap); y=by+r*(ch+gap)
     card((x,y,x+cw,y+ch),p,bg=bg or (255,255,255),pad=8)
 d.text((W-48,58),"tsns.ca/sponsorlar",font=font('SemiBold',22),fill=RED,anchor='ra')
