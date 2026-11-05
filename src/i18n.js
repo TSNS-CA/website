@@ -168,6 +168,8 @@ const translations = {
     "newsletter.consent": "Bülten almak için onay veriyorum.",
     "newsletter.thanks": "Teşekkürler! Kaydınız alındı.",
 
+    "turnstile.wait": "Güvenlik doğrulaması tamamlanıyor, birkaç saniye bekleyin.",
+
     "about.title": "Hakkımızda",
     "about.p1":
       "Nova Scotia Türk Derneği (TSNS), 2007'den bu yana Türk topluluğunu ve kültürünü Nova Scotia ile daha geniş Atlantik Kanada'da tanıtmaya adanmış, Türk kökenli insanları bir araya getiren bir sivil toplum kuruluşudur.",
@@ -372,6 +374,8 @@ const translations = {
     "newsletter.email": "Email",
     "newsletter.consent": "I agree to receive the newsletter.",
     "newsletter.thanks": "Thank you! You're subscribed.",
+
+    "turnstile.wait": "Completing the security check, please wait a few seconds.",
 
     "about.title": "About Us",
     "about.p1":

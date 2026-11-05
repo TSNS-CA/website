@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { t } from "../i18n";
 import { Section, Eyebrow, Button } from "../components/ui";
+import Turnstile, { turnstileEnabled } from "../components/Turnstile";
 
 const inputCls =
   "w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-slate-700 dark:bg-primary-700 dark:text-white";
@@ -11,6 +12,8 @@ export default function VolunteerPage({ lang }) {
   const [errors, setErrors] = useState({});
   const [status, setStatus] = useState("idle"); // idle | sending | done | error
   const [serverError, setServerError] = useState("");
+  const [turnstileToken, setTurnstileToken] = useState("");
+  const turnstileRef = useRef(null);
 
   function setField(k, v) {
     setForm((f) => ({ ...f, [k]: v }));
@@ -23,6 +26,11 @@ export default function VolunteerPage({ lang }) {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) er.email = tr ? "Geçerli e-posta gerekli" : "Valid email required";
     setErrors(er);
     if (Object.keys(er).length) return;
+    if (turnstileEnabled && !turnstileToken) {
+      setStatus("error");
+      setServerError(t(lang, "turnstile.wait"));
+      return;
+    }
 
     setStatus("sending");
     setServerError("");
@@ -30,8 +38,9 @@ export default function VolunteerPage({ lang }) {
       const res = await fetch("/api/volunteer", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, lang }),
+        body: JSON.stringify({ ...form, lang, turnstileToken: turnstileToken || undefined }),
       });
+      turnstileRef.current?.reset();
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.ok) throw new Error(data.error || (tr ? "Bir hata oluştu." : "Something went wrong."));
       setStatus("done");
@@ -99,6 +108,8 @@ export default function VolunteerPage({ lang }) {
             </label>
             <textarea rows={4} value={form.interests} onChange={(e) => setField("interests", e.target.value)} className={inputCls} placeholder={tr ? "Etkinlikler, sosyal medya, çeviri..." : "Events, social media, translation..."} />
           </div>
+
+          <Turnstile ref={turnstileRef} lang={lang} onToken={setTurnstileToken} />
 
           {status === "error" && (
             <div className="surface-red rounded-lg border border-accent/30 p-3 text-sm">{serverError}</div>

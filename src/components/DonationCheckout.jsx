@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from "react";
+import { t } from "../i18n";
+import Turnstile, { turnstileEnabled } from "./Turnstile";
 
 const APP_ID = import.meta.env.VITE_SQUARE_APPLICATION_ID;
 const LOCATION_ID = import.meta.env.VITE_SQUARE_LOCATION_ID;
@@ -44,6 +46,11 @@ export default function DonationCheckout({
   const appleBtnRef = useRef(null);
   const appleInstRef = useRef(null);
   const processingRef = useRef(false);
+  const turnstileRef = useRef(null);
+  // Ref, çünkü Apple Pay tıklama dinleyicisi ilk render'daki kapanışta
+  // (useEffect içinde) bağlanıyor; state okusa hep boş token görürdü.
+  const turnstileTokenRef = useRef("");
+  const [turnstileToken, setTurnstileToken] = useState("");
 
   const [sdkReady, setSdkReady] = useState(false);
   const [appleReady, setAppleReady] = useState(false);
@@ -141,23 +148,38 @@ export default function DonationCheckout({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  function onTurnstileToken(token) {
+    turnstileTokenRef.current = token;
+    setTurnstileToken(token);
+  }
+
   async function charge(sourceId) {
     const isOneTime = frequency === "one_time";
     const url = isOneTime ? "/api/create-payment" : "/api/create-subscription";
+    const token = turnstileTokenRef.current || undefined;
     const body = isOneTime
-      ? { sourceId, amountCents, currency: "CAD", buyer }
-      : { sourceId, frequency: "yearly", amountCents, couponCode: couponCode || undefined, buyer };
-    const res = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok || !data.ok) throw new Error(data.error || (lang === "tr" ? "Kartınızdan çekilemedi." : "Your card could not be charged."));
-    return data;
+      ? { sourceId, amountCents, currency: "CAD", buyer, turnstileToken: token }
+      : { sourceId, frequency: "yearly", amountCents, couponCode: couponCode || undefined, buyer, turnstileToken: token };
+    try {
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.ok) throw new Error(data.error || (lang === "tr" ? "Kartınızdan çekilemedi." : "Your card could not be charged."));
+      return data;
+    } finally {
+      // Token tek kullanımlık: başarısız bir denemeden sonra yenisi gerekir.
+      turnstileRef.current?.reset();
+    }
   }
 
   async function runTokenize(tokenizeFn) {
+    if (turnstileEnabled && !turnstileTokenRef.current) {
+      setPayError(t(lang, "turnstile.wait"));
+      return;
+    }
     setPayError(null);
     setProcessing(true);
     processingRef.current = true;
@@ -285,6 +307,8 @@ export default function DonationCheckout({
           </div>
         )}
 
+        <Turnstile ref={turnstileRef} lang={lang} onToken={onTurnstileToken} className="mt-3" />
+
         {payError && (
           <div className="surface-red mt-3 rounded-lg border border-accent/30 p-3 text-sm">
             {payError}
@@ -293,7 +317,7 @@ export default function DonationCheckout({
 
         <button
           onClick={() => runTokenize(() => cardRef.current && cardRef.current.tokenize())}
-          disabled={processing || !sdkReady}
+          disabled={processing || !sdkReady || (turnstileEnabled && !turnstileToken)}
           className="mt-4 w-full rounded-full bg-accent px-6 py-3 font-semibold text-white transition hover:bg-accent-600 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {processing
