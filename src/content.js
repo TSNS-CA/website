@@ -45,9 +45,4 @@ export const stories = [
 
 // Etkinlikler artık src/content/events.js içinde (tarih/mekân/bilet modeliyle).
 
-export const sponsors = [
-  "MediTerra Kitchen & Grocery",
-  "Nikki Jafari — Scotiabank",
-  "Bosphorus Construction",
-  "Remax — Deirdre Goulding",
-];
+// Sponsorlar src/content/sponsors.js içinde (kademe, logo, "Hakkında").

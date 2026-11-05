@@ -9,6 +9,7 @@
 import { getEventBySlug, splitEvents } from "../../src/content/events.js";
 import { eventInstants, fmtMediumDate, fmtTimeRange } from "../../src/lib/dates.js";
 import { getAlbums, getAlbumBySlug, formatAlbumDate, photoCount } from "../../src/content/photos.js";
+import { SPONSOR_SEASON, SPONSOR_OG_IMAGE, getSponsorsByTier } from "../../src/content/sponsors.js";
 
 export const SITE = "https://tsns.ca";
 const SITE_NAME = { tr: "Nova Scotia Türk Derneği", en: "Turkish Society of Nova Scotia" };
@@ -101,6 +102,24 @@ export function metaForPath(pathname, lang = "tr") {
       image: latest ? { url: SITE + latest.cover } : DEFAULT_IMAGE,
       imageAlt: latest?.title[lang] || SITE_NAME[lang],
       url: `${SITE}/fotograflar`,
+      type: "website",
+      lang,
+    };
+  }
+
+  if (path === "/sponsorlar") {
+    const [gold] = getSponsorsByTier("gold");
+    const [silver] = getSponsorsByTier("silver");
+    const bronze = getSponsorsByTier("bronze").map((s) => s.name).join(", ");
+    return {
+      title: lang === "en" ? `Our ${SPONSOR_SEASON} Sponsors — Turkish Society of Nova Scotia` : `${SPONSOR_SEASON} Sponsorlarımız — Nova Scotia Türk Derneği`,
+      description:
+        lang === "en"
+          ? `Gold: ${gold?.name}${gold?.org ? ` (${gold.org})` : ""} · Silver: ${silver?.name} · Bronze: ${bronze}. Thank you for supporting our community!`
+          : `Gold: ${gold?.name}${gold?.org ? ` (${gold.org})` : ""} · Silver: ${silver?.name} · Bronze: ${bronze}. Topluluğumuza destekleri için teşekkürler!`,
+      image: { url: SITE + SPONSOR_OG_IMAGE.src, width: SPONSOR_OG_IMAGE.width, height: SPONSOR_OG_IMAGE.height },
+      imageAlt: lang === "en" ? `Our ${SPONSOR_SEASON} sponsors` : `${SPONSOR_SEASON} sponsorlarımız`,
+      url: `${SITE}/sponsorlar`,
       type: "website",
       lang,
     };

@@ -154,7 +154,19 @@ const translations = {
     "newcomers.suggest": "Eksik ya da güncellenmesi gereken bir bilgi mi gördünüz?",
 
     "home.sponsors.eyebrow": "Teşekkürler",
-    "home.sponsors.title": "Sponsorlarımız & Ortaklarımız",
+    "home.sponsors.title": "{season} Sponsorlarımız",
+    "home.sponsors.tier.gold": "Gold Sponsor",
+    "home.sponsors.tier.gold.plural": "Gold Sponsorlar",
+    "home.sponsors.tier.silver": "Silver Sponsor",
+    "home.sponsors.tier.silver.plural": "Silver Sponsorlar",
+    "home.sponsors.tier.bronze": "Bronze Sponsor",
+    "home.sponsors.tier.bronze.plural": "Bronze Sponsorlar",
+    "home.sponsors.about": "Hakkında",
+    "home.sponsors.visit": "Web sitesini ziyaret edin",
+    "sponsors.page.description": "Nova Scotia Türk Derneği'nin 2026–2027 sponsorları: Gold sponsor John Atacan (Royal LePage Atlantic), Silver sponsor Bosphorus Home Construction ve Bronze sponsorlarımız.",
+    "sponsors.page.intro": "Etkinliklerimizi, bayramlarımızı ve topluluğumuzu ayakta tutan destekçilerimize teşekkür ederiz. İşletmelerini ziyaret ederek siz de onlara destek olabilirsiniz.",
+    "sponsors.page.ctaTitle": "Sponsorumuz olmak ister misiniz?",
+    "sponsors.page.ctaBody": "Nova Scotia'daki Türk topluluğuna ulaşın ve kültürümüzü yaşatmamıza destek olun. Sponsorluk paketleri için bize yazın.",
     "home.sponsors.subtitle": "Topluluğumuzu büyütenleri destekleyen herkese minnettarız.",
 
     "home.cta.title": "Topluluğumuzun bir parçası olun",
@@ -361,7 +373,19 @@ const translations = {
     "newcomers.suggest": "Spotted something missing or out of date?",
 
     "home.sponsors.eyebrow": "Thank You",
-    "home.sponsors.title": "Our Sponsors & Partners",
+    "home.sponsors.title": "Our {season} Sponsors",
+    "home.sponsors.tier.gold": "Gold Sponsor",
+    "home.sponsors.tier.gold.plural": "Gold Sponsors",
+    "home.sponsors.tier.silver": "Silver Sponsor",
+    "home.sponsors.tier.silver.plural": "Silver Sponsors",
+    "home.sponsors.tier.bronze": "Bronze Sponsor",
+    "home.sponsors.tier.bronze.plural": "Bronze Sponsors",
+    "home.sponsors.about": "About",
+    "home.sponsors.visit": "Visit website",
+    "sponsors.page.description": "The Turkish Society of Nova Scotia's 2026–2027 sponsors: Gold sponsor John Atacan (Royal LePage Atlantic), Silver sponsor Bosphorus Home Construction and our Bronze sponsors.",
+    "sponsors.page.intro": "Thank you to the supporters who keep our events, celebrations and community going. You can support them too by visiting their businesses.",
+    "sponsors.page.ctaTitle": "Interested in sponsoring?",
+    "sponsors.page.ctaBody": "Reach the Turkish community in Nova Scotia and help us keep our culture alive. Write to us for sponsorship packages.",
     "home.sponsors.subtitle": "Grateful to everyone who helps our community grow.",
 
     "home.cta.title": "Be part of our community",
@@ -451,7 +475,7 @@ export function t(lang, key, vars = {}) {
 // Türkçe metinde geçen ama Türkçe kurallarıyla büyütülmemesi gereken özel
 // adlar: "Nova Scotia" → "NOVA SCOTİA" değil, "NOVA SCOTIA". Yeni bir yabancı
 // yer/marka adı eklenirse listeye yazılmalı.
-const LATIN_NAMES = ["Nova Scotia", "Halifax", "Dartmouth", "Pier 21", "Otter Lake", "Steel Wheels", "City Hall", "Grand Parade", "Wolfville", "Annapolis", "ISANS", "Six Sigma"];
+const LATIN_NAMES = ["Nova Scotia", "Halifax", "Dartmouth", "Pier 21", "Otter Lake", "Steel Wheels", "City Hall", "Grand Parade", "Wolfville", "Annapolis", "ISANS", "Six Sigma", "Gold", "Silver", "Bronze", "Royal LePage", "Bosphorus"];
 const LATIN_NAMES_RE = new RegExp(`(${LATIN_NAMES.join("|")})`, "gi");
 
 // Büyütmeyi CSS'in `text-transform: uppercase`ına bırakamıyoruz: o hem

@@ -1,5 +1,7 @@
 import { t, upper } from "../i18n";
-import { stories, sponsors } from "../content";
+import { stories } from "../content";
+import { SPONSOR_SEASON } from "../content/sponsors.js";
+import SponsorShowcase from "../components/Sponsors";
 import { Container, Section, SectionHeading, Eyebrow, Button, Card } from "../components/ui";
 import { splitEvents } from "../content/events.js";
 import EventCard from "../components/events/EventCard";
@@ -201,24 +203,15 @@ function PhotoStrip({ lang }) {
 
 function Sponsors({ lang }) {
   return (
-    <Section className="py-20">
+    <Section id="sponsorlar" className="py-20">
       <SectionHeading
         lang={lang}
         center
         eyebrow={t(lang, "home.sponsors.eyebrow")}
-        title={t(lang, "home.sponsors.title")}
+        title={t(lang, "home.sponsors.title", { season: SPONSOR_SEASON })}
         subtitle={t(lang, "home.sponsors.subtitle")}
       />
-      <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-        {sponsors.map((name) => (
-          <div
-            key={name}
-            className="rounded-xl border border-slate-200 bg-white px-5 py-4 text-sm font-semibold text-slate-700 shadow-sm dark:border-slate-800 dark:bg-primary-800 dark:text-slate-200"
-          >
-            {name}
-          </div>
-        ))}
-      </div>
+      <SponsorShowcase lang={lang} className="mt-12" />
     </Section>
   );
 }

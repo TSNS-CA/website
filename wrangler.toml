@@ -50,6 +50,7 @@ run_worker_first = [
   "/etkinlikler", "/etkinlikler/*", "/events", "/events/*",
   "/yeni-gelenler", "/newcomers", "/announcements-events",
   "/fotograflar", "/fotograflar/*", "/galeri", "/photos", "/about/photos",
+  "/sponsorlar", "/sponsors", "/sponsors/*",
 ]
 
 # ── Hız sınırları (functions/_lib/guard.js) ─────────────────────────────────
