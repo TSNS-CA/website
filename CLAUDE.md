@@ -14,7 +14,8 @@ Square Web Payments (üyelik/bağış), Resend (e-posta). Canlı: https://tsns.c
 ## Deploy
 
 Cloudflare **Workers Builds**, `main`'e merge olunca otomatik deploy eder (GitHub Actions yok).
-Branch preview URL'leri açık. Runtime değişkenleri dashboard'da; `wrangler.toml`'a asla secret
+Branch preview URL'leri **kapalı** (`preview_urls = false`; preview'lar production anahtarlarını
+kullanır — test için `npm run dev:api`). Runtime değişkenleri dashboard'da; `wrangler.toml`'a asla secret
 yazma — repo public. `keep_vars = true` dashboard değerlerini korur.
 
 ## Kurallar
@@ -47,6 +48,11 @@ yazma — repo public. `keep_vars = true` dashboard değerlerini korur.
   çalıştırılır. Tarayıcı Supabase'e doğrudan konuşmaz; her şey Worker üzerinden.
 - API rotaları: `onRequestPost({ request, env })`, `400 {ok:false,error}` / `201 {ok:true}`;
   DB hataları yutulur ve `warning:"not_stored"` döner — bkz. `functions/_lib/supabase.js`.
+- **Herkese açık her POST ucu `functions/_lib/guard.js`'ten geçer:** `rateLimit(context, "<X>_LIMITER")`
+  (bağlama `wrangler.toml` `[[ratelimits]]`) ve e-posta gönderen / Square'e giden uçlarda
+  `requireHuman(context, turnstileToken)`. Frontend'de `src/components/Turnstile.jsx`; token tek
+  kullanımlık, her gönderimden sonra `reset()`. Tutar sınırları sunucuda da uygulanır — formdaki
+  kontrol tek başına yetmez (`MIN_AMOUNT` ↔ `MIN_AMOUNT_CENTS`).
 
 ## Git
 

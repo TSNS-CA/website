@@ -262,7 +262,8 @@ Cloudflare → **Workers & Pages** → Worker'ın → **Settings → Build**:
 > `name = "tsns"` **birebir aynı** olmalı. Değilse build daha
 > başlamadan patlar.
 
-Branch preview'ları istersen **Non-production branch builds** açık olsun.
+**Non-production branch builds** kapalı kalsın: preview'lar production
+Worker'ının anahtarlarını kullanır (bkz. `wrangler.toml`, §8).
 
 ### 4.2 Runtime değişkenleri
 
@@ -284,8 +285,15 @@ RESEND_FROM                   = Nova Scotia Türk Derneği <info@tsns.ca>
 RESEND_REPLY_TO               = info@tsns.ca
 RESEND_ADMIN_TO               = info@tsns.ca
 
-STUDENT_COUPON_CODES          = OGRENCI2026
+STUDENT_COUPON_CODES          = <tahmin edilemez kod>
+
+TURNSTILE_SECRET_KEY          = <turnstile secret key>      [Secret]  (§4.4)
 ```
+
+> 🎟️ Kupon kodu tahmin edilemez olmalı: `OGRENCI2026` gibi bir kod birkaç
+> denemede bulunur. En az 10 karakter, rastgele bir kod kullan
+> (ör. `ogr-7f3k9q2m`) ve dönem başında değiştir. `/api/coupon` IP başına
+> dakikada 5 denemeyle sınırlı, ama sınır tek başına yeterli değil.
 
 ### 4.3 Build değişkenleri — ayrı yer!
 
@@ -295,6 +303,7 @@ STUDENT_COUPON_CODES          = OGRENCI2026
 VITE_SQUARE_ENV               = sandbox
 VITE_SQUARE_APPLICATION_ID    = <sandbox application id>
 VITE_SQUARE_LOCATION_ID       = <sandbox location id>
+VITE_TURNSTILE_SITE_KEY       = <turnstile site key>        (§4.4)
 ```
 
 > ⚠️ **En sık yapılan hata bu.** `VITE_` ile başlayanlar Vite tarafından
@@ -319,6 +328,55 @@ curl -s -X POST https://tsns.<hesabin>.workers.dev/api/coupon \
 ```
 
 İkincisi HTML dönüyorsa API devreye girmemiştir → Ek D.
+
+### 4.4 Bot koruması: Turnstile + hız sınırı
+
+Ödeme ve form uçları (`/api/create-payment`, `/api/create-subscription`,
+`/api/volunteer`, `/api/newsletter`) iki katmanla korunuyor; kod
+`functions/_lib/guard.js`'te.
+
+**Hız sınırı** — `wrangler.toml`'daki `[[ratelimits]]` bağlamaları. Panelde
+bir şey yapmaya gerek yok, deploy ile gelir.
+
+| Bağlama | Uçlar | Anahtar | Sınır |
+| --- | --- | --- | --- |
+| `PAYMENT_LIMITER` | create-payment, create-subscription | IP | 5 / dk |
+| `FORM_LIMITER` | volunteer, newsletter | IP | 5 / dk |
+| `EMAIL_LIMITER` | volunteer, newsletter | e-posta | 2 / dk |
+| `COUPON_LIMITER` | coupon | IP | 5 / dk |
+
+Sayım Cloudflare lokasyonu başına ve yaklaşıktır; aşınca `429` döner.
+
+**Turnstile** — kart deneme botlarına ve e-posta bombardımanına karşı asıl
+koruma. Ücretsiz.
+
+1. Cloudflare → **Turnstile → Add widget**. Ad: `tsns.ca`, hostname'ler:
+   `tsns.ca`, `www.tsns.ca`, `tsns.<hesabin>.workers.dev` (ve yerel test için
+   `localhost`). Mod: **Managed**.
+2. **Site Key** → build değişkeni `VITE_TURNSTILE_SITE_KEY` (§4.3).
+3. **Secret Key** → runtime değişkeni `TURNSTILE_SECRET_KEY`, **Secret** (§4.2).
+4. Yeni deploy tetikle (site key build'e gömülüyor).
+
+> ⚠️ **İkisi birlikte.** Yalnızca secret girilirse tarayıcı token göndermez
+> ve **tüm ödemeler ve formlar 403 alır.** Güvenli sıra: önce site key +
+> deploy, sitede widget'ın göründüğünü kontrol et, sonra secret.
+> Secret boşken koruma kapalıdır (site çalışır, ama korumasız).
+
+Yerel test için Cloudflare'in test anahtarları: site key
+`1x00000000000000000000AA` (hep geçer), secret
+`1x0000000000000000000000000000000AA` (hep geçer) /
+`2x0000000000000000000000000000000AA` (hep reddeder).
+
+**Doğrula** — secret girildikten sonra token'sız bir istek reddedilmeli:
+
+```bash
+curl -s -X POST https://tsns.ca/api/newsletter \
+  -H 'Content-Type: application/json' -d '{"email":"test@example.com"}'
+# → {"ok":false,...,"code":"turnstile_failed"}
+```
+
+Square tarafında ek olarak: Square Dashboard → **Account & Settings →
+Risk Manager**'da kart deneme kuralları açık olsun.
 
 ---
 
