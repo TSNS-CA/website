@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { t } from "../i18n";
+import { Link } from "react-router-dom";
+import { t, upper } from "../i18n";
 import { Section, Eyebrow, Button } from "../components/ui";
 import DonationCheckout from "../components/DonationCheckout";
 
@@ -9,27 +10,44 @@ const PRESETS = [10, 25, 50, 100];
 const MIN_AMOUNT = 10;
 
 const inputCls =
-  "w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 text-sm text-slate-900 placeholder:text-slate-400 transition focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:border-slate-600 dark:bg-primary-700 dark:text-white dark:placeholder:text-slate-400 dark:focus:border-primary-200 dark:focus:ring-primary-200/20";
+  "w-full rounded-md border border-slate-300 bg-white px-3 py-2.5 text-[15px] text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-slate-600 dark:bg-primary-700 dark:text-white dark:placeholder:text-slate-400 dark:focus:border-primary-200 dark:focus:ring-primary-200";
 
-const labelCls = "mb-1.5 block text-sm font-semibold text-slate-700 dark:text-slate-200";
+const labelCls = "mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200";
 const errCls = "mt-1.5 text-xs font-semibold text-brand-red";
 
-function StepTitle({ n, children }) {
+// Bölüm başlığı: küçük, harf aralıklı, numara ya da ikon yok.
+function SectionLabel({ lang, id, children }) {
   return (
-    <h2 className="flex items-center gap-3 text-base font-bold text-slate-900 dark:text-white">
-      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-white dark:bg-primary-200 dark:text-primary-900">
-        {n}
-      </span>
-      {children}
-    </h2>
+    <p id={id} className="text-xs font-semibold tracking-[0.14em] text-slate-500 dark:text-slate-400">
+      {upper(lang, children)}
+    </p>
   );
 }
 
-function Check() {
+const PHOTO = { src: "/photos/23-nisan-2022/12.jpg", album: "/fotograflar/23-nisan-2022", w: 1600, h: 1200 };
+
+function Story({ lang, className = "" }) {
   return (
-    <svg viewBox="0 0 20 20" className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600 dark:text-emerald-400" fill="currentColor" aria-hidden="true">
-      <path fillRule="evenodd" d="M16.7 5.3a1 1 0 0 1 0 1.4l-7.5 7.5a1 1 0 0 1-1.4 0L3.3 9.7a1 1 0 1 1 1.4-1.4l3.8 3.8 6.8-6.8a1 1 0 0 1 1.4 0Z" clipRule="evenodd" />
-    </svg>
+    <div className={className}>
+      <figure>
+        <Link to={PHOTO.album} className="block overflow-hidden rounded-lg">
+          <img
+            src={PHOTO.src}
+            width={PHOTO.w}
+            height={PHOTO.h}
+            alt={t(lang, "donate.photo.alt")}
+            loading="lazy"
+            className="aspect-[4/3] w-full object-cover transition duration-500 hover:scale-[1.02]"
+          />
+        </Link>
+        <figcaption className="mt-2 text-xs text-slate-500 dark:text-slate-400">{t(lang, "donate.photo.caption")}</figcaption>
+      </figure>
+      <p className="mt-6 text-[15px] leading-relaxed text-slate-700 dark:text-slate-300">{t(lang, "donate.story")}</p>
+      <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">
+        {t(lang, "donate.questions")}{" "}
+        <a href="mailto:info@tsns.ca" className="text-brand font-medium underline underline-offset-2">info@tsns.ca</a>
+      </p>
+    </div>
   );
 }
 
@@ -127,78 +145,54 @@ export default function DonatePage({ lang, defaultFrequency = "yearly" }) {
 
   if (done) {
     return (
-      <Section className="py-20 sm:py-24">
-        <div className="mx-auto max-w-xl overflow-hidden rounded-3xl border border-slate-200 bg-white text-center shadow-card dark:border-slate-800 dark:bg-primary-800">
-          <div className="h-1.5 w-full bg-accent" />
-          <div className="p-8 sm:p-10">
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-500/15">
-              <svg viewBox="0 0 24 24" className="h-8 w-8 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
-                <path d="M5 12.5l4.5 4.5L19 7.5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </div>
-            <h1 className="mt-5 font-display text-3xl font-extrabold text-slate-900 dark:text-white">{t(lang, "donate.done.title")}</h1>
-            <p className="mt-3 text-lg font-semibold text-slate-800 dark:text-slate-100">
-              {t(lang, done.uyelik ? "donate.done.member" : "donate.done.gift", { name: done.name })}
-            </p>
-            <p className="mt-2 text-slate-600 dark:text-slate-300">{t(lang, "donate.done.body")}</p>
-            <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">{t(lang, "donate.done.emailed", { email: done.email })}</p>
-            <div className="mt-7 flex flex-wrap justify-center gap-3">
-              {done.receiptUrl && (
-                <Button href={done.receiptUrl} variant="outline" target="_blank" rel="noreferrer">
-                  {t(lang, "donate.done.receipt")}
-                </Button>
-              )}
-              <Button to="/" variant="secondary">{t(lang, "action.backHome")}</Button>
-            </div>
+      <Section className="py-20 sm:py-28">
+        <div className="mx-auto max-w-lg text-center">
+          <Eyebrow lang={lang}>{t(lang, uyelik ? "action.becomeMember" : "action.donate")}</Eyebrow>
+          <h1 className="mt-3 font-display text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">{t(lang, "donate.done.title")}</h1>
+          <p className="mt-5 text-lg text-slate-800 dark:text-slate-100">
+            {t(lang, done.uyelik ? "donate.done.member" : "donate.done.gift", { name: done.name })}
+          </p>
+          <p className="mt-2 leading-relaxed text-slate-600 dark:text-slate-300">{t(lang, "donate.done.body")}</p>
+          <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">{t(lang, "donate.done.emailed", { email: done.email })}</p>
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
+            {done.receiptUrl && (
+              <Button href={done.receiptUrl} variant="outline" target="_blank" rel="noreferrer">
+                {t(lang, "donate.done.receipt")}
+              </Button>
+            )}
+            <Button to="/" variant="secondary">{t(lang, "action.backHome")}</Button>
           </div>
         </div>
       </Section>
     );
   }
 
-  const stats = ["since", "members", "events"];
-  const benefits = [
-    t(lang, "donate.benefit.membership"),
-    t(lang, "home.why.statDetail"),
-    t(lang, "home.why.stat"),
-    t(lang, "donate.benefit.cancel"),
-  ];
-
   return (
     <Section className="py-12 sm:py-16">
-      <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,34rem)] lg:gap-14">
-        {/* Intro — on mobile it is the page header; on desktop it is the left column */}
-        <div className="lg:sticky lg:top-24 lg:self-start">
+      <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,30rem)] lg:gap-16">
+        <div>
           <Eyebrow lang={lang}>{t(lang, uyelik ? "action.becomeMember" : "action.donate")}</Eyebrow>
           <h1 className="mt-3 font-display text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white sm:text-5xl">
             {t(lang, uyelik ? "membership.title" : "donate.title")}
           </h1>
-          <p className="mt-4 max-w-lg text-lg leading-relaxed text-slate-600 dark:text-slate-300">
+          <p className="mt-4 max-w-xl text-lg leading-relaxed text-slate-600 dark:text-slate-300">
             {t(lang, uyelik ? "membership.intro" : "donate.intro")}
           </p>
-
-          <div className="mt-8 hidden lg:block">
-            <SidePanel lang={lang} stats={stats} benefits={benefits} />
-          </div>
+          <Story lang={lang} className="mt-10 hidden max-w-xl lg:block" />
         </div>
 
-        {/* Form card */}
         <form
           onSubmit={onSubmit}
           noValidate
-          className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-card dark:border-slate-800 dark:bg-primary-800"
+          className="rounded-lg border border-slate-200 bg-white dark:border-slate-700 dark:bg-primary-800 lg:mt-2 lg:self-start"
         >
-          <div className="h-1.5 w-full bg-accent" />
-          <div className="space-y-8 p-6 sm:p-8">
-            {/* 1. Type */}
-            <fieldset>
-              <legend className="contents">
-                <StepTitle n={1}>{t(lang, "donate.step.type")}</StepTitle>
-              </legend>
-              <div role="radiogroup" className="mt-4 grid grid-cols-2 gap-3">
+          <div className="space-y-7 p-5 sm:p-7">
+            <div role="radiogroup" aria-labelledby="donate-type-label">
+              <SectionLabel lang={lang} id="donate-type-label">{t(lang, "donate.label.type")}</SectionLabel>
+              <div className="mt-3 grid grid-cols-2 rounded-md bg-slate-100 p-1 dark:bg-primary-900/60">
                 {[
-                  { id: "yearly", icon: "🔁", label: t(lang, "donate.freq.yearly"), sub: t(lang, "donate.freq.yearlySub") },
-                  { id: "one_time", icon: "💝", label: t(lang, "donate.freq.oneTime"), sub: t(lang, "donate.freq.oneTimeSub") },
+                  { id: "yearly", label: t(lang, "donate.freq.yearly") },
+                  { id: "one_time", label: t(lang, "donate.freq.oneTime") },
                 ].map((f) => {
                   const on = frequency === f.id;
                   return (
@@ -209,48 +203,37 @@ export default function DonatePage({ lang, defaultFrequency = "yearly" }) {
                       aria-checked={on}
                       onClick={() => chooseFrequency(f.id)}
                       className={
-                        "relative rounded-2xl border-2 p-4 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 " +
+                        "rounded px-3 py-2 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 " +
                         (on
-                          ? "border-primary bg-primary/5 dark:border-primary-200 dark:bg-primary-200/10"
-                          : "border-slate-200 hover:border-slate-300 dark:border-slate-700 dark:hover:border-slate-500")
+                          ? "bg-white text-slate-900 shadow-sm dark:bg-primary-700 dark:text-white"
+                          : "text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white")
                       }
                     >
-                      <span className="text-xl" aria-hidden="true">{f.icon}</span>
-                      <span className="mt-2 block text-sm font-bold text-slate-900 dark:text-white">{f.label}</span>
-                      <span className="mt-0.5 block text-xs leading-snug text-slate-500 dark:text-slate-400">{f.sub}</span>
-                      <span
-                        className={
-                          "absolute right-3 top-3 flex h-5 w-5 items-center justify-center rounded-full border-2 " +
-                          (on ? "border-primary bg-primary dark:border-primary-200 dark:bg-primary-200" : "border-slate-300 dark:border-slate-600")
-                        }
-                        aria-hidden="true"
-                      >
-                        {on && <span className="h-1.5 w-1.5 rounded-full bg-white dark:bg-primary-900" />}
-                      </span>
+                      {f.label}
                     </button>
                   );
                 })}
               </div>
-            </fieldset>
+              <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                {t(lang, uyelik ? "donate.summary.yearly" : "donate.summary.oneTime")}
+              </p>
+            </div>
 
-            {/* 2. Amount */}
-            <fieldset>
-              <legend className="contents">
-                <StepTitle n={2}>{t(lang, "donate.step.amount")}</StepTitle>
-              </legend>
+            <div>
+              <SectionLabel lang={lang}>{t(lang, "donate.label.amount")}</SectionLabel>
               {/* With a student coupon the price is fixed, so there is nothing
-                  left to choose. Show the price instead; "Kaldır" on the coupon
-                  brings the picker back. */}
+                  left to choose. Show the price instead; "Kaldır" brings the
+                  picker back. */}
               {locked ? (
-                <div className="mt-4 flex items-center justify-between gap-3 rounded-2xl border-2 border-primary bg-primary/5 px-4 py-3.5 dark:border-primary-200 dark:bg-primary-200/10">
-                  <span className="text-sm font-bold text-slate-900 dark:text-white">🎓 {t(lang, "donate.student.locked")} · {amountLabel}</span>
-                  <button type="button" onClick={removeCoupon} className="text-xs font-semibold text-slate-500 underline-offset-2 hover:underline dark:text-slate-300">
+                <div className="mt-3 flex items-center justify-between gap-3 rounded-md border border-primary px-3 py-2.5 dark:border-primary-200">
+                  <span className="text-sm font-semibold text-slate-900 dark:text-white">{t(lang, "donate.student.locked")} · {amountLabel}</span>
+                  <button type="button" onClick={removeCoupon} className="text-sm text-slate-500 underline underline-offset-2 hover:text-slate-800 dark:text-slate-300">
                     {t(lang, "donate.student.remove")}
                   </button>
                 </div>
               ) : (
                 <>
-                  <div className="mt-4 grid grid-cols-4 gap-2 sm:gap-3">
+                  <div className="mt-3 grid grid-cols-4 gap-2">
                     {PRESETS.map((p) => {
                       const on = !custom && preset === p;
                       return (
@@ -260,10 +243,10 @@ export default function DonatePage({ lang, defaultFrequency = "yearly" }) {
                           aria-pressed={on}
                           onClick={() => { setPreset(p); setCustom(""); }}
                           className={
-                            "rounded-xl border-2 py-3 text-base font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 " +
+                            "rounded-md border py-2.5 text-[15px] font-semibold tabular-nums transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 " +
                             (on
                               ? "border-primary bg-primary text-white dark:border-primary-200 dark:bg-primary-200 dark:text-primary-900"
-                              : "border-slate-200 text-slate-800 hover:border-slate-300 dark:border-slate-700 dark:text-slate-100 dark:hover:border-slate-500")
+                              : "border-slate-300 text-slate-800 hover:border-slate-400 dark:border-slate-600 dark:text-slate-100 dark:hover:border-slate-400")
                           }
                         >
                           ${p}
@@ -272,8 +255,8 @@ export default function DonatePage({ lang, defaultFrequency = "yearly" }) {
                     })}
                   </div>
                   <label htmlFor="donate-custom" className="sr-only">{t(lang, "donate.amount.custom")}</label>
-                  <div className="relative mt-3">
-                    <span className="pointer-events-none absolute inset-y-0 left-3.5 flex items-center text-sm font-semibold text-slate-500 dark:text-slate-400">$</span>
+                  <div className="relative mt-2">
+                    <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-[15px] text-slate-500 dark:text-slate-400">$</span>
                     <input
                       id="donate-custom"
                       type="number"
@@ -283,31 +266,27 @@ export default function DonatePage({ lang, defaultFrequency = "yearly" }) {
                       value={custom}
                       onChange={(e) => setCustom(e.target.value)}
                       placeholder={`${t(lang, "donate.amount.custom")} (min $${MIN_AMOUNT})`}
-                      className={`${inputCls} pl-7 pr-14 ${custom ? "border-primary dark:border-primary-200" : ""}`}
+                      className={`${inputCls} pl-6 ${custom ? "border-primary dark:border-primary-200" : ""}`}
                     />
-                    <span className="pointer-events-none absolute inset-y-0 right-3.5 flex items-center text-xs font-semibold text-slate-400">CAD</span>
                   </div>
                 </>
               )}
               {errors.amount && <p className={errCls}>{errors.amount}</p>}
 
-              {/* Student coupon — yearly membership only, tucked away until asked for */}
               {uyelik && !locked && (
-                <div className="mt-4">
+                <div className="mt-3">
                   {!couponOpen ? (
                     <button
                       type="button"
                       onClick={() => setCouponOpen(true)}
-                      className="text-brand text-sm font-semibold underline-offset-2 hover:underline"
+                      className="text-sm text-slate-600 underline underline-offset-2 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
                     >
-                      🎓 {t(lang, "donate.student.toggle")}
+                      {t(lang, "donate.student.toggle")}
                     </button>
                   ) : (
-                    <div className="rounded-2xl bg-cream-50 p-4 dark:bg-primary-700/40">
-                      <label htmlFor="donate-coupon" className="text-sm font-semibold text-slate-700 dark:text-slate-200">
-                        🎓 {t(lang, "donate.student.toggle")}
-                      </label>
-                      <div className="mt-2 flex gap-2">
+                    <div>
+                      <label htmlFor="donate-coupon" className={labelCls}>{t(lang, "donate.student.toggle")}</label>
+                      <div className="flex gap-2">
                         <input
                           id="donate-coupon"
                           value={couponInput}
@@ -316,23 +295,24 @@ export default function DonatePage({ lang, defaultFrequency = "yearly" }) {
                           placeholder={t(lang, "donate.student.code")}
                           className={inputCls}
                         />
-                        <Button type="button" variant="secondary" size="sm" onClick={applyCoupon} className="whitespace-nowrap px-5">
+                        <button
+                          type="button"
+                          onClick={applyCoupon}
+                          className="whitespace-nowrap rounded-md border border-slate-300 px-4 text-sm font-semibold text-slate-800 hover:border-slate-400 dark:border-slate-600 dark:text-slate-100"
+                        >
                           {t(lang, "donate.student.apply")}
-                        </Button>
+                        </button>
                       </div>
                       {couponMsg && !couponMsg.ok && <p className={errCls}>{couponMsg.text}</p>}
                     </div>
                   )}
                 </div>
               )}
-            </fieldset>
+            </div>
 
-            {/* 3. Details */}
-            <fieldset>
-              <legend className="contents">
-                <StepTitle n={3}>{t(lang, "donate.step.details")}</StepTitle>
-              </legend>
-              <div className="mt-4 space-y-4">
+            <div>
+              <SectionLabel lang={lang}>{t(lang, "donate.label.details")}</SectionLabel>
+              <div className="mt-3 space-y-4">
                 <div>
                   <label htmlFor="donate-name" className={labelCls}>{t(lang, "donate.field.name")}</label>
                   <input
@@ -341,82 +321,70 @@ export default function DonatePage({ lang, defaultFrequency = "yearly" }) {
                     value={donor.name}
                     onChange={(e) => setField("name", e.target.value)}
                     className={inputCls}
-                    placeholder={t(lang, "donate.field.namePh")}
                     aria-invalid={!!errors.name}
                   />
                   {errors.name && <p className={errCls}>{errors.name}</p>}
                 </div>
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <div>
-                    <label htmlFor="donate-email" className={labelCls}>{t(lang, "donate.field.email")}</label>
-                    <input
-                      id="donate-email"
-                      type="email"
-                      autoComplete="email"
-                      value={donor.email}
-                      onChange={(e) => setField("email", e.target.value)}
-                      className={inputCls}
-                      placeholder="you@email.com"
-                      aria-invalid={!!errors.email}
-                    />
-                    {errors.email && <p className={errCls}>{errors.email}</p>}
-                  </div>
-                  <div>
-                    <label htmlFor="donate-phone" className={labelCls}>
-                      {t(lang, "donate.field.phone")}{" "}
-                      <span className="font-normal text-slate-400">({t(lang, "donate.optional")})</span>
-                    </label>
-                    <input
-                      id="donate-phone"
-                      type="tel"
-                      autoComplete="tel"
-                      value={donor.phone}
-                      onChange={(e) => setField("phone", e.target.value)}
-                      className={inputCls}
-                      placeholder="+1 (902) 000-0000"
-                    />
-                  </div>
+                <div>
+                  <label htmlFor="donate-email" className={labelCls}>{t(lang, "donate.field.email")}</label>
+                  <input
+                    id="donate-email"
+                    type="email"
+                    autoComplete="email"
+                    value={donor.email}
+                    onChange={(e) => setField("email", e.target.value)}
+                    className={inputCls}
+                    aria-invalid={!!errors.email}
+                    aria-describedby="donate-email-hint"
+                  />
+                  {errors.email ? (
+                    <p className={errCls}>{errors.email}</p>
+                  ) : (
+                    <p id="donate-email-hint" className="mt-1 text-xs text-slate-500 dark:text-slate-400">{t(lang, "donate.field.emailHint")}</p>
+                  )}
                 </div>
-                <p className="text-xs text-slate-500 dark:text-slate-400">{t(lang, "donate.field.emailHint")}</p>
+                <div>
+                  <label htmlFor="donate-phone" className={labelCls}>
+                    {t(lang, "donate.field.phone")}{" "}
+                    <span className="font-normal text-slate-400">({t(lang, "donate.optional")})</span>
+                  </label>
+                  <input
+                    id="donate-phone"
+                    type="tel"
+                    autoComplete="tel"
+                    value={donor.phone}
+                    onChange={(e) => setField("phone", e.target.value)}
+                    className={inputCls}
+                  />
+                </div>
               </div>
-            </fieldset>
+            </div>
           </div>
 
-          {/* Summary + submit */}
-          <div className="border-t border-slate-200 bg-cream-50 p-6 dark:border-slate-700 dark:bg-primary-900/40 sm:p-8">
-            <div className="flex items-end justify-between gap-4">
-              <div>
-                <p className="text-sm font-semibold text-slate-600 dark:text-slate-300">{t(lang, "donate.summary.label")}</p>
-                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                  {t(lang, uyelik ? "donate.summary.yearly" : "donate.summary.oneTime")}
-                </p>
-              </div>
-              <p className="whitespace-nowrap font-display text-3xl font-extrabold text-slate-900 dark:text-white">
-                {amountText}
-                <span className="ml-1 text-sm font-semibold text-slate-500 dark:text-slate-400">
-                  CAD{uyelik ? t(lang, "donate.perYear") : ""}
-                </span>
-              </p>
+          <div className="border-t border-slate-200 p-5 dark:border-slate-700 sm:p-7">
+            <div className="flex items-baseline justify-between">
+              <span className="text-sm font-medium text-slate-600 dark:text-slate-300">{t(lang, "donate.total")}</span>
+              <span className="font-display text-2xl font-extrabold tabular-nums text-slate-900 dark:text-white">
+                {amountText}{" "}
+                <span className="text-sm font-medium text-slate-500 dark:text-slate-400">CAD{uyelik ? t(lang, "donate.perYear") : ""}</span>
+              </span>
             </div>
             <button
               type="submit"
-              className="mt-5 flex w-full items-center justify-center gap-2 rounded-full bg-accent px-6 py-4 text-base font-bold text-white shadow-sm transition hover:bg-accent-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2"
+              className="mt-4 w-full rounded-md bg-accent px-6 py-3.5 text-base font-semibold text-white transition hover:bg-accent-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-primary-800"
             >
               {t(lang, "donate.continue")}
-              <span aria-hidden="true">→</span>
             </button>
-            <ul className="mt-5 flex flex-wrap justify-center gap-x-5 gap-y-2 text-xs text-slate-500 dark:text-slate-400">
-              <li className="flex items-center gap-1.5">🔒 {t(lang, "donate.trust.secure")}</li>
-              <li className="flex items-center gap-1.5">💳 {t(lang, "donate.trust.card")}</li>
-              <li className="flex items-center gap-1.5">✉️ {t(lang, "donate.trust.receipt")}</li>
-            </ul>
+            <p className="mt-4 flex gap-2 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+              <svg viewBox="0 0 20 20" className="mt-0.5 h-3.5 w-3.5 shrink-0" fill="currentColor" aria-hidden="true">
+                <path fillRule="evenodd" d="M10 1.5a4 4 0 0 0-4 4V8H5a2 2 0 0 0-2 2v6.5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2h-1V5.5a4 4 0 0 0-4-4Zm2.5 6.5V5.5a2.5 2.5 0 0 0-5 0V8h5Z" clipRule="evenodd" />
+              </svg>
+              {t(lang, "donate.trust")}
+            </p>
           </div>
         </form>
 
-        {/* Mobile: the "why give" panel comes after the form, not before it */}
-        <div className="lg:hidden">
-          <SidePanel lang={lang} stats={stats} benefits={benefits} />
-        </div>
+        <Story lang={lang} className="lg:hidden" />
       </div>
 
       {checkout && (
@@ -439,41 +407,5 @@ export default function DonatePage({ lang, defaultFrequency = "yearly" }) {
         />
       )}
     </Section>
-  );
-}
-
-function SidePanel({ lang, stats, benefits }) {
-  return (
-    <div className="space-y-6">
-      <div className="rounded-3xl bg-primary p-6 text-white sm:p-8">
-        <h2 className="font-display text-xl font-extrabold">{t(lang, "donate.side.title")}</h2>
-        <p className="mt-2 text-sm leading-relaxed text-slate-200">{t(lang, "donate.side.body")}</p>
-        <dl className="mt-6 grid grid-cols-3 gap-3 border-t border-white/15 pt-6">
-          {stats.map((k) => (
-            <div key={k}>
-              <dt className="sr-only">{t(lang, `home.stats.${k}.label`)}</dt>
-              <dd className="font-display text-2xl font-black text-gold sm:text-3xl">{t(lang, `home.stats.${k}.value`)}</dd>
-              <dd className="mt-0.5 text-xs text-slate-300">{t(lang, `home.stats.${k}.label`)}</dd>
-            </div>
-          ))}
-        </dl>
-      </div>
-
-      <div className="rounded-3xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-primary-800 sm:p-8">
-        <h3 className="text-sm font-bold text-slate-900 dark:text-white">{t(lang, "donate.side.includes")}</h3>
-        <ul className="mt-4 space-y-3">
-          {benefits.map((b) => (
-            <li key={b} className="flex gap-3 text-sm text-slate-700 dark:text-slate-200">
-              <Check />
-              {b}
-            </li>
-          ))}
-        </ul>
-        <p className="mt-6 border-t border-slate-100 pt-5 text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
-          {t(lang, "donate.help")}{" "}
-          <a href="mailto:info@tsns.ca" className="text-brand font-semibold hover:underline">info@tsns.ca</a>
-        </p>
-      </div>
-    </div>
   );
 }

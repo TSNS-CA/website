@@ -12,11 +12,11 @@ import { zonedToDate } from "../lib/dates.js";
 import { getEventBySlug } from "./events.js";
 
 export const FEEDBACK_CATEGORIES = {
-  yemek: { icon: "🍽️", label: { tr: "Yemek", en: "Food" } },
-  organizasyon: { icon: "📋", label: { tr: "Organizasyon", en: "Organization" } },
-  muzik: { icon: "🎶", label: { tr: "Müzik", en: "Music" } },
-  konum: { icon: "📍", label: { tr: "Konum", en: "Venue" } },
-  ilgi: { icon: "🤝", label: { tr: "İlgi ve alaka", en: "Hospitality" } },
+  yemek: { label: { tr: "Yemek", en: "Food" } },
+  organizasyon: { label: { tr: "Organizasyon", en: "Organization" } },
+  muzik: { label: { tr: "Müzik", en: "Music" } },
+  konum: { label: { tr: "Konum", en: "Venue" } },
+  ilgi: { label: { tr: "İlgi ve alaka", en: "Hospitality" } },
 };
 
 const surveys = {
