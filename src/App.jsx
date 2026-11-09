@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate, useParams } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate, useParams, useLocation } from "react-router-dom";
 import { getInitialLang, setLang } from "./i18n";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
@@ -15,9 +15,16 @@ import EventDetailPage from "./pages/EventDetail";
 import NewcomersPage from "./pages/Newcomers";
 import PhotosPage from "./pages/Photos";
 import AlbumPage from "./pages/Album";
+import FeedbackPage from "./pages/Feedback";
 
 // /events/:slug → /etkinlikler/:slug. Türkçe yol kanonik (canonical + JSON-LD
 // tek URL'de kalsın diye İngilizce takma adlar kopya değil, yönlendirme).
+function RedirectFeedback() {
+  const { slug } = useParams();
+  const { search } = useLocation();
+  return <Navigate to={`/geri-bildirim/${slug}${search}`} replace />;
+}
+
 function RedirectEvent() {
   const { slug } = useParams();
   return <Navigate to={`/etkinlikler/${slug}`} replace />;
@@ -59,6 +66,8 @@ function Layout() {
           <Route path="/fotograflar/:slug" element={<AlbumPage lang={lang} />} />
           {/* Ayrı sayfa değil: ana sayfa açılır ve sponsor bölümüne kayar. Paylaşım
               önizlemesi yine sponsorlara özel (functions/sponsorlar.js). */}
+          <Route path="/geri-bildirim/:slug" element={<FeedbackPage lang={lang} />} />
+          <Route path="/feedback/:slug" element={<RedirectFeedback />} />
           <Route path="/sponsorlar" element={<HomePage lang={lang} focus="sponsorlar" />} />
           {/* Legacy/aliases */}
           <Route path="/membership" element={<DonatePage key="uye-ol" lang={lang} defaultFrequency="yearly" />} />
