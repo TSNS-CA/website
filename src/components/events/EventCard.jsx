@@ -88,8 +88,7 @@ export default function EventCard({ event, lang, now = new Date(), compact = fal
   const { start, end } = eventInstants(event);
   const past = isPast(event, now);
   const live = !past && event.status === "scheduled";
-  // Anma törenlerinde ücret rozeti yok (ücretsiz olsa da).
-  const price = live && !(event.solemn && event.registration?.free) ? priceFrom(event, lang, now) : null;
+  const price = live ? priceFrom(event, lang, now) : null;
   const external = live && event.registration?.mode === "external" && event.registration.url;
   const href = `/etkinlikler/${event.slug}`;
   const timeText = fmtTimeRange(start, event.showEndTime === false ? null : end, lang);

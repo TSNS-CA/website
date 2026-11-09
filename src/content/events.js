@@ -8,7 +8,6 @@
 // Alan rehberi:
 //   start/end   duvar saati, "YYYY-MM-DDTHH:mm", her zaman America/Halifax
 //   status      "scheduled" | "cancelled" | "postponed" — yaklaşan/geçmiş TÜRETİLİR
-//   solemn      true → anma/yas etkinliği; 🎉 ve "Ücretsiz / Kayıt gerekmez" rozetleri gösterilmez
 //   registration.mode
 //               "none"     bilgi amaçlı, CTA yok
 //               "external" dış bilet sayfası (Zeffy vb.), `url` zorunlu
@@ -205,9 +204,9 @@ export const events = [
       mapUrl: "https://maps.app.goo.gl/2WenrJKb7HL3NPqd9",
     },
     status: "scheduled",
-    registration: { mode: "none", free: true },
-    // Anma töreni: "Ücretsiz / Kayıt gerekmez" rozetleri ve 🎉 gösterilmez.
-    solemn: true,
+    // Ücret bilgisi bilerek yok: anma töreninde "Ücretsiz / Kayıt gerekmez"
+    // rozetleri ve 🎉 gösterilmesin.
+    registration: { mode: "none" },
     tiers: [],
     poster: {
       src: "/events/10-kasim-2026.jpg",

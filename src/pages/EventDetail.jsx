@@ -118,8 +118,7 @@ function RegistrationCta({ event, lang, past, size = "lg" }) {
       </Button>
     );
   }
-  // Anma törenlerinde (solemn) "Ücretsiz / Kayıt gerekmez" kutusu gösterilmez.
-  if (reg.free && !event.solemn) {
+  if (reg.free) {
     return (
       <div className="rounded-xl bg-gold/20 px-4 py-3 text-sm font-semibold text-slate-900 dark:bg-gold/15 dark:text-gold">
         🎉 {t(lang, "events.freeEntry")}
@@ -362,7 +361,7 @@ export default function EventDetailPage({ lang }) {
                     <span aria-hidden="true">🎟️</span>{t(lang, "events.register")} ↗
                   </Button>
                 )}
-                {live && event.registration?.free && !event.solemn && (
+                {live && event.registration?.free && (
                   <span className="inline-flex items-center gap-2 rounded-full bg-gold px-4 py-2 text-sm font-black text-primary-900">
                     🎉 {t(lang, "events.freeEntry")}
                   </span>
