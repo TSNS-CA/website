@@ -2,7 +2,7 @@
 // NOTE: stories are illustrative placeholders until real member quotes are gathered.
 
 export const socials = [
-  { name: "Instagram", href: "https://instagram.com/turkishsocietyofns" },
+  { name: "Instagram", href: "https://www.instagram.com/tsns.ca" },
   { name: "Facebook", href: "https://www.facebook.com/turkishsocietyns" },
   { name: "YouTube", href: "https://www.youtube.com/channel/UCQ2mpj2PM5gYSLFn6EDbSnw" },
   { name: "LinkedIn", href: "https://www.linkedin.com/company/turkish-society-of-nova-scotia" },
