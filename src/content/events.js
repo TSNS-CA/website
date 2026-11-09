@@ -184,11 +184,11 @@ export const events = [
     description: {
       tr: [
         "Cumhuriyetimizin kurucusu Gazi Mustafa Kemal Atatürk'ü aramızdan ayrılışının 88. yılında saygı, özlem ve minnetle anıyoruz. 10 Kasım sabahı Pier 21'in karşısındaki Atatürk büstü önünde kısa bir anma töreni düzenliyoruz.",
-        "Tüm vatandaşlarımızı ve dostlarımızı törene davet ediyoruz. Tören birkaç dakika sürecek; lütfen birkaç dakika erken gelin. Kayıt gerekmez.",
+        "Tüm vatandaşlarımızı ve dostlarımızı törene davet ediyoruz.",
       ],
       en: [
         "On the 88th anniversary of his passing, we remember Mustafa Kemal Atatürk, founder of the Republic of Türkiye, with respect, longing and gratitude. On the morning of November 10 we will hold a short commemoration at the Atatürk bust across from Pier 21.",
-        "Everyone is welcome. The ceremony lasts only a few minutes, so please arrive a little early. No registration needed.",
+        "Everyone is welcome to join us.",
       ],
     },
     start: "2026-11-10T08:45",
