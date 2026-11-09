@@ -8,7 +8,6 @@
 // Alan rehberi:
 //   start/end   duvar saati, "YYYY-MM-DDTHH:mm", her zaman America/Halifax
 //   status      "scheduled" | "cancelled" | "postponed" — yaklaşan/geçmiş TÜRETİLİR
-//   solemn      true → anma/yas etkinliği; kutlama süsü (🎉 vb.) gösterilmez
 //   registration.mode
 //               "none"     bilgi amaçlı, CTA yok
 //               "external" dış bilet sayfası (Zeffy vb.), `url` zorunlu
@@ -178,8 +177,8 @@ export const events = [
     slug: "10-kasim-2026",
     title: { tr: "10 Kasım Atatürk'ü Anma Töreni", en: "November 10 Atatürk Commemoration" },
     summary: {
-      tr: "Aramızdan ayrılışının 88. yılında Gazi Mustafa Kemal Atatürk'ü saygı, özlem ve minnetle anıyoruz. Herkese açık, ücretsiz.",
-      en: "On the 88th anniversary of his passing, we remember Mustafa Kemal Atatürk with respect, longing and gratitude. Free and open to everyone.",
+      tr: "Aramızdan ayrılışının 88. yılında Gazi Mustafa Kemal Atatürk'ü saygı, özlem ve minnetle anıyoruz.",
+      en: "On the 88th anniversary of his passing, we remember Mustafa Kemal Atatürk with respect, longing and gratitude.",
     },
     description: {
       tr: [
@@ -205,9 +204,9 @@ export const events = [
       mapUrl: "https://maps.app.goo.gl/2WenrJKb7HL3NPqd9",
     },
     status: "scheduled",
-    registration: { mode: "none", free: true },
-    // Anma töreni: kutlama süsü (🎉, altın "ücretsiz" rozeti) gösterilmez.
-    solemn: true,
+    // Ücret bilgisi bilerek yok: anma töreninde "Ücretsiz / Kayıt gerekmez"
+    // rozetleri ve 🎉 gösterilmesin.
+    registration: { mode: "none" },
     tiers: [],
     poster: {
       src: "/events/10-kasim-2026.jpg",
