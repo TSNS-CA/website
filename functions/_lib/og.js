@@ -21,6 +21,7 @@ const IMAGE_DIMS = {
   "/events/cumhuriyet-2026.jpg": { width: 1080, height: 1350 },
   "/events/cumhuriyet-2026-program.jpg": { width: 1122, height: 1402 },
   "/events/bayrak-cekme-2026.jpg": { width: 922, height: 1152 },
+  "/events/10-kasim-2026.jpg": { width: 1080, height: 1350 },
 };
 
 export function pickLang(request) {

@@ -8,6 +8,7 @@
 // Alan rehberi:
 //   start/end   duvar saati, "YYYY-MM-DDTHH:mm", her zaman America/Halifax
 //   status      "scheduled" | "cancelled" | "postponed" — yaklaşan/geçmiş TÜRETİLİR
+//   solemn      true → anma/yas etkinliği; kutlama süsü (🎉 vb.) gösterilmez
 //   registration.mode
 //               "none"     bilgi amaçlı, CTA yok
 //               "external" dış bilet sayfası (Zeffy vb.), `url` zorunlu
@@ -170,6 +171,50 @@ export const events = [
       },
     ],
     tags: ["republic-day", "gala"],
+  },
+
+  {
+    id: "10-kasim-2026",
+    slug: "10-kasim-2026",
+    title: { tr: "10 Kasım Atatürk'ü Anma Töreni", en: "November 10 Atatürk Commemoration" },
+    summary: {
+      tr: "Aramızdan ayrılışının 88. yılında Gazi Mustafa Kemal Atatürk'ü saygı, özlem ve minnetle anıyoruz. Herkese açık, ücretsiz.",
+      en: "On the 88th anniversary of his passing, we remember Mustafa Kemal Atatürk with respect, longing and gratitude. Free and open to everyone.",
+    },
+    description: {
+      tr: [
+        "Cumhuriyetimizin kurucusu Gazi Mustafa Kemal Atatürk'ü aramızdan ayrılışının 88. yılında saygı, özlem ve minnetle anıyoruz. 10 Kasım sabahı Pier 21'in karşısındaki Atatürk büstü önünde kısa bir anma töreni düzenliyoruz.",
+        "Tüm vatandaşlarımızı ve dostlarımızı törene davet ediyoruz. Tören birkaç dakika sürecek; lütfen birkaç dakika erken gelin. Kayıt gerekmez.",
+      ],
+      en: [
+        "On the 88th anniversary of his passing, we remember Mustafa Kemal Atatürk, founder of the Republic of Türkiye, with respect, longing and gratitude. On the morning of November 10 we will hold a short commemoration at the Atatürk bust across from Pier 21.",
+        "Everyone is welcome. The ceremony lasts only a few minutes, so please arrive a little early. No registration needed.",
+      ],
+    },
+    start: "2026-11-10T08:45",
+    end: "2026-11-10T08:50",
+    timezone: EVENTS_TZ,
+    // Afişte "Atatürk Büstü, Pier 21 karşısında" yazıyor; büstün kendi adresi
+    // yok, harita Pier 21'i gösterir.
+    venue: {
+      name: "Atatürk Büstü · Pier 21 karşısı",
+      city: "Halifax",
+      region: "NS",
+      mapUrl: PIER21.mapUrl,
+    },
+    status: "scheduled",
+    registration: { mode: "none", free: true },
+    // Anma töreni: kutlama süsü (🎉, altın "ücretsiz" rozeti) gösterilmez.
+    solemn: true,
+    tiers: [],
+    poster: {
+      src: "/events/10-kasim-2026.jpg",
+      alt: {
+        tr: "10 Kasım Atatürk'ü Anma Töreni afişi — 10 Kasım 2026, saat 08.45–08.50, Atatürk Büstü, Pier 21 karşısında",
+        en: "November 10 Atatürk Commemoration poster — November 10, 2026, 8:45–8:50 AM, Atatürk bust across from Pier 21",
+      },
+    },
+    tags: ["ataturk", "ceremony", "free"],
   },
 
   {
