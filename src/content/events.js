@@ -194,13 +194,15 @@ export const events = [
     start: "2026-11-10T08:45",
     end: "2026-11-10T08:50",
     timezone: EVENTS_TZ,
-    // Afişte "Atatürk Büstü, Pier 21 karşısında" yazıyor; büstün kendi adresi
-    // yok, harita Pier 21'i gösterir.
+    // Google Haritalar'da "Halifax Atatürk Memorial" olarak kayıtlı; adres
+    // Pier 21 ile aynı parsel. Link derneğin paylaştığı konum.
     venue: {
       name: "Atatürk Büstü · Pier 21 karşısı",
+      street: "1055 Marginal Rd",
       city: "Halifax",
       region: "NS",
-      mapUrl: PIER21.mapUrl,
+      postalCode: "B3H 4P7",
+      mapUrl: "https://maps.app.goo.gl/2WenrJKb7HL3NPqd9",
     },
     status: "scheduled",
     registration: { mode: "none", free: true },
