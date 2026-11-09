@@ -8,7 +8,7 @@
 // Alan rehberi:
 //   start/end   duvar saati, "YYYY-MM-DDTHH:mm", her zaman America/Halifax
 //   status      "scheduled" | "cancelled" | "postponed" — yaklaşan/geçmiş TÜRETİLİR
-//   solemn      true → anma/yas etkinliği; kutlama süsü (🎉 vb.) gösterilmez
+//   solemn      true → anma/yas etkinliği; 🎉 ve "Ücretsiz / Kayıt gerekmez" rozetleri gösterilmez
 //   registration.mode
 //               "none"     bilgi amaçlı, CTA yok
 //               "external" dış bilet sayfası (Zeffy vb.), `url` zorunlu
@@ -206,7 +206,7 @@ export const events = [
     },
     status: "scheduled",
     registration: { mode: "none", free: true },
-    // Anma töreni: kutlama süsü (🎉, altın "ücretsiz" rozeti) gösterilmez.
+    // Anma töreni: "Ücretsiz / Kayıt gerekmez" rozetleri ve 🎉 gösterilmez.
     solemn: true,
     tiers: [],
     poster: {

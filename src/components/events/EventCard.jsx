@@ -88,7 +88,8 @@ export default function EventCard({ event, lang, now = new Date(), compact = fal
   const { start, end } = eventInstants(event);
   const past = isPast(event, now);
   const live = !past && event.status === "scheduled";
-  const price = live ? priceFrom(event, lang, now) : null;
+  // Anma törenlerinde ücret rozeti yok (ücretsiz olsa da).
+  const price = live && !(event.solemn && event.registration?.free) ? priceFrom(event, lang, now) : null;
   const external = live && event.registration?.mode === "external" && event.registration.url;
   const href = `/etkinlikler/${event.slug}`;
   const timeText = fmtTimeRange(start, event.showEndTime === false ? null : end, lang);
@@ -124,10 +125,7 @@ export default function EventCard({ event, lang, now = new Date(), compact = fal
         {!compact && <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-slate-600 dark:text-slate-300">{event.summary[lang]}</p>}
         {price && (
           <div className="mt-3 inline-flex w-fit items-center gap-1.5 rounded-full bg-gold/25 px-2.5 py-1 text-[11px] font-bold text-slate-900 dark:bg-gold/20 dark:text-gold">
-            {!(event.registration?.free && event.solemn) && (
-              <span aria-hidden="true">{event.registration?.free ? "🎉" : "🎟️"}</span>
-            )}{" "}
-            {price}
+            <span aria-hidden="true">{event.registration?.free ? "🎉" : "🎟️"}</span> {price}
           </div>
         )}
         <div className="mt-auto flex flex-wrap gap-2 pt-5">
