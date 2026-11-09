@@ -82,6 +82,20 @@ function Newsletter({ lang }) {
   );
 }
 
+/**
+ * Altbilgideki bülten formuna kaydırıp ilk alana odaklanır. `#newsletter`
+ * düz linki yetmiyordu: odak forma geçmiyor, aynı sayfada ikinci tıklamada
+ * da hiçbir şey olmuyordu (hash değişmediği için).
+ */
+export function goToNewsletter() {
+  const box = document.getElementById("newsletter");
+  if (!box) return;
+  box.scrollIntoView({ behavior: "smooth", block: "start" });
+  const input = box.querySelector("input[name=name]");
+  // Kaydırma bitmeden odaklanırsak tarayıcı kaydırmayı yarıda keser.
+  if (input) setTimeout(() => input.focus({ preventScroll: true }), 500);
+}
+
 export default function Footer({ lang }) {
   // Halifax'ta yılbaşı, UTC'de çoktan yeni yıl olduğu için 31 Aralık akşamı
   // altbilgi bir sonraki yılı gösteriyordu.
@@ -136,7 +150,8 @@ export default function Footer({ lang }) {
           </div>
 
           {/* Newsletter */}
-          <div>
+          {/* id: başka sayfalardaki "Abone Ol" butonları buraya kaydırır (goToNewsletter). */}
+          <div id="newsletter" className="scroll-mt-24">
             <h3 className="text-sm font-bold tracking-wider text-white">{upper(lang, t(lang, "newsletter.title"))}</h3>
             <p className="mt-4 text-sm text-slate-300">{t(lang, "newsletter.body")}</p>
             <div className="mt-4">
