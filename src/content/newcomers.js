@@ -365,9 +365,9 @@ export const linkGroups = [
     id: "official-links",
     title: { tr: "Resmî temsilcilikler", en: "Official representations" },
     links: [
-      { label: { tr: "T.C. Ottawa Büyükelçiliği", en: "Embassy of Türkiye in Ottawa" }, href: "https://ottava.be.mfa.gov.tr/" },
+      { label: { tr: "T.C. Ottawa Büyükelçiliği", en: "Embassy of Türkiye in Ottawa" }, href: "https://ottawa-emb.mfa.gov.tr/" },
       { label: { tr: "e-Konsolosluk", en: "Turkish e-Consulate" }, href: "https://www.e-konsolosluk.net/" },
-      { label: { tr: "T.C. Toronto Başkonsolosluğu", en: "Consulate General of Türkiye in Toronto" }, href: "https://toronto.bk.mfa.gov.tr/" },
+      { label: { tr: "T.C. Toronto Başkonsolosluğu", en: "Consulate General of Türkiye in Toronto" }, href: "https://toronto-bk.mfa.gov.tr/" },
     ],
   },
 ];

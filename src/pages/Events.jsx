@@ -1,6 +1,7 @@
 import { t, upper } from "../i18n";
 import { Container, Section, Eyebrow, Button, Card } from "../components/ui";
 import EventCard from "../components/events/EventCard";
+import { goToNewsletter } from "../components/Footer";
 import { splitEvents, groupByYear, organizer } from "../content/events.js";
 import { eventInstants, isoWithOffset } from "../lib/dates.js";
 import { usePageMeta } from "../lib/usePageMeta";
@@ -84,7 +85,7 @@ export default function EventsPage({ lang }) {
         ) : (
           <Card className="mt-8 flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-sm text-slate-600 dark:text-slate-300">{t(lang, "events.empty")}</p>
-            <Button href="#newsletter" variant="secondary" size="sm">
+            <Button type="button" onClick={goToNewsletter} variant="secondary" size="sm">
               {t(lang, "action.subscribe")}
             </Button>
           </Card>
