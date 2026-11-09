@@ -195,7 +195,7 @@ export function buildVolunteerEmail({ name, email, phone, interests, lang = "tr"
 
 /**
  * Internal heads-up to the society's inbox. `kind` is "volunteer" | "donation"
- * | "membership"; `rows` is an array of [label, value] pairs.
+ * | "membership" | "newsletter" | "feedback"; `rows` is an array of [label, value] pairs.
  */
 export function buildAdminNotice({ kind, rows, year = halifaxYear() }) {
   const titles = {
@@ -203,6 +203,7 @@ export function buildAdminNotice({ kind, rows, year = halifaxYear() }) {
     donation: "Yeni bağış",
     membership: "Yeni üyelik",
     newsletter: "Yeni bülten aboneliği",
+    feedback: "Etkinlik geri bildirimi (kaydedilemedi)",
   };
   const title = titles[kind] || "Yeni kayıt";
   return {

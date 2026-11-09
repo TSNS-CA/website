@@ -49,6 +49,10 @@ yazma — repo public. `keep_vars = true` dashboard değerlerini korur.
   sayfayı açıp o bölüme kayar (`HomePage focus`), önizlemesi sunucuda sponsorlara özel. Liste
   değişince paylaşım görselini `python3 scripts/sponsor-og.py` ile yeniden üret. `/sponsors/*`
   eski site linkleri için 301 yönlendirmesi — bu yüzden logolar `/sponsors/` altına konmaz.
+- Etkinlik anketleri `src/content/feedback.js` (etkinlik slug'ı → kategoriler + `closes`), sayfa
+  `/geri-bildirim/:slug`, API `functions/api/feedback.js`, tablo `event_feedback` (migration 0006).
+  Anonim: ad/e-posta/IP saklanmaz. Kategori `key`leri Resend şablonundaki yıldız linklerinin sorgu
+  parametreleriyle aynı olmalı (`?yemek=4` o puanı seçili açar). Sonuçlar: `event_feedback_summary`.
 - Supabase migration'ları `supabase/migrations/` altında, idempotent, SQL Editor'da elle
   çalıştırılır. Tarayıcı Supabase'e doğrudan konuşmaz; her şey Worker üzerinden.
 - API rotaları: `onRequestPost({ request, env })`, `400 {ok:false,error}` / `201 {ok:true}`;

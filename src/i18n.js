@@ -181,6 +181,23 @@ const translations = {
 
     "turnstile.wait": "Güvenlik doğrulaması tamamlanıyor, birkaç saniye bekleyin.",
 
+    "feedback.eyebrow": "Geri Bildirim",
+    "feedback.title": "Kutlamamız nasıldı?",
+    "feedback.intro": "Etkinliği nasıl bulduğunuzu merak ediyoruz. Görüşleriniz, bir sonraki etkinliğimizi daha da güzel yapmamıza yardımcı olacak.",
+    "feedback.anon": "Anket tamamen anonimdir; adınız veya e-posta adresiniz kaydedilmez. Yaklaşık 1 dakika sürer.",
+    "feedback.scale": "1 = Zayıf · 5 = Mükemmel. Cevaplamak istemediğiniz satırı boş bırakabilirsiniz.",
+    "feedback.rateAria": "{label}: 5 üzerinden {n}",
+    "feedback.comment": "Eklemek istedikleriniz (isteğe bağlı)",
+    "feedback.commentPlaceholder": "Neyi beğendiniz, neyi geliştirebiliriz?",
+    "feedback.submit": "Gönder",
+    "feedback.sending": "Gönderiliyor…",
+    "feedback.thanksTitle": "Teşekkür ederiz!",
+    "feedback.thanksBody": "Geri bildiriminiz bize ulaştı. Bir sonraki etkinlikte görüşmek üzere!",
+    "feedback.empty": "Lütfen en az bir kategoriyi puanlayın ya da bir yorum yazın.",
+    "feedback.error": "Bir hata oluştu, lütfen tekrar deneyin.",
+    "feedback.closed": "Bu etkinliğin geri bildirim formu kapandı. İlginiz için teşekkür ederiz!",
+    "feedback.notFound": "Bu geri bildirim formu bulunamadı.",
+
     "about.title": "Hakkımızda",
     "about.p1":
       "Nova Scotia Türk Derneği (TSNS), 2007'den bu yana Türk topluluğunu ve kültürünü Nova Scotia ile daha geniş Atlantik Kanada'da tanıtmaya adanmış, Türk kökenli insanları bir araya getiren bir sivil toplum kuruluşudur.",
@@ -398,6 +415,23 @@ const translations = {
     "newsletter.thanks": "Thank you! You're subscribed.",
 
     "turnstile.wait": "Completing the security check, please wait a few seconds.",
+
+    "feedback.eyebrow": "Feedback",
+    "feedback.title": "How was our celebration?",
+    "feedback.intro": "We'd love to hear what you thought of the event. Your feedback helps us make the next one even better.",
+    "feedback.anon": "This survey is fully anonymous; your name and email are not recorded. It takes about a minute.",
+    "feedback.scale": "1 = Poor · 5 = Excellent. Feel free to skip any row.",
+    "feedback.rateAria": "{label}: {n} out of 5",
+    "feedback.comment": "Anything else? (optional)",
+    "feedback.commentPlaceholder": "What did you enjoy, and what could we improve?",
+    "feedback.submit": "Submit",
+    "feedback.sending": "Sending…",
+    "feedback.thanksTitle": "Thank you!",
+    "feedback.thanksBody": "We've received your feedback. See you at the next event!",
+    "feedback.empty": "Please rate at least one item or leave a comment.",
+    "feedback.error": "Something went wrong, please try again.",
+    "feedback.closed": "Feedback for this event is now closed. Thank you for your interest!",
+    "feedback.notFound": "This feedback form could not be found.",
 
     "about.title": "About Us",
     "about.p1":
