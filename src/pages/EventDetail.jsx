@@ -121,7 +121,7 @@ function RegistrationCta({ event, lang, past, size = "lg" }) {
   if (reg.free) {
     return (
       <div className="rounded-xl bg-gold/20 px-4 py-3 text-sm font-semibold text-slate-900 dark:bg-gold/15 dark:text-gold">
-        🎉 {t(lang, "events.freeEntry")}
+        {!event.solemn && "🎉 "}{t(lang, "events.freeEntry")}
         <div className="mt-0.5 text-xs font-normal text-slate-700 dark:text-slate-200">{t(lang, "events.noRegistration")}</div>
       </div>
     );
@@ -362,8 +362,14 @@ export default function EventDetailPage({ lang }) {
                   </Button>
                 )}
                 {live && event.registration?.free && (
-                  <span className="inline-flex items-center gap-2 rounded-full bg-gold px-4 py-2 text-sm font-black text-primary-900">
-                    🎉 {t(lang, "events.freeEntry")}
+                  <span
+                    className={
+                      event.solemn
+                        ? "inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-semibold text-white ring-1 ring-inset ring-white/25"
+                        : "inline-flex items-center gap-2 rounded-full bg-gold px-4 py-2 text-sm font-black text-primary-900"
+                    }
+                  >
+                    {!event.solemn && "🎉 "}{t(lang, "events.freeEntry")}
                   </span>
                 )}
                 {live && <CalendarButtons event={event} lang={lang} light />}
