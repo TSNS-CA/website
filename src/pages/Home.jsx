@@ -1,5 +1,4 @@
 import { t, upper } from "../i18n";
-import { stories } from "../content";
 import { SPONSOR_SEASON } from "../content/sponsors.js";
 import SponsorShowcase from "../components/Sponsors";
 import { useEffect } from "react";
@@ -103,37 +102,6 @@ function Stats({ lang }) {
               {t(lang, `home.stats.${it.key}.label`)}
             </div>
           </div>
-        ))}
-      </div>
-    </Section>
-  );
-}
-
-function Stories({ lang }) {
-  return (
-    <Section className="py-20">
-      <SectionHeading
-        lang={lang}
-        center
-        eyebrow={t(lang, "home.stories.eyebrow")}
-        title={t(lang, "home.stories.title")}
-        subtitle={t(lang, "home.stories.subtitle")}
-      />
-      <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-3">
-        {stories.map((s) => (
-          <Card key={s.name}>
-            <div className="text-4xl leading-none text-brand-red">“</div>
-            <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-200">{s.quote[lang]}</p>
-            <div className="mt-5 flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-sm font-bold text-white">
-                {s.name.charAt(0)}
-              </div>
-              <div>
-                <div className="text-sm font-bold text-slate-900 dark:text-white">{s.name}</div>
-                <div className="text-xs text-slate-500 dark:text-slate-400">{s.role[lang]}</div>
-              </div>
-            </div>
-          </Card>
         ))}
       </div>
     </Section>
@@ -298,7 +266,6 @@ export default function HomePage({ lang, focus }) {
       {upcoming.length ? <NextEventBanner events={upcoming} lang={lang} /> : <Promise lang={lang} />}
       <WhySupport lang={lang} />
       <Stats lang={lang} />
-      <Stories lang={lang} />
       <Events lang={lang} />
       <PhotoStrip lang={lang} />
       <Sponsors lang={lang} />

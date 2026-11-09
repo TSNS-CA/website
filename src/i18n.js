@@ -18,7 +18,6 @@ const translations = {
     "action.learnMore": "Daha Fazla",
     "action.upcomingEvents": "Yaklaşan Etkinlikler",
     "action.viewAll": "Tümünü Gör",
-    "action.readStories": "Hikâyeleri Oku",
     "action.backHome": "Ana Sayfaya Dön",
     "action.subscribe": "Abone Ol",
 
@@ -45,9 +44,6 @@ const translations = {
     "home.stats.region.label": "Bölge",
     "home.stats.region.value": "Atlantik Kanada",
 
-    "home.stories.eyebrow": "Topluluk",
-    "home.stories.title": "Topluluğumuzdan Sesler",
-    "home.stories.subtitle": "TSNS üyeleri ve gönüllüleri derneğin kendileri için ne anlam ifade ettiğini anlatıyor.",
 
     "home.events.eyebrow": "Takvim",
     "home.events.title": "Yaklaşan Etkinlikler",
@@ -253,7 +249,6 @@ const translations = {
     "action.learnMore": "Learn More",
     "action.upcomingEvents": "Upcoming Events",
     "action.viewAll": "View All",
-    "action.readStories": "Read Stories",
     "action.backHome": "Back to Home",
     "action.subscribe": "Subscribe",
 
@@ -280,9 +275,6 @@ const translations = {
     "home.stats.region.label": "Region",
     "home.stats.region.value": "Atlantic Canada",
 
-    "home.stories.eyebrow": "Community",
-    "home.stories.title": "Voices from Our Community",
-    "home.stories.subtitle": "Members and volunteers share what TSNS means to them.",
 
     "home.events.eyebrow": "Calendar",
     "home.events.title": "Upcoming Events",
