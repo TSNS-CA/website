@@ -7,7 +7,7 @@ import PosterCarousel from "../components/events/PosterCarousel";
 import { DateLeaf, StatusBadge } from "../components/events/EventCard";
 import { getEventBySlug, tierIsAvailable, organizer } from "../content/events.js";
 import { eventInstants, isoWithOffset, isPast, fmtLongDate, fmtMediumDate, fmtTimeRange, zonedToDate } from "../lib/dates.js";
-import { downloadIcs, googleCalendarUrl } from "../lib/ics.js";
+import { googleCalendarUrl } from "../lib/ics.js";
 import { usePageMeta } from "../lib/usePageMeta";
 
 const STATUS_URL = {
@@ -133,7 +133,10 @@ function CalendarButtons({ event, lang, light = false }) {
   const variant = light ? "ghostWhite" : "outline";
   return (
     <div className="flex flex-wrap gap-2">
-      <Button type="button" variant={variant} size="sm" onClick={() => downloadIcs(event, lang)}>
+      {/* Sunucudan gerçek dosya (functions/etkinlikler/[slug].js): iPhone "Takvime Ekle",
+          Android Google Takvim açar. Google Takvim linki ise ancak tarayıcıda Google'a
+          giriş yapılmışsa ekleme ekranını açar; giriş yoksa Google tanıtım sayfasına gider. */}
+      <Button href={`/etkinlikler/${event.slug}.ics${lang === "en" ? "?lang=en" : ""}`} variant={variant} size="sm">
         <span aria-hidden="true">📅</span>{t(lang, "events.downloadIcs")}
       </Button>
       <Button href={googleCalendarUrl(event, lang)} target="_blank" rel="noopener noreferrer" variant={variant} size="sm">
