@@ -78,18 +78,6 @@ export function buildIcs(event, lang = "tr") {
   return lines.map(fold).join("\r\n") + "\r\n";
 }
 
-export function downloadIcs(event, lang = "tr") {
-  const blob = new Blob([buildIcs(event, lang)], { type: "text/calendar;charset=utf-8" });
-  const href = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = href;
-  a.download = `${event.slug}.ics`;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(href), 1000);
-}
-
 export function googleCalendarUrl(event, lang = "tr") {
   const { start, end } = eventInstants(event);
   const title = event.title?.[lang] || event.title?.tr || event.slug;
