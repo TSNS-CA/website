@@ -24,9 +24,12 @@ const IMAGE_DIMS = {
   "/events/10-kasim-2026.jpg": { width: 1080, height: 1350 },
 };
 
+// Önizleme dili. Varsayılan her zaman Türkçe (site Türkçe öncelikli).
+// Accept-Language'a BAKMIYORUZ: WhatsApp/Facebook'un önizleme robotu
+// "en-US" gönderiyor ve Türkçe paylaşılan her link İngilizce önizleme
+// çıkarıyordu. İngilizce önizleme isteyen linke ?lang=en ekler.
 export function pickLang(request) {
-  const al = request.headers.get("accept-language") || "";
-  return /^\s*en/i.test(al) ? "en" : "tr";
+  return new URL(request.url).searchParams.get("lang") === "en" ? "en" : "tr";
 }
 
 function eventMeta(event, lang) {
@@ -208,7 +211,6 @@ export async function renderWithMeta(request, env, meta) {
   // HTML önbelleğe alınmaz: deploy sonrası eski index.html, silinmiş hash'li JS'i
   // göstermesin. (Önizleme botları için önbellek gerekmiyor; görseller zaten uzun ömürlü.)
   headers.set("Cache-Control", "no-cache, must-revalidate");
-  headers.set("Vary", "Accept-Language");
   return new Response(rewritten.body, { status: rewritten.status, headers });
 }
 

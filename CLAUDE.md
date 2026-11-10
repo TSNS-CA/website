@@ -44,6 +44,8 @@ yazma — repo public. `keep_vars = true` dashboard değerlerini korur.
   og:/twitter: etiketleriyle zenginleştirir; bu yollar `wrangler.toml` `run_worker_first`
   listesinde olmalı. Yeni bir SEO'lu sayfa eklersen: `functions/<yol>.js` + `metaForPath`
   + `run_worker_first`. Yeni afiş eklersen `IMAGE_DIMS`'e boyutunu yaz; og:image < 300 KB tut.
+  Önizleme dili her zaman Türkçe (Accept-Language'a bakılmaz; WhatsApp robotu `en-US` gönderiyor);
+  İngilizce önizleme için linke `?lang=en` eklenir.
 - Sponsorlar `src/content/sponsors.js` (kademe gold/silver/bronze, logo `public/sponsor-logos/*.webp`).
   Vitrin `src/components/Sponsors.jsx`, ana sayfada `#sponsorlar`. `/sponsorlar` ayrı sayfa değil: ana
   sayfayı açıp o bölüme kayar (`HomePage focus`), önizlemesi sunucuda sponsorlara özel. Liste
