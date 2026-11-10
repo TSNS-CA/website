@@ -24,7 +24,9 @@ function SectionLabel({ lang, id, children }) {
   );
 }
 
-const PHOTO = { src: "/photos/23-nisan-2022/12.jpg", album: "/fotograflar/23-nisan-2022", w: 1600, h: 1200 };
+// Dikey fotoğraf (23 Nisan 2022 pikniği, bayraklar ve pasta). Mobilde kare kırpılır ki form
+// çok aşağı inmesin; masaüstünde 4:5. Odak üst-orta: bayraklar + çocuklar + pasta.
+const PHOTO = { src: "/photos/23-nisan-2022/09.jpg", album: "/fotograflar/23-nisan-2022", w: 1200, h: 1600 };
 
 // Fotoğraf ve metin ayrı: mobilde fotoğraf formun üstünde, metin altında;
 // masaüstünde ikisi de sol sütunda alt alta.
@@ -38,7 +40,7 @@ function StoryPhoto({ lang, className = "", eager = false }) {
           height={PHOTO.h}
           alt={t(lang, "donate.photo.alt")}
           loading={eager ? "eager" : "lazy"}
-          className="aspect-[4/3] w-full object-cover transition duration-500 hover:scale-[1.02]"
+          className="aspect-square w-full object-cover object-[50%_30%] transition duration-500 hover:scale-[1.02] lg:aspect-[4/5]"
         />
       </Link>
       <figcaption className="mt-2 text-xs text-slate-500 dark:text-slate-400">{t(lang, "donate.photo.caption")}</figcaption>
