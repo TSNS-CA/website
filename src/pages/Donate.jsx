@@ -26,23 +26,30 @@ function SectionLabel({ lang, id, children }) {
 
 const PHOTO = { src: "/photos/23-nisan-2022/12.jpg", album: "/fotograflar/23-nisan-2022", w: 1600, h: 1200 };
 
-function Story({ lang, className = "" }) {
+// Fotoğraf ve metin ayrı: mobilde fotoğraf formun üstünde, metin altında;
+// masaüstünde ikisi de sol sütunda alt alta.
+function StoryPhoto({ lang, className = "", eager = false }) {
+  return (
+    <figure className={className}>
+      <Link to={PHOTO.album} className="block overflow-hidden rounded-lg">
+        <img
+          src={PHOTO.src}
+          width={PHOTO.w}
+          height={PHOTO.h}
+          alt={t(lang, "donate.photo.alt")}
+          loading={eager ? "eager" : "lazy"}
+          className="aspect-[4/3] w-full object-cover transition duration-500 hover:scale-[1.02]"
+        />
+      </Link>
+      <figcaption className="mt-2 text-xs text-slate-500 dark:text-slate-400">{t(lang, "donate.photo.caption")}</figcaption>
+    </figure>
+  );
+}
+
+function StoryText({ lang, className = "" }) {
   return (
     <div className={className}>
-      <figure>
-        <Link to={PHOTO.album} className="block overflow-hidden rounded-lg">
-          <img
-            src={PHOTO.src}
-            width={PHOTO.w}
-            height={PHOTO.h}
-            alt={t(lang, "donate.photo.alt")}
-            loading="lazy"
-            className="aspect-[4/3] w-full object-cover transition duration-500 hover:scale-[1.02]"
-          />
-        </Link>
-        <figcaption className="mt-2 text-xs text-slate-500 dark:text-slate-400">{t(lang, "donate.photo.caption")}</figcaption>
-      </figure>
-      <p className="mt-6 text-[15px] leading-relaxed text-slate-700 dark:text-slate-300">{t(lang, "donate.story")}</p>
+      <p className="text-[15px] leading-relaxed text-slate-700 dark:text-slate-300">{t(lang, "donate.story")}</p>
       <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">
         {t(lang, "donate.questions")}{" "}
         <a href="mailto:info@tsns.ca" className="text-brand font-medium underline underline-offset-2">info@tsns.ca</a>
@@ -178,7 +185,9 @@ export default function DonatePage({ lang, defaultFrequency = "yearly" }) {
           <p className="mt-4 max-w-xl text-lg leading-relaxed text-slate-600 dark:text-slate-300">
             {t(lang, uyelik ? "membership.intro" : "donate.intro")}
           </p>
-          <Story lang={lang} className="mt-10 hidden max-w-xl lg:block" />
+          {/* Mobilde fotoğraf burada, formun üstünde; masaüstünde sol sütunda metinle birlikte. */}
+          <StoryPhoto lang={lang} eager className="mt-8 max-w-xl lg:mt-10" />
+          <StoryText lang={lang} className="mt-6 hidden max-w-xl lg:block" />
         </div>
 
         <form
@@ -384,7 +393,7 @@ export default function DonatePage({ lang, defaultFrequency = "yearly" }) {
           </div>
         </form>
 
-        <Story lang={lang} className="lg:hidden" />
+        <StoryText lang={lang} className="lg:hidden" />
       </div>
 
       {checkout && (
